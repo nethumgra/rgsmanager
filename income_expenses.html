@@ -261,7 +261,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        // ========================= 1. IMPORT WENAS KALA =========================
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        // ======================================================================
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
         // ... (Firebase config and initialization remain the same) ...
@@ -533,6 +535,8 @@
 
                 const isLinked = trans.materialDocId || trans.vehicleExpenseId;
 
+                // ========================= 2. WENAS KALA =========================
+                // 'disabled' eka ayin kala delete button eken
                 row.innerHTML = `
                     <td class="p-4 align-top">${date}</td>
                     <td class="p-4 align-top">${trans.description || 'N/A'}</td>
@@ -543,9 +547,11 @@
                     <td class="p-4 align-top">${(trans.amount != null ? trans.amount.toFixed(2) : '0.00')}</td>
                     <td class="p-4 align-top flex items-center gap-2">
                        <button data-id="${trans.id}" class="edit-btn text-blue-400 hover:text-blue-300 ${isLinked ? 'opacity-50 cursor-not-allowed' : ''}" ${isLinked ? 'disabled title="Cannot edit linked transactions here"' : 'title="Edit Transaction"'}><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${trans.id}" data-material-id="${trans.materialDocId || ''}" data-vehicle-id="${trans.vehicleExpenseId || ''}" class="delete-btn text-red-400 hover:text-red-300 ${isLinked ? 'opacity-50 cursor-not-allowed' : ''}" ${isLinked ? 'disabled title="Delete linked transactions from their respective pages"' : 'title="Delete Transaction"'}><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                       
+                       <button data-id="${trans.id}" data-material-id="${trans.materialDocId || ''}" data-vehicle-id="${trans.vehicleExpenseId || ''}" class="delete-btn text-red-400 hover:text-red-300" title="Delete Transaction"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                     </td>
                 `;
+                // ===================================================================
             });
             lucide.createIcons();
         }
@@ -607,35 +613,75 @@
              }
         }
 
+        // ========================= 3. DELETE LOGIC WENAS KALA =========================
         transactionTableBody.addEventListener('click', async (e) => {
             const delBtn = e.target.closest('.delete-btn');
-            if(delBtn && !delBtn.disabled) {
+            
+            // 'disabled' check eka ayin kala
+            if(delBtn) {
+                 const docId = delBtn.dataset.id;
                  const materialId = delBtn.dataset.materialId;
-                 const vehicleId = delBtn.dataset.vehicleId;
+                 const vehicleId = delBtn.dataset.vehicleId; // meka api use karanne naha, eth check ekata thiyanawa
+
+                 let confirmMessage = 'Delete this transaction?';
+                 
+                 // Link eka thiyenawa nam, Warning eka wenas karanawa
                  if (materialId || vehicleId) {
-                     alert("Cannot delete linked transactions from here. Please delete from the Materials Stock or Vehicles page.");
-                     return;
+                     confirmMessage = 'WARNING: This is a linked transaction.\n\nDeleting this will ALSO permanently delete the original record from Materials or Vehicles.\n\nAre you sure you want to proceed?';
                  }
-                if(confirm('Delete this transaction?')) {
+
+                if(confirm(confirmMessage)) {
                      try {
-                        await deleteDoc(doc(db, `users/${currentUserId}/transactions`, delBtn.dataset.id));
-                        showToast('Transaction deleted.');
+                         // Batch ekak hadanawa data dekak delete karanna
+                         const batch = writeBatch(db);
+                         
+                         // 1. Transaction (Income/Expense) eka delete karanawa
+                         const transRef = doc(db, `users/${currentUserId}/transactions`, docId);
+                         batch.delete(transRef);
+
+                         // 2. Link una Material record eka delete karanawa
+                         if (materialId) {
+                             const materialRef = doc(db, `users/${currentUserId}/materials`, materialId);
+                             batch.delete(materialRef);
+                         }
+                         
+                         // (Anagathayedi vehicles add kaloth me logic eka use karanna puluwan)
+                         // if (vehicleId) {
+                         //    const vehicleRef = doc(db, `users/${currentUserId}/vehicle_expenses`, vehicleId);
+                         //    batch.delete(vehicleRef);
+                         // }
+
+                         // Deletes dekama ekapara karanawa
+                         await batch.commit();
+                         
+                         if (materialId || vehicleId) {
+                             showToast('Transaction and linked record deleted.');
+                         } else {
+                             showToast('Transaction deleted.');
+                         }
+
                      } catch (error) {
                          console.error("Error deleting transaction:", error);
                          showToast(`Error deleting: ${error.message}`, false);
                      }
                 }
             }
+            
+            // Edit logic eka kalin wageemai
             const editBtn = e.target.closest('.edit-btn');
             if(editBtn && !editBtn.disabled) {
                 openEditModal(editBtn.dataset.id);
             }
+            
+            // Bill view logic eka kalin wageemai
             const billBtn = e.target.closest('.view-bill-btn');
             if(billBtn){
                 e.preventDefault();
                 openBillViewModal(billBtn.dataset.url);
             }
         });
+        // ===================================================================
+
 
         // --- *** HADAPU THANA (2): Filters Logic එක update කළා *** ---
         function applyFilters() {
