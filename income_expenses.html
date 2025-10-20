@@ -8,7 +8,7 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
         /* Custom scrollbar for a better look */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
@@ -58,7 +58,7 @@
 </div> <nav class="flex flex-col gap-2">
                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                     <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
@@ -69,16 +69,16 @@
                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
                    <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
 
-                </nav>
+                 </nav>
             </div>
             <div>
                  <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                    <i data-lucide="log-out"></i><span>Sign Out</span>
-                </button>
-                <div class="text-xs text-slate-500">
-                    <p>&copy; 2025 Property MS. All rights reserved.</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
-                </div>
+                     <i data-lucide="log-out"></i><span>Sign Out</span>
+                 </button>
+                 <div class="text-xs text-slate-500">
+                     <p>&copy; 2025 Property MS. All rights reserved.</p>
+                     <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                 </div>
             </div>
         </aside>
 
@@ -94,15 +94,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-slate-800 p-6 rounded-lg">
                         <h3 class="text-slate-400">Total Income (This Month)</h3>
-                        <p id="totalIncome" class="text-3xl font-bold text-green-400 mt-2">Rs 0</p>
+                        <p id="totalIncome" class="text-3xl font-bold text-green-400 mt-2">€ 0</p>
                     </div>
                     <div class="bg-slate-800 p-6 rounded-lg">
                         <h3 class="text-slate-400">Total Expenses (This Month)</h3>
-                        <p id="totalExpenses" class="text-3xl font-bold text-red-400 mt-2">Rs 0</p>
+                        <p id="totalExpenses" class="text-3xl font-bold text-red-400 mt-2">€ 0</p>
                     </div>
                     <div class="bg-slate-800 p-6 rounded-lg">
                         <h3 class="text-slate-400">Profit (This Month)</h3>
-                        <p id="totalProfit" class="text-3xl font-bold text-blue-400 mt-2">Rs 0</p>
+                        <p id="totalProfit" class="text-3xl font-bold text-blue-400 mt-2">€ 0</p>
                     </div>
                 </div>
 
@@ -135,17 +135,17 @@
                 </div>
                 <div class="bg-slate-800 rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                      <div>
-                        <label for="filterType" class="block mb-2 text-sm font-medium">Filter by Type</label>
-                        <select id="filterType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                            <option value="">All Types</option>
-                            <option value="Income">Income</option>
-                            <option value="Expense">Expense</option>
-                        </select>
-                    </div>
+                         <label for="filterType" class="block mb-2 text-sm font-medium">Filter by Type</label>
+                         <select id="filterType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                             <option value="">All Types</option>
+                             <option value="Income">Income</option>
+                             <option value="Expense">Expense</option>
+                         </select>
+                     </div>
                      <div>
-                        <label for="filterCategory" class="block mb-2 text-sm font-medium">Filter by Category</label>
-                        <input type="text" id="filterCategory" placeholder="e.g., Materials, Salary, Customer Payment" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
+                         <label for="filterCategory" class="block mb-2 text-sm font-medium">Filter by Category</label>
+                         <input type="text" id="filterCategory" placeholder="e.g., Materials, Salary, Customer Payment" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                     </div>
                     <div>
                         <label for="filterDate" class="block mb-2 text-sm font-medium">Filter by Date</label>
                         <input type="date" id="filterDate" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
@@ -165,8 +165,7 @@
                                 <th class="p-4 font-semibold text-white">Payment Method</th>
                                 <th class="p-4 font-semibold text-white">Bill</th>
                                 <th class="p-4 font-semibold text-white">Type</th>
-                                <th class="p-4 font-semibold text-white">Amount (Rs)</th>
-                                <th class="p-4 font-semibold text-white">Actions</th>
+                                <th class="p-4 font-semibold text-white">Amount (€)</th> <th class="p-4 font-semibold text-white">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="transactionTableBody">
@@ -194,7 +193,7 @@
                             <option value="Expense">Expense</option>
                         </select>
                     </div>
-                     <div>
+                    <div>
                         <label for="transDate" class="block mb-2 text-sm font-medium">Date</label>
                         <input type="date" id="transDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
                     </div>
@@ -209,8 +208,7 @@
                         <input type="text" id="transCategory" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" placeholder="e.g., Rent, Salary, Vehicle">
                     </div>
                     <div>
-                        <label for="transAmount" class="block mb-2 text-sm font-medium">Amount (Rs)</label>
-                        <input type="number" step="0.01" min="0" id="transAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                        <label for="transAmount" class="block mb-2 text-sm font-medium">Amount (€)</label> <input type="number" step="0.01" min="0" id="transAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
                     </div>
                 </div>
 
@@ -565,48 +563,48 @@
                 applyFilters();
                 updateSummaryAndChart();
              }, (error) => {
-                console.error("Error listening for transactions:", error);
-                transactionTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-400">Error loading transactions. Please try again later.</td></tr>`;
-                showToast("Failed to load transaction data.", false);
+                 console.error("Error listening for transactions:", error);
+                 transactionTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-400">Error loading transactions. Please try again later.</td></tr>`;
+                 showToast("Failed to load transaction data.", false);
              });
         }
 
         async function openEditModal(docId) {
              try {
-                const docRef = doc(db, `users/${currentUserId}/transactions`, docId);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const trans = docSnap.data();
+                 const docRef = doc(db, `users/${currentUserId}/transactions`, docId);
+                 const docSnap = await getDoc(docRef);
+                 if (docSnap.exists()) {
+                     const trans = docSnap.data();
 
-                    if (trans.materialDocId || trans.vehicleExpenseId) {
-                        alert("This transaction is linked from another section (Materials or Vehicles). Please edit or delete it from there.");
-                        return;
-                    }
+                     if (trans.materialDocId || trans.vehicleExpenseId) {
+                         alert("This transaction is linked from another section (Materials or Vehicles). Please edit or delete it from there.");
+                         return;
+                     }
 
-                    transactionModalTitle.textContent = 'Edit Transaction';
-                    submitTransactionBtnText.textContent = 'Update';
-                    document.getElementById('transactionDocId').value = docId;
-                    document.getElementById('transType').value = trans.type || 'Expense';
-                    document.getElementById('transDate').value = trans.date?.toDate()?.toISOString()?.split('T')[0] || '';
-                    document.getElementById('transDescription').value = trans.description || '';
-                    document.getElementById('transCategory').value = trans.category || '';
-                    document.getElementById('transAmount').value = trans.amount || 0;
-                    document.getElementById('transPaymentMethod').value = trans.paymentMethod || 'Cash';
+                     transactionModalTitle.textContent = 'Edit Transaction';
+                     submitTransactionBtnText.textContent = 'Update';
+                     document.getElementById('transactionDocId').value = docId;
+                     document.getElementById('transType').value = trans.type || 'Expense';
+                     document.getElementById('transDate').value = trans.date?.toDate()?.toISOString()?.split('T')[0] || '';
+                     document.getElementById('transDescription').value = trans.description || '';
+                     document.getElementById('transCategory').value = trans.category || '';
+                     document.getElementById('transAmount').value = trans.amount || 0;
+                     document.getElementById('transPaymentMethod').value = trans.paymentMethod || 'Cash';
 
-                    if (trans.billUrl) {
-                        billFileNameSpan.textContent = 'Bill previously uploaded.';
-                        existingBillLink.href = trans.billUrl;
-                        existingBillLink.classList.remove('hidden');
-                    } else {
-                        billFileNameSpan.textContent = 'No file chosen';
-                        existingBillLink.classList.add('hidden');
-                        existingBillLink.href = '#';
-                    }
+                     if (trans.billUrl) {
+                         billFileNameSpan.textContent = 'Bill previously uploaded.';
+                         existingBillLink.href = trans.billUrl;
+                         existingBillLink.classList.remove('hidden');
+                     } else {
+                         billFileNameSpan.textContent = 'No file chosen';
+                         existingBillLink.classList.add('hidden');
+                         existingBillLink.href = '#';
+                     }
 
-                    openModal();
-                } else {
-                    showToast("Transaction not found.", false);
-                }
+                     openModal();
+                 } else {
+                     showToast("Transaction not found.", false);
+                 }
              } catch (error) {
                  console.error("Error opening edit modal:", error);
                  showToast("Could not load transaction details for editing.", false);
@@ -624,7 +622,7 @@
                  const vehicleId = delBtn.dataset.vehicleId; // meka api use karanne naha, eth check ekata thiyanawa
 
                  let confirmMessage = 'Delete this transaction?';
-                 
+                
                  // Link eka thiyenawa nam, Warning eka wenas karanawa
                  if (materialId || vehicleId) {
                      confirmMessage = 'WARNING: This is a linked transaction.\n\nDeleting this will ALSO permanently delete the original record from Materials or Vehicles.\n\nAre you sure you want to proceed?';
@@ -634,7 +632,7 @@
                      try {
                          // Batch ekak hadanawa data dekak delete karanna
                          const batch = writeBatch(db);
-                         
+                        
                          // 1. Transaction (Income/Expense) eka delete karanawa
                          const transRef = doc(db, `users/${currentUserId}/transactions`, docId);
                          batch.delete(transRef);
@@ -644,16 +642,16 @@
                              const materialRef = doc(db, `users/${currentUserId}/materials`, materialId);
                              batch.delete(materialRef);
                          }
-                         
-                         // (Anagathayedi vehicles add kaloth me logic eka use karanna puluwan)
-                         // if (vehicleId) {
-                         //    const vehicleRef = doc(db, `users/${currentUserId}/vehicle_expenses`, vehicleId);
-                         //    batch.delete(vehicleRef);
-                         // }
+                        
+                         // 3. Link una Vehicle Expense record eka delete karanawa (anagathayedi one unoth)
+                         if (vehicleId) {
+                              const vehicleRef = doc(db, `users/${currentUserId}/vehicle_expenses`, vehicleId);
+                              batch.delete(vehicleRef);
+                         }
 
                          // Deletes dekama ekapara karanawa
                          await batch.commit();
-                         
+                        
                          if (materialId || vehicleId) {
                              showToast('Transaction and linked record deleted.');
                          } else {
@@ -664,7 +662,7 @@
                          console.error("Error deleting transaction:", error);
                          showToast(`Error deleting: ${error.message}`, false);
                      }
-                }
+                 }
             }
             
             // Edit logic eka kalin wageemai
@@ -696,7 +694,7 @@
                 filtered = filtered.filter(t => t.category && t.category.toLowerCase() === 'materials');
             } else if (activeTab === 'vehicles') {
                 filtered = filtered.filter(t => t.category && t.category.toLowerCase() === 'vehicle');
-            } else if (activeTab === 'customerfixed') { 
+            } else if (activeTab === 'customerfixed') {
                 // --- ALUTH TAB LOGIC EKA ---
                 // 'customers.html' eken save wenne "Customer Payment (CategoryName)" kiyala
                 filtered = filtered.filter(t => t.category && t.category.toLowerCase().startsWith('customer payment'));
@@ -748,6 +746,7 @@
         });
 
         // --- *** HADAPU THANA (3): Summary & Chart Logic එක update කළා *** ---
+        // --- *** VENAS KALA *** --- Currency symbol eka haduwa
         function updateSummaryAndChart(){
              // Filter data based on the ACTIVE TAB for summary boxes and chart
             let dataForSummary = allTransactions;
@@ -759,7 +758,7 @@
                  dataForSummary = allTransactions.filter(t => t.category && t.category.toLowerCase() === 'materials');
              } else if (activeTab === 'vehicles') {
                  dataForSummary = allTransactions.filter(t => t.category && t.category.toLowerCase() === 'vehicle');
-             } else if (activeTab === 'customerfixed') { 
+             } else if (activeTab === 'customerfixed') {
                 // --- ALUTH TAB LOGIC EKA ---
                  dataForSummary = allTransactions.filter(t => t.category && t.category.toLowerCase().startsWith('customer payment'));
              }
@@ -772,9 +771,9 @@
             const income = thisMonthTrans.filter(t => t.type === 'Income').reduce((sum, t) => sum + (t.amount || 0), 0);
             const expenses = thisMonthTrans.filter(t => t.type === 'Expense').reduce((sum, t) => sum + (t.amount || 0), 0);
 
-            document.getElementById('totalIncome').textContent = `Rs ${income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('totalExpenses').textContent = `Rs ${expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('totalProfit').textContent = `Rs ${(income-expenses).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('totalIncome').textContent = `€ ${income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('totalExpenses').textContent = `€ ${expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('totalProfit').textContent = `€ ${(income-expenses).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
             // Chart Data (uses the same filtered `dataForSummary`)
             const monthlyData = {};
@@ -787,12 +786,12 @@
 
             dataForSummary.forEach(t => {
                  if (t.date && t.date.toDate) {
-                    const d = t.date.toDate();
-                    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    if(monthlyData[monthKey]){
-                        if(t.type === 'Income') monthlyData[monthKey].income += (t.amount || 0);
-                        else monthlyData[monthKey].expenses += (t.amount || 0);
-                    }
+                     const d = t.date.toDate();
+                     const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                     if(monthlyData[monthKey]){
+                         if(t.type === 'Income') monthlyData[monthKey].income += (t.amount || 0);
+                         else monthlyData[monthKey].expenses += (t.amount || 0);
+                     }
                  }
             });
 

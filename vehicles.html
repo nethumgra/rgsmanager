@@ -38,6 +38,17 @@
         .file-input-label:hover { background-color: #2563eb; }
         .file-input { display: none; }
         .modal-content { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        
+        /* */
+        /* Future payment highlight kiranna */
+        .future-payment-row {
+            background-color: rgba(202, 138, 4, 0.1); /* bg-yellow-900/50 */
+            border-left: 4px solid #ca8a04; /* border-yellow-500 */
+        }
+        .future-payment-row:hover {
+             background-color: rgba(202, 138, 4, 0.2) !important;
+        }
+
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
@@ -55,7 +66,7 @@
            <nav class="flex flex-col gap-2">
                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                     <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
@@ -70,12 +81,12 @@
             </div>
             <div>
                  <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                    <i data-lucide="log-out"></i><span>Sign Out</span>
-                </button>
-                <div class="text-xs text-slate-500">
-                    <p>&copy; 2025 RSG MANAGER ADMIN. All rights reserved.Developed By Mathizz</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
-                </div>
+                     <i data-lucide="log-out"></i><span>Sign Out</span>
+                 </button>
+                 <div class="text-xs text-slate-500">
+                     <p>&copy; 2025 RSG MANAGER ADMIN. All rights reserved.Developed By Mathizz</p>
+                     <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                 </div>
             </div>
         </aside>
 
@@ -85,9 +96,9 @@
                     <h2 class="text-3xl font-bold text-white">Vehicle Management</h2>
                     <div class="flex items-center gap-4">
                          <div class="bg-slate-800 p-3 rounded-lg text-center">
-                            <h3 class="text-sm text-slate-400">Total Vehicle Expenses</h3>
-                            <p id="totalVehicleExpensesDisplay" class="text-xl font-bold text-red-400 mt-1">Rs 0</p>
-                        </div>
+                             <h3 class="text-sm text-slate-400">Total Vehicle Expenses</h3>
+                             <p id="totalVehicleExpensesDisplay" class="text-xl font-bold text-red-400 mt-1">€ 0</p>
+                         </div>
                         <button id="addVehicleBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 h-full">
                             <i data-lucide="plus"></i> Add New Vehicle
                         </button>
@@ -96,23 +107,23 @@
 
                 <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
                      <div class="flex-1">
-                        <label for="searchByNumber" class="block mb-2 text-sm font-medium">Search by Vehicle Number</label>
-                        <input type="text" id="searchByNumber" placeholder="Enter vehicle number..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
-                    <div class="flex-1">
-                        <label for="filterType" class="block mb-2 text-sm font-medium">Filter by Type</label>
-                        <select id="filterType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                            <option value="">All Types</option>
-                            <option value="Van">Van</option>
-                            <option value="Car">Car</option>
-                            <option value="Lorry">Lorry</option>
-                            <option value="Motorbike">Motorbike</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
-                    </div>
+                         <label for="searchByNumber" class="block mb-2 text-sm font-medium">Search by Vehicle Number</label>
+                         <input type="text" id="searchByNumber" placeholder="Enter vehicle number..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                     </div>
+                     <div class="flex-1">
+                         <label for="filterType" class="block mb-2 text-sm font-medium">Filter by Type</label>
+                         <select id="filterType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                             <option value="">All Types</option>
+                             <option value="Van">Van</option>
+                             <option value="Car">Car</option>
+                             <option value="Lorry">Lorry</option>
+                             <option value="Motorbike">Motorbike</option>
+                             <option value="Other">Other</option>
+                         </select>
+                     </div>
+                     <div>
+                         <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
+                     </div>
                 </div>
 
                 <div class="bg-slate-800 rounded-lg overflow-hidden">
@@ -153,9 +164,9 @@
                     </div>
                     <div class="flex-1">
                          <div class="mb-4">
-                            <label for="vehicleNumber" class="block mb-2 text-sm font-medium">Vehicle Number</label>
-                            <input type="text" id="vehicleNumber" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
-                        </div>
+                             <label for="vehicleNumber" class="block mb-2 text-sm font-medium">Vehicle Number</label>
+                             <input type="text" id="vehicleNumber" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                         </div>
                         <div class="mb-4">
                             <label for="vehicleModel" class="block mb-2 text-sm font-medium">Model</label>
                             <input type="text" id="vehicleModel" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
@@ -212,12 +223,24 @@
                     <input type="text" id="expenseDescription" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
                 </div>
                 <div class="mb-4">
-                    <label for="expenseAmount" class="block mb-2 text-sm font-medium">Amount (Rs)</label>
+                    <label for="expenseAmount" class="block mb-2 text-sm font-medium">Amount (€)</label>
                     <input type="number" step="0.01" min="0" id="expenseAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
                 </div>
                 <div class="mb-4">
-                    <label for="expenseBillFile" class="block mb-2 text-sm font-medium">Upload Bill/Receipt</label> <label for="expenseBillFile" class="file-input-label">Choose File</label>
-                    <input type="file" id="expenseBillFile" class="file-input" accept="image/*"> <span id="expenseBillFileName" class="ml-4 text-slate-400 text-sm">No file chosen</span> <a href="#" id="expenseExistingBillLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing Bill</a> </div>
+                    <label for="expenseBillFile" class="block mb-2 text-sm font-medium">Upload Bill/Receipt</label>
+                    <label for="expenseBillFile" class="file-input-label">Choose File</label>
+                    <input type="file" id="expenseBillFile" class="file-input" accept="image/*">
+                    <span id="expenseBillFileName" class="ml-4 text-slate-400 text-sm">No file chosen</span>
+                    <a href="#" id="expenseExistingBillLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing Bill</a>
+                </div>
+                
+                <div class="mb-4 flex items-center gap-3 bg-slate-700/50 p-3 rounded-lg">
+                    <input type="checkbox" id="isFuturePayment" class="w-5 h-5 bg-slate-700 border-slate-600 rounded text-blue-500 focus:ring-blue-500">
+                    <label for="isFuturePayment" class="text-sm font-medium select-none cursor-pointer">This is a future/scheduled payment
+                         <span class="block text-xs text-slate-400">(Won't be added to main expenses until its date)</span>
+                    </label>
+                </div>
+                
                 <div class="flex justify-end gap-4 mt-8">
                     <button type="button" id="cancelExpenseModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
                     <button type="submit" id="submitExpenseBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
@@ -243,7 +266,7 @@
                             <th class="p-4 font-semibold text-white">Type</th>
                             <th class="p-4 font-semibold text-white">Description</th>
                             <th class="p-4 font-semibold text-white">Bill</th>
-                            <th class="p-4 font-semibold text-white">Amount (Rs)</th>
+                            <th class="p-4 font-semibold text-white">Amount (€)</th>
                             <th class="p-4 font-semibold text-white">Actions</th>
                         </tr>
                     </thead>
@@ -254,15 +277,16 @@
         </div>
     </div>
 
-    <div id="billViewModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-[60]"> <div class="bg-slate-800 rounded-lg p-4 w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0" id="bill-view-modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-white">Bill Viewer</h3>
-                <button id="closeBillViewModalBtn" class="text-slate-400 hover:text-white text-3xl">&times;</button>
-            </div>
-            <div class="flex-1 overflow-auto">
-                <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto" alt="Bill Preview">
-            </div>
-        </div>
+    <div id="billViewModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-[60]">
+        <div class="bg-slate-800 rounded-lg p-4 w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0" id="bill-view-modal-content">
+             <div class="flex justify-between items-center mb-4">
+                 <h3 class="text-xl font-bold text-white">Bill Viewer</h3>
+                 <button id="closeBillViewModalBtn" class="text-slate-400 hover:text-white text-3xl">&times;</button>
+             </div>
+             <div class="flex-1 overflow-auto">
+                 <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto" alt="Bill Preview">
+             </div>
+         </div>
     </div>
 
     <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
@@ -328,6 +352,8 @@
         const expenseBillFileInput = document.getElementById('expenseBillFile'); // Corrected ID
         const expenseBillFileNameSpan = document.getElementById('expenseBillFileName'); // Corrected ID
         const expenseExistingBillLink = document.getElementById('expenseExistingBillLink'); // Corrected ID
+        // --- *** VENAS KALA *** ---
+        const isFuturePaymentCheckbox = document.getElementById('isFuturePayment');
         
         // Log Modal
         const logModal = document.getElementById('logModal');
@@ -349,7 +375,7 @@
                 userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
                 appContainer.classList.remove('hidden');
                 listenForVehicles();
-                listenForExpenses();
+                listenForExpenses(); // Meka load weddi auto process eka karanawa
             } else {
                 window.location.href = './index.html';
             }
@@ -394,10 +420,17 @@
             });
         }
         
-        function listenForExpenses() {
+        // --- *** VENAS KALA *** ---
+        // 'Auto' process logic eka mekata damma
+        async function listenForExpenses() {
              if(!currentUserId) return;
-             onSnapshot(collection(db, `users/${currentUserId}/vehicle_expenses`), snapshot => {
+             onSnapshot(collection(db, `users/${currentUserId}/vehicle_expenses`), async (snapshot) => {
                 allExpenses = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                // --- 'Auto' process logic eka mekai ---
+                await processDueExpenses(); 
+                // --- ---
+                
                 applyFiltersAndRender();
                 updateTotalExpensesDisplay(); 
              }, error => {
@@ -406,9 +439,72 @@
              });
         }
         
+        // --- *** VENAS KALA *** ---
+        // Due date eka pass wechcha future payments check karala main transaction walata add karana function eka
+        async function processDueExpenses() {
+            if (!allVehicles.length) return; // Wait until vehicles are loaded
+
+            const now = new Date();
+            // isFuturePayment = true, saha date eka ada ho adate kalin
+            const dueExpenses = allExpenses.filter(e => e.isFuturePayment && e.date?.toDate() <= now);
+
+            if (dueExpenses.length === 0) return; // Gewanna deyak naha
+
+            console.log(`Processing ${dueExpenses.length} due vehicle expenses...`);
+            
+            try {
+                const batch = writeBatch(db);
+                const transactionsCol = collection(db, `users/${currentUserId}/transactions`);
+                let processedCount = 0;
+
+                for (const ex of dueExpenses) {
+                    // 1. Vehicle eke number eka hoyaganna description ekata
+                    const vehicle = allVehicles.find(v => v.id === ex.vehicleId);
+                    const vehicleNumber = vehicle ? vehicle.number : 'Unknown Vehicle';
+
+                    // 2. Main transaction data eka hadanna
+                    const mainTransactionData = {
+                          date: ex.date,
+                          description: `Vehicle Expense: ${vehicleNumber} - ${ex.description}`,
+                          category: "Vehicle",
+                          type: "Expense",
+                          amount: ex.amount,
+                          paymentMethod: "N/A",
+                          vehicleExpenseId: ex.id // Link eka thiyanna
+                    };
+                    if (ex.billUrl) {
+                        mainTransactionData.billUrl = ex.billUrl; // Bill eka add karanna
+                    }
+
+                    // 3. Main transaction ekata add karanna batch eken
+                    const newTransactionRef = doc(transactionsCol); // Aluth document ekak hadanawa
+                    batch.set(newTransactionRef, mainTransactionData);
+
+                    // 4. Vehicle_expense eke 'isFuturePayment' eka false karanna
+                    const vehicleExpenseRef = doc(db, `users/${currentUserId}/vehicle_expenses`, ex.id);
+                    batch.update(vehicleExpenseRef, { isFuturePayment: false });
+
+                    processedCount++;
+                }
+
+                await batch.commit(); // Okkoma eka para save karanna
+                if (processedCount > 0) {
+                     showToast(`Successfully processed ${processedCount} due vehicle payment(s)!`, true);
+                }
+                // Listener eka auto update wena nisa data reload wei
+            } catch (error) {
+                 console.error("Error processing due expenses:", error);
+                 showToast("Error processing due payments.", false);
+            }
+        }
+        
+        // --- *** VENAS KALA *** ---
+        // Future payments total ekata ganan ganna epa
         function updateTotalExpensesDisplay() {
-            const total = allExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-            totalVehicleExpensesDisplay.textContent = `Rs ${total.toLocaleString()}`;
+            const total = allExpenses
+                .filter(e => !e.isFuturePayment) // Future nathi ewa vitharak filter karanna
+                .reduce((sum, e) => sum + (e.amount || 0), 0);
+            totalVehicleExpensesDisplay.textContent = `€ ${total.toLocaleString()}`;
         }
 
         // --- Main Table Render & Filter ---
@@ -434,8 +530,11 @@
             }
             
             vehicleList.forEach(vehicle => {
-                // Ensure vehicle and vehicle.id are valid before filtering expenses
-                const vehicleExpenses = vehicle && vehicle.id ? allExpenses.filter(e => e.vehicleId === vehicle.id) : [];
+                // --- *** VENAS KALA *** ---
+                // Future payments total ekata ganan ganna epa
+                const vehicleExpenses = vehicle && vehicle.id 
+                    ? allExpenses.filter(e => e.vehicleId === vehicle.id && !e.isFuturePayment) // Future nathi ewa vitharak
+                    : [];
                 const totalSpent = vehicleExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
                 
                 const row = vehicleTableBody.insertRow();
@@ -445,7 +544,7 @@
                     <td class="p-4 font-mono">${vehicle.number || 'N/A'}</td>
                     <td class="p-4">${vehicle.model || 'N/A'}</td>
                     <td class="p-4">${vehicle.type || 'N/A'}</td>
-                    <td class="p-4 font-semibold text-red-400">Rs ${totalSpent.toLocaleString()}</td>
+                    <td class="p-4 font-semibold text-red-400">€ ${totalSpent.toLocaleString()}</td>
                     <td class="p-4 flex items-center gap-2">
                        <button data-id="${vehicle.id}" class="edit-vehicle-btn text-blue-400 hover:text-blue-300" title="Edit Vehicle"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
                        <button data-id="${vehicle.id}" class="delete-vehicle-btn text-red-400 hover:text-red-300" title="Delete Vehicle"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
@@ -482,18 +581,18 @@
                 vehicleModalTitle.textContent = 'Edit Vehicle';
                 submitVehicleBtnText.textContent = 'Update';
                  try {
-                    const docRef = doc(db, `users/${currentUserId}/vehicles`, docId);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const v = docSnap.data();
-                        document.getElementById('vehicleNumber').value = v.number || '';
-                        document.getElementById('vehicleModel').value = v.model || '';
-                        document.getElementById('vehicleType').value = v.type || '';
-                        if(v.photoUrl) vehiclePhotoPreview.src = v.photoUrl;
-                    } else {
+                     const docRef = doc(db, `users/${currentUserId}/vehicles`, docId);
+                     const docSnap = await getDoc(docRef);
+                     if (docSnap.exists()) {
+                         const v = docSnap.data();
+                         document.getElementById('vehicleNumber').value = v.number || '';
+                         document.getElementById('vehicleModel').value = v.model || '';
+                         document.getElementById('vehicleType').value = v.type || '';
+                         if(v.photoUrl) vehiclePhotoPreview.src = v.photoUrl;
+                     } else {
                          showToast("Vehicle not found.", false);
                          return; // Don't open modal if not found
-                    }
+                     }
                  } catch (error) {
                      console.error("Error fetching vehicle for edit:", error);
                      showToast("Error loading vehicle data.", false);
@@ -592,27 +691,34 @@
             document.getElementById('expenseVehicleId').value = vehicleId;
             document.getElementById('expenseDocId').value = expenseDocId || '';
             
+            // --- *** VENAS KALA *** ---
+            isFuturePaymentCheckbox.checked = false; // Checkbox eka reset karanna
+            
             if (expenseDocId) {
                 expenseModalTitle.textContent = `Edit Expense for ${vehicleName}`;
                 submitExpenseBtnText.textContent = 'Update';
                  try {
-                    const docRef = doc(db, `users/${currentUserId}/vehicle_expenses`, expenseDocId);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const ex = docSnap.data();
-                        document.getElementById('expenseType').value = ex.type || 'Other';
-                        document.getElementById('expenseDate').value = ex.date?.toDate()?.toISOString()?.split('T')[0] || '';
-                        document.getElementById('expenseDescription').value = ex.description || '';
-                        document.getElementById('expenseAmount').value = ex.amount || 0;
-                        if (ex.billUrl) {
+                     const docRef = doc(db, `users/${currentUserId}/vehicle_expenses`, expenseDocId);
+                     const docSnap = await getDoc(docRef);
+                     if (docSnap.exists()) {
+                         const ex = docSnap.data();
+                         document.getElementById('expenseType').value = ex.type || 'Other';
+                         document.getElementById('expenseDate').value = ex.date?.toDate()?.toISOString()?.split('T')[0] || '';
+                         document.getElementById('expenseDescription').value = ex.description || '';
+                         document.getElementById('expenseAmount').value = ex.amount || 0;
+                         
+                         // --- *** VENAS KALA *** ---
+                         isFuturePaymentCheckbox.checked = ex.isFuturePayment || false; // Checkbox eka set karanna
+                         
+                         if (ex.billUrl) {
                              expenseBillFileNameSpan.textContent = 'Bill previously uploaded.'; // Corrected ID
                              expenseExistingBillLink.href = ex.billUrl; // Corrected ID
                              expenseExistingBillLink.classList.remove('hidden'); // Corrected ID
-                        }
-                    } else {
-                        showToast("Expense not found.", false);
-                        return;
-                    }
+                         }
+                     } else {
+                         showToast("Expense not found.", false);
+                         return;
+                     }
                  } catch (error) {
                      console.error("Error fetching expense for edit:", error);
                      showToast("Error loading expense data.", false);
@@ -636,7 +742,8 @@
         cancelExpenseModalBtn.addEventListener('click', closeExpenseModal);
         expenseModal.addEventListener('click', (e) => { if(e.target === expenseModal) closeExpenseModal(); });
 
-        // --- *** HADAPU THANA (8): Expense Form Submit Logic එක update කළා *** ---
+        // --- *** VENAS KALA *** ---
+        // Expense Form Submit Logic eka pamen update kala
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!currentUserId) return;
@@ -652,6 +759,9 @@
             const expenseType = document.getElementById('expenseType').value;
             const expenseDescription = document.getElementById('expenseDescription').value.trim();
             const billFile = expenseBillFileInput.files[0]; // Corrected ID
+            
+            // --- *** VENAS KALA *** ---
+            const isFuture = isFuturePaymentCheckbox.checked;
 
              if (!vehicleId || !expenseDate || isNaN(expenseAmount) || expenseAmount < 0 || !expenseType || !expenseDescription) {
                  showToast("Please fill all required expense fields with valid values.", false);
@@ -672,19 +782,23 @@
                     type: expenseType,
                     date: new Date(expenseDate),
                     description: expenseDescription,
-                    amount: expenseAmount
+                    amount: expenseAmount,
+                    isFuturePayment: isFuture // Aluth field eka add kala
                 };
 
-                 // Prepare data for main transactions collection
-                 const mainTransactionData = {
-                     date: vehicleExpenseData.date,
-                     description: `Vehicle Expense: ${vehicleNumber} - ${expenseDescription}`,
-                     category: "Vehicle", // Set category to Vehicle
-                     type: "Expense",
-                     amount: vehicleExpenseData.amount,
-                     paymentMethod: "N/A", // Default or you could add a field
-                     vehicleExpenseId: "" // Will be set after saving vehicle expense
-                 };
+                // Prepare data for main transactions collection (meka conditional)
+                let mainTransactionData = null;
+                if (!isFuture) { // Future payment ekak *nethnam* vitharak main transaction hadanna
+                     mainTransactionData = {
+                         date: vehicleExpenseData.date,
+                         description: `Vehicle Expense: ${vehicleNumber} - ${expenseDescription}`,
+                         category: "Vehicle", // Set category to Vehicle
+                         type: "Expense",
+                         amount: vehicleExpenseData.amount,
+                         paymentMethod: "N/A", 
+                         vehicleExpenseId: "" // Link eka set karanna
+                     };
+                }
 
 
                 // --- Handle Bill Upload ---
@@ -698,59 +812,68 @@
                     const billUrl = await uploadFile(billFile);
                     if (billUrl) {
                         vehicleExpenseData.billUrl = billUrl;
-                        mainTransactionData.billUrl = billUrl;
+                        if (mainTransactionData) mainTransactionData.billUrl = billUrl;
                     } else {
                         throw new Error("Bill upload failed"); // Stop if upload fails
                     }
                 } else if (docId && existingVehicleExpenseUrl) { // Editing, no new file, keep old
                     vehicleExpenseData.billUrl = existingVehicleExpenseUrl;
-                    mainTransactionData.billUrl = existingVehicleExpenseUrl;
+                    if (mainTransactionData) mainTransactionData.billUrl = existingVehicleExpenseUrl;
                 } else { // No file selected or needed
                      delete vehicleExpenseData.billUrl;
-                     delete mainTransactionData.billUrl;
+                     if (mainTransactionData) delete mainTransactionData.billUrl;
                 }
                 // --- Bill Handling End ---
 
 
                 // --- Save/Update Logic ---
-                let vehicleExpenseDocId = docId; // Use existing ID if updating
+                const batch = writeBatch(db); // Okkoma ekapara karanna batch ekak ganna
 
                 if (docId) { // UPDATE existing expense
                     const vehicleExpenseRef = doc(db, `users/${currentUserId}/vehicle_expenses`, docId);
-                    await updateDoc(vehicleExpenseRef, vehicleExpenseData);
+                    batch.update(vehicleExpenseRef, vehicleExpenseData); // 1. Vehicle expense eka update karanna
 
-                    // Find and update the corresponding main transaction
+                    // Link wechcha main transaction eka hoyanna
                     const q = query(collection(db, `users/${currentUserId}/transactions`), where("vehicleExpenseId", "==", docId));
                     const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        const transactionDocId = querySnapshot.docs[0].id;
-                        await updateDoc(doc(db, `users/${currentUserId}/transactions`, transactionDocId), mainTransactionData);
-                    } else {
-                         // If not found, maybe add it? Or log an error? For now, log warning.
-                         console.warn("Could not find linked transaction to update for vehicleExpenseId:", docId);
+                    
+                    if (!isFuture) { // --- Dan meka future nemei (normal expense)
+                        mainTransactionData.vehicleExpenseId = docId; // Link eka set karanna
+                        if (!querySnapshot.empty) {
+                            // Kalin transaction ekak thibba, eka update karanna
+                            const transactionDocRef = querySnapshot.docs[0].ref;
+                            batch.update(transactionDocRef, mainTransactionData);
+                        } else {
+                            // Kalin transaction ekak thibbe naha (future eke idan normal una), aluthen add karanna
+                            const newTransactionRef = doc(collection(db, `users/${currentUserId}/transactions`));
+                            batch.set(newTransactionRef, mainTransactionData);
+                        }
+                    } else { // --- Dan meka future (normal eke idan future una)
+                        if (!querySnapshot.empty) {
+                            // Kalin transaction ekak thibba, eka delete karanna
+                            const transactionDocRef = querySnapshot.docs[0].ref;
+                            batch.delete(transactionDocRef);
+                        }
+                        // Kalin transaction ekak nethnam (future idan future maai), monath karanna ona naha
                     }
-                    showToast('Expense updated in both logs!');
+                    showToast('Expense updated!');
 
                 } else { // ADD new expense
-                    const newVehicleExpenseRef = await addDoc(collection(db, `users/${currentUserId}/vehicle_expenses`), vehicleExpenseData);
-                    vehicleExpenseDocId = newVehicleExpenseRef.id; // Get the new ID
-
-                    // Add the vehicleExpenseId to the main transaction data
-                    mainTransactionData.vehicleExpenseId = vehicleExpenseDocId; 
+                    const newVehicleExpenseRef = doc(collection(db, `users/${currentUserId}/vehicle_expenses`));
+                    batch.set(newVehicleExpenseRef, vehicleExpenseData); // 1. Aluth vehicle expense eka add karanna
                     
-                    // Add the new main transaction
-                    await addDoc(collection(db, `users/${currentUserId}/transactions`), mainTransactionData);
-                    showToast('Expense added to both logs!');
+                    if (!isFuture) { // Future nethnam vitharak
+                         mainTransactionData.vehicleExpenseId = newVehicleExpenseRef.id; // Aluth ID eka link karanna
+                         const newTransactionRef = doc(collection(db, `users/${currentUserId}/transactions`));
+                         batch.set(newTransactionRef, mainTransactionData); // 2. Aluth main transaction eka add karanna
+                    }
+                    showToast('Expense added!');
                 }
                 
+                await batch.commit(); // Okkoma save karanna
+                
                 closeExpenseModal();
-                // Refresh log modal if it's open for the correct vehicle
-                if (!logModal.classList.contains('hidden')) {
-                     const logVehicleId = logTableBody.querySelector('.edit-expense-btn')?.dataset.vid || logTableBody.querySelector('.delete-expense-btn')?.dataset.vid; // Try to get ID from buttons
-                     if(logVehicleId === vehicleId) { // Check if the log modal is for the vehicle we just modified
-                         openLogModal(vehicleId, vehicleNumber);
-                     }
-                }
+                
             } catch (error) {
                  if (error.message !== "Bill upload failed") { // Avoid double toast
                      showToast(`Error: ${error.message}`, false);
@@ -764,6 +887,8 @@
         });
         
         // --- View Log Modal (Per Vehicle) ---
+        // --- *** VENAS KALA *** ---
+        // Highlight logic eka damma
         const openLogModal = (vehicleId, vehicleName) => {
             logModalTitle.textContent = `Expense Log for ${vehicleName}`;
             logTableBody.innerHTML = '';
@@ -777,22 +902,30 @@
             } else {
                 vehicleExpenses.forEach(ex => {
                     const row = logTableBody.insertRow();
-                    row.className = "border-b border-slate-700 hover:bg-slate-700/50";
+                    
                     const billHTML = ex.billUrl ? `<button data-url="${ex.billUrl}" class="view-bill-btn bg-slate-600 hover:bg-slate-500 text-white text-xs px-2 py-1 rounded-md">View Bill</button>` : '<span class="text-slate-500">N/A</span>';
                     
                     const typeClass = ex.type === 'Insurance' ? 'font-bold' : '';
                     const insuranceTag = ex.type === 'Insurance' ? '<span class="ml-2 bg-yellow-600 text-yellow-100 text-xs font-medium px-2 py-0.5 rounded-full">INS</span>' : '';
-                     const dateString = ex.date && ex.date.toDate ? ex.date.toDate().toLocaleDateString() : 'Invalid Date';
+                    const dateString = ex.date && ex.date.toDate ? ex.date.toDate().toLocaleDateString() : 'Invalid Date';
+
+                    // --- Highlight logic ---
+                    const isStillFuture = ex.isFuturePayment && ex.date.toDate() > new Date();
+                    const futureRowClass = isStillFuture ? 'future-payment-row' : '';
+                    const futureTag = isStillFuture ? '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">SCHEDULED</span>' : '';
+                    
+                    row.className = `border-b border-slate-700 hover:bg-slate-700/50 ${futureRowClass}`;
+                    // --- ---
 
                     row.innerHTML = `
-                        <td class="p-4">${dateString}</td>
+                        <td class="p-4">${dateString} ${futureTag}</td>
                         <td class="p-4 ${typeClass}">${ex.type || 'N/A'} ${insuranceTag}</td>
                         <td class="p-4">${ex.description || 'N/A'}</td>
                         <td class="p-4">${billHTML}</td>
                         <td class="p-4">${(ex.amount || 0).toLocaleString()}</td>
                         <td class="p-4 flex gap-2">
-                           <button data-id="${ex.id}" data-vid="${vehicleId}" data-vname="${vehicleName}" class="edit-expense-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                           <button data-id="${ex.id}" class="delete-expense-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                            <button data-id="${ex.id}" data-vid="${vehicleId}" data-vname="${vehicleName}" class="edit-expense-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                            <button data-id="${ex.id}" class="delete-expense-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                         </td>
                     `;
                 });
@@ -853,90 +986,86 @@
             if(billBtn) openBillViewModal(billBtn.dataset.url);
         });
         
-        // --- Delete Functions ---
+        // --- Delete Functions (Meka kalin wage mai) ---
         async function deleteVehicle(docId) {
              if (!docId) return; // Prevent errors if id is missing
-            if (confirm('Are you sure you want to delete this vehicle? This will also delete ALL its expenses from BOTH logs!')) {
-                try {
-                    const batch = writeBatch(db); 
+             if (confirm('Are you sure you want to delete this vehicle? This will also delete ALL its expenses from BOTH logs!')) {
+                 try {
+                     const batch = writeBatch(db); 
 
-                    // Find and delete all associated vehicle expenses
-                    const qExpenses = query(collection(db, `users/${currentUserId}/vehicle_expenses`), where("vehicleId", "==", docId));
-                    const expenseSnapshot = await getDocs(qExpenses);
-                    const expenseIds = expenseSnapshot.docs.map(doc => doc.id); // Get IDs for next query
-                    
-                    expenseSnapshot.forEach(doc => {
-                        batch.delete(doc.ref); // Delete from vehicle_expenses
-                    });
+                     // Find and delete all associated vehicle expenses
+                     const qExpenses = query(collection(db, `users/${currentUserId}/vehicle_expenses`), where("vehicleId", "==", docId));
+                     const expenseSnapshot = await getDocs(qExpenses);
+                     const expenseIds = expenseSnapshot.docs.map(doc => doc.id); // Get IDs for next query
+                     
+                     expenseSnapshot.forEach(doc => {
+                         batch.delete(doc.ref); // Delete from vehicle_expenses
+                     });
 
-                    // Find and delete corresponding main transactions
-                    if (expenseIds.length > 0) {
-                        const qTransactions = query(collection(db, `users/${currentUserId}/transactions`), where("vehicleExpenseId", "in", expenseIds));
-                        const transactionSnapshot = await getDocs(qTransactions);
-                        transactionSnapshot.forEach(doc => {
+                     // Find and delete corresponding main transactions
+                     if (expenseIds.length > 0) {
+                         const qTransactions = query(collection(db, `users/${currentUserId}/transactions`), where("vehicleExpenseId", "in", expenseIds));
+                         const transactionSnapshot = await getDocs(qTransactions);
+                         transactionSnapshot.forEach(doc => {
                              batch.delete(doc.ref); // Delete from transactions
-                        });
-                    }
+                         });
+                     }
 
-                    // Delete the vehicle itself
-                    batch.delete(doc(db, `users/${currentUserId}/vehicles`, docId));
-                    
-                    await batch.commit(); // Commit all deletions
-                    showToast('Vehicle and all its expenses deleted from both logs.');
-                } catch (error) {
-                    showToast(`Error: ${error.message}`, false);
-                    console.error("Error deleting vehicle and expenses:", error);
-                }
-            }
+                     // Delete the vehicle itself
+                     batch.delete(doc(db, `users/${currentUserId}/vehicles`, docId));
+                     
+                     await batch.commit(); // Commit all deletions
+                     showToast('Vehicle and all its expenses deleted from both logs.');
+                 } catch (error) {
+                     showToast(`Error: ${error.message}`, false);
+                     console.error("Error deleting vehicle and expenses:", error);
+                 }
+             }
         }
         
-        // --- *** HADAPU THANA (9): Delete Expense Logic එක update කළා *** ---
         async function deleteExpense(docId) { // docId is from vehicle_expenses
              if (!docId) return; 
              if (confirm('Are you sure you want to delete this expense entry from both logs?')) {
-                try {
-                    const batch = writeBatch(db);
+                 try {
+                     const batch = writeBatch(db);
 
-                    // 1. Reference to the vehicle expense doc
-                    const vehicleExpenseRef = doc(db, `users/${currentUserId}/vehicle_expenses`, docId);
-                    
-                    // 2. Find the corresponding main transaction doc using vehicleExpenseId
-                    const q = query(collection(db, `users/${currentUserId}/transactions`), where("vehicleExpenseId", "==", docId));
-                    const transactionSnapshot = await getDocs(q);
-                    
-                    // 3. Add deletion of main transaction(s) to the batch
-                    transactionSnapshot.forEach(transactionDoc => {
-                        batch.delete(transactionDoc.ref);
-                    });
+                     // 1. Reference to the vehicle expense doc
+                     const vehicleExpenseRef = doc(db, `users/${currentUserId}/vehicle_expenses`, docId);
+                     
+                     // 2. Find the corresponding main transaction doc using vehicleExpenseId
+                     const q = query(collection(db, `users/${currentUserId}/transactions`), where("vehicleExpenseId", "==", docId));
+                     const transactionSnapshot = await getDocs(q);
+                     
+                     // 3. Add deletion of main transaction(s) to the batch
+                     transactionSnapshot.forEach(transactionDoc => {
+                         batch.delete(transactionDoc.ref);
+                     });
 
-                    // 4. Add deletion of the vehicle expense doc to the batch
-                    batch.delete(vehicleExpenseRef);
+                     // 4. Add deletion of the vehicle expense doc to the batch
+                     batch.delete(vehicleExpenseRef);
 
-                    // 5. Commit the batch
-                    await batch.commit(); 
-                    
-                    showToast('Expense deleted from both logs.');
-                    
-                    // Refresh log modal if it's open
-                    if (!logModal.classList.contains('hidden')) {
-                        // Re-fetch vehicle details to refresh log modal correctly
-                        const logVehicleId = logTableBody.querySelector('.edit-expense-btn')?.dataset.vid || logTableBody.querySelector('.delete-expense-btn')?.dataset.vid; 
-                        if(logVehicleId) {
-                            const vehicleRef = doc(db, `users/${currentUserId}/vehicles`, logVehicleId);
-                            const vehicleSnap = await getDoc(vehicleRef);
-                            const vehicleName = vehicleSnap.exists() ? vehicleSnap.data().number : 'Vehicle';
-                            // Re-fetch expenses as `allExpenses` might be stale after deletion
-                            const updatedExpensesSnapshot = await getDocs(collection(db, `users/${currentUserId}/vehicle_expenses`));
-                            allExpenses = updatedExpensesSnapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                            openLogModal(logVehicleId, vehicleName);
-                        } else {
-                            closeLogModal(); // Close if vehicleId not found
-                        }
-                    }
-                } catch (error) {
-                    showToast(`Error deleting expense: ${error.message}`, false);
-                    console.error("Error deleting expense:", error);
-                }
+                     // 5. Commit the batch
+                     await batch.commit(); 
+                     
+                     showToast('Expense deleted from both logs.');
+                     
+                     // Refresh log modal if it's open (Meka auto listener eken wena nisa ona nathi wei, eth thibbath kamak naha)
+                     if (!logModal.classList.contains('hidden')) {
+                         // Re-fetch vehicle details to refresh log modal correctly
+                         const logVehicleId = logTableBody.querySelector('.edit-expense-btn')?.dataset.vid || logTableBody.querySelector('.delete-expense-btn')?.dataset.vid; 
+                         if(logVehicleId) {
+                             const vehicleRef = doc(db, `users/${currentUserId}/vehicles`, logVehicleId);
+                             const vehicleSnap = await getDoc(vehicleRef);
+                             const vehicleName = vehicleSnap.exists() ? vehicleSnap.data().number : 'Vehicle';
+                             openLogModal(logVehicleId, vehicleName);
+                         } else {
+                             closeLogModal(); // Close if vehicleId not found
+                         }
+                     }
+                 } catch (error) {
+                     showToast(`Error deleting expense: ${error.message}`, false);
+                     console.error("Error deleting expense:", error);
+                 }
              }
         }
         

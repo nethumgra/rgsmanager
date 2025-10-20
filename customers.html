@@ -250,7 +250,7 @@
                                     <th class="p-4 font-semibold text-white">Category</th>
                                     <th class="p-4 font-semibold text-white">Contact</th>
                                     <th class="p-4 font-semibold text-white">Agreement %</th>
-                                    <th class="p-4 font-semibold text-white">Items / Total Price (Rs)</th>
+                                    <th class="p-4 font-semibold text-white">Items / Total Price (€)</th>
                                     <th class="p-4 font-semibold text-white">Date Added</th>
                                     <th class="p-4 font-semibold text-white no-print no-pdf">Actions</th>
                                 </tr>
@@ -326,7 +326,7 @@
                             <input type="text" id="newItemName" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., Condo A1, Room 101">
                         </div>
                          <div class="w-28">
-                            <label for="newItemPrice" class="block mb-2 text-xs font-medium">Fixed Price (Rs)</label>
+                            <label for="newItemPrice" class="block mb-2 text-xs font-medium">Fixed Price (€)</label>
                             <input type="number" step="0.01" min="0" id="newItemPrice" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., 5000">
                         </div>
                         <div class="w-20">
@@ -341,7 +341,7 @@
                      <div id="itemsList" class="space-y-2 max-h-40 overflow-y-auto border border-slate-700 rounded-lg p-3 bg-slate-800">
                          <p id="noItemsMsg" class="text-sm text-slate-400 italic">No items/services added yet.</p>
                      </div>
-                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="totalItemPrice" class="font-bold text-white">Rs 0.00</span></p>
+                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="totalItemPrice" class="font-bold text-white">€ 0.00</span></p>
                 </div>
 
                 <div class="flex justify-end gap-4 mt-8">
@@ -371,10 +371,10 @@
                     <div id="detailItemsList" class="space-y-1 text-sm bg-slate-700 p-3 rounded-md">
                          <div class="detail-item font-semibold text-slate-300">
                              <span>Name</span>
-                             <span>Due Day / Price (Rs)</span>
+                             <span>Due Day / Price (€)</span>
                          </div>
                     </div>
-                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="detailTotalItemPrice" class="font-bold text-white">Rs 0.00</span></p>
+                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="detailTotalItemPrice" class="font-bold text-white">€ 0.00</span></p>
                 </div>
             </div>
             
@@ -555,7 +555,7 @@
                       headerDiv.className = 'detail-item font-semibold text-slate-300';
                       headerDiv.innerHTML = `
                           <span>Name</span>
-                          <span>Due Day / Price (Rs)</span>
+                          <span>Due Day / Price (€)</span>
                       `;
                       detailItemsList.appendChild(headerDiv);
                      if (customer.items && Array.isArray(customer.items) && customer.items.length > 0) {
@@ -567,20 +567,20 @@
                              div.innerHTML = `
                                  <span>${item.name || 'Unnamed Item'}</span>
                                  <span class="font-semibold">
-                                     ${dueDayHtml} / Rs ${(item.price || 0).toFixed(2)}
+                                     ${dueDayHtml} / € ${(item.price || 0).toFixed(2)}
                                  </span>
                              `;
                              detailItemsList.appendChild(div);
                              total += (item.price || 0);
                          });
-                         detailTotalItemPrice.textContent = `Rs ${total.toFixed(2)}`;
+                         detailTotalItemPrice.textContent = `€ ${total.toFixed(2)}`;
                          detailItemsSection.classList.remove('hidden');
                      } else {
                          const noItemsDiv = document.createElement('div');
                          noItemsDiv.className = 'detail-item text-slate-400 italic';
                          noItemsDiv.textContent = 'No items/services added.';
                          detailItemsList.appendChild(noItemsDiv);
-                         detailTotalItemPrice.textContent = `Rs 0.00`;
+                         detailTotalItemPrice.textContent = `€ 0.00`;
                          detailItemsSection.classList.remove('hidden');
                      }
                      customerDetailModal.classList.remove('hidden');
@@ -662,7 +662,7 @@
                      const dueDayText = item.dueDay ? ` <span class="text-xs text-slate-400">(Due: Day ${item.dueDay})</span>` : '';
                      div.innerHTML = `
                          <span>
-                             <span class="font-semibold">${item.name}</span>${dueDayText} - Rs ${item.price.toFixed(2)}
+                             <span class="font-semibold">${item.name}</span>${dueDayText} - € ${item.price.toFixed(2)}
                          </span>
                          <button type="button" data-id="${item.id}" class="remove-item-item text-red-500 hover:text-red-400 p-1">
                              <i data-lucide="x-circle" class="w-4 h-4 pointer-events-none"></i>
@@ -676,7 +676,7 @@
          }
          function updateModalItemTotal() {
              const total = tempItems.reduce((sum, item) => sum + item.price, 0);
-             totalItemPriceSpan.textContent = `Rs ${total.toFixed(2)}`;
+             totalItemPriceSpan.textContent = `€ ${total.toFixed(2)}`;
          }
         const showToast = (message, isSuccess = true) => {
             toast.textContent = message;
@@ -764,7 +764,7 @@
                 if (customer.items && Array.isArray(customer.items) && customer.items.length > 0) {
                     itemCount = customer.items.length;
                     totalPrice = customer.items.reduce((sum, item) => sum + (item.price || 0), 0);
-                    detailsHtml = `<span class="font-semibold">${itemCount} Item(s)</span><br>Rs ${totalPrice.toFixed(2)}`;
+                    detailsHtml = `<span class="font-semibold">${itemCount} Item(s)</span><br>€ ${totalPrice.toFixed(2)}`;
                 }
                 const addedDate = customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString() : 'N/A';
                 row.innerHTML = `
@@ -998,7 +998,7 @@
                             </div>
                         </div>
                         <div class="text-right mt-2">
-                             <p class="font-semibold text-lg text-green-300">Rs ${payment.amount.toLocaleString() || '0.00'}</p>
+                             <p class="font-semibold text-lg text-green-300">€ ${payment.amount.toLocaleString() || '0.00'}</p>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 mt-2">
@@ -1026,7 +1026,7 @@
              if (markPaidBtn) {
                  const { customerName, itemName, amount, category } = markPaidBtn.dataset;
                  if (!customerName || !itemName) return;
-                 if (confirm(`Record payment of Rs ${amount} for "${itemName}" from "${customerName}"?`)) {
+                 if (confirm(`Record payment of € ${amount} for "${itemName}" from "${customerName}"?`)) {
                      markPaidBtn.disabled = true; // <-- TYPO FIX
                      markPaidBtn.textContent = 'Saving...';
                      try {
