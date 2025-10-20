@@ -151,7 +151,7 @@
             <form id="agreementForm">
                 <input type="hidden" id="agreementDocId">
                 <input type="hidden" id="existingDocumentUrl">
-                <input type="hidden" id="existingDocumentPath">
+                <input type="hidden" id="existingDocumentDeleteUrl">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
@@ -203,6 +203,23 @@
         </div>
     </div>
 
+    <div id="viewDocumentModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto p-4 no-print">
+        <div class="bg-slate-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0 modal-content" id="view-document-modal-content">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                <h3 id="viewDocumentModalTitle" class="text-2xl font-bold text-white">View Document</h3>
+                <div class="flex items-center gap-4">
+                    <button id="downloadDocumentBtn" 
+                       class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 text-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Download</span>
+                    </button>
+                    <button id="closeViewDocumentModalBtn" class="text-slate-400 hover:text-white text-3xl">&times;</button>
+                </div>
+            </div>
+            <div id="viewDocumentModalBody" class="flex-1 overflow-y-auto">
+                </div>
+        </div>
+    </div>
     <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 no-print"></div>
 
     <script type="module">
@@ -211,11 +228,12 @@
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
+        // *** MEKA THAMAI HADAPU THANA ***
         const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
              authDomain: "rsgweb-5f36d.firebaseapp.com",
              projectId: "rsgweb-5f36d",
-             storageBucket: "rsgweb-5f36d.firebasestorage.app",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app", // *** HARIMA NAMA DEMMA ***
              messagingSenderId: "633023905515",
              appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae"
         };
@@ -224,17 +242,15 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const storage = getStorage(app);
+        
         let currentUserId = null;
-
         let allAgreements = [];
-        let allCustomers = []; // Customers ගබඩා කරන්න
+        let allCustomers = []; 
 
-        // *** Customer Categories (customers.html එකෙන් ගත්තේ) ***
         const customerCategories = [
             "Condominium", "Hotel B&B", "Gardners", "Staff",
             "Agency", "Gym", "Laundry", "Others"
         ];
-        // --- ---
 
         const appContainer = document.getElementById('app-container');
         const signOutBtn = document.getElementById('signOutBtn');
@@ -244,6 +260,7 @@
         const agreementTableBody = document.getElementById('agreementTableBody');
         const expiredAgreementTableBody = document.getElementById('expiredAgreementTableBody');
 
+        // Add/Edit Modal
         const agreementModal = document.getElementById('agreementModal');
         const agreementModalContent = document.getElementById('agreement-modal-content');
         const agreementModalTitle = document.getElementById('agreementModalTitle');
@@ -257,8 +274,7 @@
         const submitAgreementBtn = document.getElementById('submitAgreementBtn');
         const submitAgreementBtnText = document.getElementById('submitAgreementBtnText');
         const submitAgreementSpinner = document.getElementById('submitAgreementSpinner');
-
-        // Modal eke aluth elements
+        
         const agreementCategorySelect = document.getElementById('agreementCategory');
         const customerSelect = document.getElementById('customerSelect');
 
@@ -267,6 +283,15 @@
         const activeTabPanel = document.getElementById('activeTabPanel');
         const expiredTabPanel = document.getElementById('expiredTabPanel');
 
+        // === View Document Modal Variables ===
+        const viewDocumentModal = document.getElementById('viewDocumentModal');
+        const viewDocumentModalContent = document.getElementById('view-document-modal-content');
+        const viewDocumentModalBody = document.getElementById('viewDocumentModalBody');
+        const closeViewDocumentModalBtn = document.getElementById('closeViewDocumentModalBtn');
+        const viewDocumentModalTitle = document.getElementById('viewDocumentModalTitle');
+        // === Download Button Variable ===
+        const downloadDocumentBtn = document.getElementById('downloadDocumentBtn');
+        // =====================================
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -274,7 +299,7 @@
                 userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
                 appContainer.classList.remove('hidden');
                 listenForAgreements();
-                listenForCustomers(); // Customers load karanna
+                listenForCustomers(); 
             } else {
                 window.location.href = './index.html';
             }
@@ -291,12 +316,12 @@
         };
 
 
-        // --- Modal Control ---
+        // --- Add/Edit Modal Control ---
         const openAgreementModal = (docId = null) => {
             agreementForm.reset();
             document.getElementById('agreementDocId').value = docId || '';
             document.getElementById('existingDocumentUrl').value = '';
-            document.getElementById('existingDocumentPath').value = '';
+            document.getElementById('existingDocumentDeleteUrl').value = '';
             agreementFileNameSpan.textContent = 'No file chosen';
             existingFileLink.classList.add('hidden');
             existingFileLink.href = '#';
@@ -305,13 +330,11 @@
             submitAgreementBtnText.classList.remove('hidden');
 
             delete agreementForm.dataset.renewingOldId;
-            delete agreementForm.dataset.renewingOldPath;
+            delete agreementForm.dataset.renewingOldDeleteUrl;
 
-            // Dropdown logic modal open weddi
-            populateCategoryDropdown(); // Categories load karanna
-            customerSelect.innerHTML = '<option value="">Select Category First</option>'; // Customer dropdown reset karanna
+            populateCategoryDropdown(); 
+            customerSelect.innerHTML = '<option value="">Select Category First</option>'; 
             customerSelect.disabled = true;
-            // --- ---
 
             if (docId) { // Editing
                 agreementModalTitle.textContent = 'Edit Agreement';
@@ -319,20 +342,20 @@
                 const agreement = allAgreements.find(a => a.id === docId);
                 if (agreement) {
                     document.getElementById('agreementTitle').value = agreement.title || '';
-
-                    // Edit karaddi dropdowns set karanna
-                    agreementCategorySelect.value = agreement.category || ''; // Category eka select karanna
+                    agreementCategorySelect.value = agreement.category || ''; 
                     if (agreement.category) {
-                        populateCustomerDropdown(agreement.category); // E category eke customers load karanna
-                        customerSelect.value = agreement.customerId || ''; // Customer select karanna
+                        populateCustomerDropdown(agreement.category); 
+                        customerSelect.value = agreement.customerId || ''; 
                     }
-                    // --- ---
-
                     document.getElementById('startDate').value = agreement.startDate?.toDate ? agreement.startDate.toDate().toISOString().split('T')[0] : '';
                     document.getElementById('endDate').value = agreement.endDate?.toDate ? agreement.endDate.toDate().toISOString().split('T')[0] : '';
                     document.getElementById('agreementNotes').value = agreement.notes || '';
                     document.getElementById('existingDocumentUrl').value = agreement.documentUrl || '';
-                    document.getElementById('existingDocumentPath').value = agreement.documentPath || '';
+                    
+                    const legacyPath = agreement.documentPath || ''; 
+                    const newDeleteUrl = agreement.documentDeleteUrl || ''; 
+                    document.getElementById('existingDocumentDeleteUrl').value = newDeleteUrl || legacyPath; 
+                    
                     if(agreement.documentUrl) {
                         agreementFileNameSpan.textContent = 'Existing file uploaded (Choose new to replace)';
                         existingFileLink.href = agreement.documentUrl;
@@ -353,13 +376,11 @@
         };
 
         const closeAgreementModal = () => {
-            agreementModalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                agreementModal.classList.add('hidden');
-                agreementForm.reset();
-                agreementFileNameSpan.textContent = 'No file chosen';
-                existingFileLink.classList.add('hidden');
-            }, 200);
+            agreementModalContent.classList.add('scale-95', 'opacity-0'); 
+            agreementModal.classList.add('hidden'); 
+            agreementForm.reset();
+            agreementFileNameSpan.textContent = 'No file chosen';
+            existingFileLink.classList.add('hidden');
         };
 
         addAgreementBtn.addEventListener('click', () => openAgreementModal());
@@ -370,6 +391,66 @@
             agreementFileNameSpan.textContent = agreementFileInput.files[0]?.name || 'No file chosen';
             existingFileLink.classList.add('hidden');
         });
+
+        // === View Document Modal Functions ===
+        const openViewModal = (url) => {
+            viewDocumentModalBody.innerHTML = ''; // Clear previous content
+
+            // === UPDATED: Set Download Button's data-url ===
+            downloadDocumentBtn.dataset.url = url;
+            // ==========================================
+
+            // Check file type
+            if (url.toLowerCase().endsWith('.pdf')) {
+                // For PDF, use <embed>
+                viewDocumentModalTitle.textContent = 'View PDF Document';
+                const embed = document.createElement('embed');
+                embed.src = url;
+                embed.type = 'application/pdf';
+                embed.className = 'w-full h-[75vh]';
+                viewDocumentModalBody.appendChild(embed);
+            } else if (url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                // For images, use <img>
+                viewDocumentModalTitle.textContent = 'View Image';
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'w-full h-auto object-contain max-h-[75vh]'; // Added max-h
+                viewDocumentModalBody.appendChild(img);
+            } else {
+                // Fallback for other types
+                viewDocumentModalTitle.textContent = 'View Document';
+                viewDocumentModalBody.innerHTML = `<p>Cannot embed this file type. <a href="${url}" target="_blank" class="text-blue-400 hover:underline">Open in new tab</a></p>`;
+            }
+
+            viewDocumentModal.classList.remove('hidden');
+            setTimeout(() => viewDocumentModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        };
+
+        const closeViewModal = () => {
+            viewDocumentModalContent.classList.add('scale-95', 'opacity-0');
+            viewDocumentModal.classList.add('hidden'); // Hide immediately
+            viewDocumentModalBody.innerHTML = ''; // Clear content on close
+            delete downloadDocumentBtn.dataset.url; // Clear the url
+        };
+
+        // --- Add event listeners for the new modal
+        closeViewDocumentModalBtn.addEventListener('click', closeViewModal);
+        viewDocumentModal.addEventListener('click', (e) => { 
+            if (e.target === viewDocumentModal) closeViewModal(); 
+        });
+
+        // === NEW: Click listener for Download Button ===
+        downloadDocumentBtn.addEventListener('click', () => {
+            const urlToDownload = downloadDocumentBtn.dataset.url;
+            if (urlToDownload) {
+                window.open(urlToDownload, '_blank');
+                showToast("File opened in new tab. Right-click and 'Save As...' to download.", true);
+            } else {
+                 showToast("Could not find file URL.", false);
+            }
+        });
+        // ==========================================
+
 
         // Tab Switching
         const activeClasses = 'border-b-2 border-blue-500 text-blue-400';
@@ -390,11 +471,9 @@
         });
 
         // --- Dropdown Logic ---
-
-        // Category Dropdown Populate karana function eka
         function populateCategoryDropdown() {
             agreementCategorySelect.innerHTML = '<option value="">Select Category</option>';
-            customerCategories.sort().forEach(cat => { // Sort categories alphabetically
+            customerCategories.sort().forEach(cat => { 
                 const option = document.createElement('option');
                 option.value = cat;
                 option.textContent = cat;
@@ -402,7 +481,6 @@
             });
         }
 
-        // Category eka select karama Customer Dropdown eka populate karana function eka
         function populateCustomerDropdown(selectedCategory) {
             customerSelect.innerHTML = '<option value="">Select Customer</option>';
             if (!selectedCategory) {
@@ -410,9 +488,7 @@
                 customerSelect.disabled = true;
                 return;
             }
-
             const filteredCustomers = allCustomers.filter(cust => cust.category === selectedCategory);
-
             if (filteredCustomers.length > 0) {
                 filteredCustomers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filteredCustomers.forEach(cust => {
@@ -427,37 +503,63 @@
                 customerSelect.disabled = true;
             }
         }
-
-        // Category eka change karama Customer list eka update karanna listener
         agreementCategorySelect.addEventListener('change', () => {
             const selectedCategoryValue = agreementCategorySelect.value;
             populateCustomerDropdown(selectedCategoryValue);
         });
-        // --- END Dropdown Logic ---
 
+        // --- Firebase Storage: File Upload ---
         const uploadFile = async (file) => {
-            if (!file || !currentUserId) return { url: null, path: null };
-            const filePath = `users/${currentUserId}/agreements/${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, filePath);
+            if (!file || !currentUserId) return { url: null, deleteUrl: null };
+            
+            // Create a unique path in Firebase Storage
+            const fileTimestamp = Date.now();
+            const storagePath = `users/${currentUserId}/agreements/${fileTimestamp}-${file.name}`;
+            const storageRef = ref(storage, storagePath);
+
             try {
+                // Upload the file
                 const snapshot = await uploadBytes(storageRef, file);
+                
+                // Get the public download URL
                 const downloadURL = await getDownloadURL(snapshot.ref);
-                return { url: downloadURL, path: filePath };
+                
+                // Return the URL and the path (which we use as the 'deleteUrl')
+                return { url: downloadURL, deleteUrl: storagePath }; 
+
             } catch (error) {
                 console.error("Upload Error:", error);
                 showToast(`File upload failed: ${error.message}`, false);
-                return { url: null, path: null };
+                return { url: null, deleteUrl: null };
             }
         };
 
-        const deleteFile = async (filePath) => {
-             if (!filePath) return;
-             const storageRef = ref(storage, filePath);
+        const deleteFile = async (deletePath) => {
+             if (!deletePath) {
+                 console.log("No storage path provided, nothing to delete.");
+                 return Promise.resolve();
+             }
+             
+             // Check if it's an old ImgBB URL (shouldn't be, but good to check)
+             if (deletePath.startsWith('http')) {
+                 console.warn("Cannot auto-delete old ImgBB file:", deletePath);
+                 return Promise.resolve();
+             }
+
+             // This is a Firebase Storage path
+             const fileRef = ref(storage, deletePath);
+             
              try {
-                await deleteObject(storageRef);
+                 await deleteObject(fileRef);
+                 console.log("File deleted successfully from Storage:", deletePath);
              } catch (error) {
-                 if (error.code !== 'storage/object-not-found') console.error("Delete Error:", error);
-                 else console.warn("File not found for deletion:", filePath);
+                 // It's okay if it doesn't exist (e.g., already deleted)
+                 if (error.code === 'storage/object-not-found') {
+                     console.log("File not found in storage, might be already deleted.");
+                 } else {
+                     console.error("Error deleting file from Storage:", error);
+                     // Don't show a toast here, it might interrupt user flow
+                 }
              }
         };
 
@@ -472,29 +574,31 @@
             submitAgreementSpinner.classList.remove('hidden');
 
             const file = agreementFileInput.files[0];
-            const existingPath = document.getElementById('existingDocumentPath').value;
-            let fileData = { url: document.getElementById('existingDocumentUrl').value || null, path: existingPath || null };
+            const existingDeleteUrl = document.getElementById('existingDocumentDeleteUrl').value;
+            let fileData = { url: document.getElementById('existingDocumentUrl').value || null, deleteUrl: existingDeleteUrl || null };
 
             const renewingOldId = agreementForm.dataset.renewingOldId;
-            const renewingOldPath = agreementForm.dataset.renewingOldPath;
+            const renewingOldDeleteUrl = agreementForm.dataset.renewingOldDeleteUrl;
 
             try {
                 if (file) {
+                    // If there's a new file, upload it
                     const uploadResult = await uploadFile(file);
                     if (!uploadResult.url) throw new Error("File upload failed, agreement not saved.");
+                    
+                    // If upload is successful, delete the OLD file (if one existed)
+                    if (existingDeleteUrl) {
+                        await deleteFile(existingDeleteUrl);
+                    }
+                    
                     fileData = uploadResult;
-                    if (docId && existingPath && existingPath !== fileData.path) await deleteFile(existingPath);
                 }
 
                 const startDateValue = document.getElementById('startDate').value;
                 const endDateValue = document.getElementById('endDate').value;
-
-                // Dropdown walin data ganne
                 const category = agreementCategorySelect.value;
                 const customerId = customerSelect.value;
-                // Get selected customer's name from the dropdown text
                 const customerName = customerSelect.options[customerSelect.selectedIndex]?.text || '';
-                // --- ---
 
                 if (!document.getElementById('agreementTitle').value || !category || !customerId || !startDateValue || !endDateValue) {
                      showToast("Please fill in Title, Category, Customer, Start Date, and End Date.", false);
@@ -513,16 +617,14 @@
 
                 const agreementData = {
                     title: document.getElementById('agreementTitle').value.trim(),
-                    // Save karana data wenas kala
-                    customerName: customerName, // Name eka save karanawa table ekata
-                    customerId: customerId,     // Customer ge ID eka save karanawa
-                    category: category,         // Category eka save karanawa
-                    // --- ---
+                    customerName: customerName, 
+                    customerId: customerId,     
+                    category: category,         
                     startDate: Timestamp.fromDate(startDate),
                     endDate: Timestamp.fromDate(endDate),
                     notes: document.getElementById('agreementNotes').value.trim(),
                     documentUrl: fileData.url,
-                    documentPath: fileData.path,
+                    documentDeleteUrl: fileData.deleteUrl, // This is the storage path
                 };
 
                 let savedDocId = docId;
@@ -537,26 +639,30 @@
                     showToast('Agreement added!');
                 }
 
+                // If this was a renewal, delete the old *expired* agreement doc AND its file
                 if (renewingOldId && savedDocId) {
                     try {
                         const batch = writeBatch(db);
+                        // Delete the old firestore document
                         batch.delete(doc(db, `users/${currentUserId}/agreements`, renewingOldId));
                         await batch.commit();
-                        await deleteFile(renewingOldPath);
+                        
+                        // Delete the old storage file
+                        await deleteFile(renewingOldDeleteUrl);
                         showToast('Old agreement removed after renewal.');
                     } catch (deleteError) {
                         showToast("New agreement saved, but failed to remove old one.", false);
                     }
                 }
-                closeAgreementModal();
+                closeAgreementModal(); 
             } catch (error) {
                 if (!["File upload failed, agreement not saved.", "Missing required fields", "Invalid date format", "Invalid date range", "Invalid customer"].includes(error.message)) {
                     showToast(`Error: ${error.message}`, false);
-                    console.error("Error saving agreement:", error); // Log the full error
+                    console.error("Error saving agreement:", error);
                 }
             } finally {
                 delete agreementForm.dataset.renewingOldId;
-                delete agreementForm.dataset.renewingOldPath;
+                delete agreementForm.dataset.renewingOldDeleteUrl;
                 submitAgreementBtn.disabled = false;
                 submitAgreementBtnText.classList.remove('hidden');
                 submitAgreementSpinner.classList.add('hidden');
@@ -596,14 +702,12 @@
             });
         }
 
-        // Customers listen karana function
         function listenForCustomers() {
             if (!currentUserId) return;
             const customersRef = query(collection(db, `users/${currentUserId}/customers`), orderBy("name"));
             onSnapshot(customersRef, (snapshot) => {
                 allCustomers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 console.log("Customers loaded:", allCustomers.length);
-                // If modal is open, refresh customer dropdown if category is selected
                 if (!agreementModal.classList.contains('hidden')) {
                    const currentCat = agreementCategorySelect.value;
                    if (currentCat) populateCustomerDropdown(currentCat);
@@ -616,7 +720,6 @@
                 customerSelect.innerHTML = '<option value="">Error loading customers</option>';
             });
         }
-        // --- ---
 
         // --- Render Tables ---
         function renderAgreementsTable(agreements) {
@@ -627,7 +730,10 @@
             agreements.forEach(a => {
                 const start = a.startDate?.toDate ? a.startDate.toDate().toLocaleDateString() : 'N/A';
                 const end = a.endDate?.toDate ? a.endDate.toDate().toLocaleDateString() : 'N/A';
-                const docLink = a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-blue-400 hover:underline">View</a>` : '<span class="text-slate-500">N/A</span>';
+                const docLink = a.documentUrl 
+                    ? `<button data-url="${a.documentUrl}" class="view-doc-btn text-blue-400 hover:underline">View</button>` 
+                    : '<span class="text-slate-500">N/A</span>';
+                
                 const row = agreementTableBody.insertRow();
                 row.innerHTML = `
                     <td class="p-4">${a.title || 'N/A'}</td>
@@ -637,7 +743,7 @@
                     <td class="p-4">${docLink}</td>
                     <td class="p-4 flex gap-2 no-print">
                         <button data-id="${a.id}" class="edit-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="delete-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${a.id}" data-path="${a.documentDeleteUrl || a.documentPath || ''}" class="delete-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                     </td>`;
             });
             lucide.createIcons();
@@ -649,7 +755,10 @@
             }
             agreements.forEach(a => {
                 const expiredDate = a.endDate?.toDate ? a.endDate.toDate().toLocaleDateString() : 'N/A';
-                const docLink = a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-blue-400 hover:underline">View</a>` : '<span class="text-slate-500">N/A</span>';
+                const docLink = a.documentUrl 
+                    ? `<button data-url="${a.documentUrl}" class="view-doc-btn text-blue-400 hover:underline">View</button>` 
+                    : '<span class="text-slate-500">N/A</span>';
+
                 const row = expiredAgreementTableBody.insertRow();
                 row.classList.add('expired-row');
                 row.innerHTML = `
@@ -658,8 +767,8 @@
                     <td class="p-4">${expiredDate}</td>
                     <td class="p-4">${docLink}</td>
                     <td class="p-4 flex gap-2 no-print">
-                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="renew-btn text-white text-sm px-3 py-1.5 rounded-md flex items-center gap-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Renew</button>
-                        <button data-id="${a.id}" data-path="${a.documentPath || ''}" class="delete-expired-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${a.id}" data-path="${a.documentDeleteUrl || a.documentPath || ''}" class="renew-btn text-white text-sm px-3 py-1.5 rounded-md flex items-center gap-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Renew</button>
+                        <button data-id="${a.id}" data-path="${a.documentDeleteUrl || a.documentPath || ''}" class="delete-expired-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                     </td>`;
             });
             lucide.createIcons();
@@ -679,7 +788,14 @@
                 expiringSoon.forEach(a => {
                     const endDate = a.endDate.toDate();
                     const alertEl = document.createElement('div'); alertEl.className = 'bg-yellow-800 border border-yellow-600 p-4 rounded-lg flex items-start gap-3';
-                    alertEl.innerHTML = `<div><i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-300 flex-shrink-0 mt-1"></i></div><div><p class="font-bold">${a.title || 'N/A'}</p><p class="text-sm text-yellow-200">Customer: ${a.customerName || 'N/A'}</p><p class="text-sm text-yellow-300 font-semibold">Expires On: ${endDate.toLocaleDateString()}</p>${a.documentUrl ? `<a href="${a.documentUrl}" target="_blank" class="text-sm text-blue-300 hover:underline mt-1 inline-block">View Document</a>` : ''}</div>`;
+                    alertEl.innerHTML = `
+                        <div><i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-300 flex-shrink-0 mt-1"></i></div>
+                        <div>
+                            <p class="font-bold">${a.title || 'N/A'}</p>
+                            <p class="text-sm text-yellow-200">Customer: ${a.customerName || 'N/A'}</p>
+                            <p class="text-sm text-yellow-300 font-semibold">Expires On: ${endDate.toLocaleDateString()}</p>
+                            ${a.documentUrl ? `<button data-url="${a.documentUrl}" class="view-doc-btn text-sm text-blue-300 hover:underline mt-1 inline-block">View Document</button>` : ''}
+                        </div>`;
                     list.appendChild(alertEl);
                 });
                 expiringAlertsContainer.appendChild(list); lucide.createIcons();
@@ -687,58 +803,88 @@
         }
 
         // --- Table Click Handlers ---
-        async function handleDelete(docId, filePath) {
-             if (confirm('Are you sure you want to permanently delete this agreement and its document?')) {
+        async function handleDelete(docId, deletePath) {
+             if (confirm('Are you sure you want to permanently delete this agreement? This will also delete the uploaded document.')) {
                  try {
-                     const batch = writeBatch(db); batch.delete(doc(db, `users/${currentUserId}/agreements`, docId));
-                     await batch.commit(); await deleteFile(filePath); showToast('Agreement deleted permanently.');
-                 } catch (error) { console.error("Error deleting agreement:", error); showToast(`Error deleting: ${error.message}`, false); }
+                     // 1. Delete the document from Firebase Storage
+                     await deleteFile(deletePath); 
+                     
+                     // 2. Delete the entry from Firestore database
+                     const batch = writeBatch(db); 
+                     batch.delete(doc(db, `users/${currentUserId}/agreements`, docId));
+                     await batch.commit(); 
+                     
+                     showToast('Agreement and document deleted.');
+                 } catch (error) { 
+                     console.error("Error deleting agreement:", error); 
+                     showToast(`Error deleting: ${error.message}`, false); 
+                 }
              }
         }
+
         agreementTableBody.addEventListener('click', async (e) => {
-            const editBtn = e.target.closest('.edit-btn'); if (editBtn) { openAgreementModal(editBtn.dataset.id); return; }
-            const deleteBtn = e.target.closest('.delete-btn'); if (deleteBtn) { await handleDelete(deleteBtn.dataset.id, deleteBtn.dataset.path); }
+            const editBtn = e.target.closest('.edit-btn'); 
+            if (editBtn) { openAgreementModal(editBtn.dataset.id); return; }
+            
+            const deleteBtn = e.target.closest('.delete-btn'); 
+            if (deleteBtn) { await handleDelete(deleteBtn.dataset.id, deleteBtn.dataset.path); return; }
+
+            const viewBtn = e.target.closest('.view-doc-btn'); 
+            if (viewBtn) { openViewModal(viewBtn.dataset.url); return; }
         });
+
         expiredAgreementTableBody.addEventListener('click', async (e) => {
             const renewBtn = e.target.closest('.renew-btn');
             if (renewBtn) {
                  const docId = renewBtn.dataset.id;
-                 const oldPath = renewBtn.dataset.path;
+                 const oldDeleteUrl = renewBtn.dataset.path; // This is the storage path
                  const agreement = allAgreements.find(a => a.id === docId);
                  if (!agreement) { showToast("Cannot find agreement data.", false); return; }
+                 
                  openAgreementModal();
                  setTimeout(() => {
                      document.getElementById('agreementTitle').value = (agreement.title || '') + " (Renewed)";
-                     // Renew karaddi dropdowns set karanna
                      if(agreement.category) {
                          agreementCategorySelect.value = agreement.category;
                          populateCustomerDropdown(agreement.category);
-                         // Check if customer exists before setting value
                          if (allCustomers.some(c => c.id === agreement.customerId && c.category === agreement.category)) {
                             customerSelect.value = agreement.customerId;
                          } else {
                             console.warn(`Customer ID ${agreement.customerId} not found in category ${agreement.category} for renewal.`);
-                            // Optionally, reset the customer dropdown or show a message
                             customerSelect.value = "";
                             customerSelect.disabled = true;
                             customerSelect.innerHTML = '<option value="">Original Customer Not Found</option>';
                          }
                      }
-                     // --- ---
                      document.getElementById('startDate').valueAsDate = new Date();
                      const nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1);
                      document.getElementById('endDate').value = nextYear.toISOString().split('T')[0];
                      document.getElementById('agreementNotes').value = agreement.notes || '';
+                     
+                     // IMPORTANT: Store the ID and File Path of the *old* agreement
                      agreementForm.dataset.renewingOldId = docId;
-                     agreementForm.dataset.renewingOldPath = oldPath;
+                     agreementForm.dataset.renewingOldDeleteUrl = oldDeleteUrl; 
+                     
                      showToast("Enter new details & upload document for renewal.", true);
-                 }, 100); // Increased delay slightly
+                 }, 100); 
                  return;
             }
             const deleteExpiredBtn = e.target.closest('.delete-expired-btn');
             if (deleteExpiredBtn) {
                 await handleDelete(deleteExpiredBtn.dataset.id, deleteExpiredBtn.dataset.path);
+                return;
             }
+
+            const viewBtn = e.target.closest('.view-doc-btn');
+            if (viewBtn) { openViewModal(viewBtn.dataset.url); return; }
+        });
+
+        expiringAlertsContainer.addEventListener('click', (e) => {
+             const viewBtn = e.target.closest('.view-doc-btn');
+             if (viewBtn) {
+                 e.preventDefault(); 
+                 openViewModal(viewBtn.dataset.url);
+             }
         });
 
         lucide.createIcons();

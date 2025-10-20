@@ -7,7 +7,11 @@
 
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -30,12 +34,51 @@
         .modal-content {
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
+         /* --- Hide elements in print --- */
+         @media print {
+            .no-print { display: none; }
+         }
+         /* === Class to hide from PDF === */
+         .no-pdf {
+             /* This class will hide elements from html2canvas screenshot */
+         }
+         
+         /* === Class for PDF Export === */
+         .pdf-export {
+             background-color: #ffffff !important;
+             color: #000000 !important;
+         }
+         .pdf-export th, .pdf-export td {
+             color: #000000 !important;
+             border: 1px solid #dddddd; /* Add borders for clarity */
+             padding: 8px; /* Ensure padding is consistent */
+             vertical-align: middle; /* Align content vertically */
+         }
+         .pdf-export thead {
+             background-color: #f0f0f0 !important;
+         }
+         .pdf-export .text-slate-500 { /* Target the 'Not Assigned' spans */
+              color: #555555 !important;
+         }
+         /* === UPDATED: Added Image styles for PDF === */
+         .pdf-export img {
+             width: 40px !important;
+             height: 40px !important;
+             border-radius: 50% !important; /* Keep it round */
+             object-fit: cover !important; /* Keep the cover style */
+         }
+         /* === End PDF Export Class === */
+
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
 
+    <div id="loading-spinner" class="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="loader" style="width: 60px; height: 60px; border-width: 6px;"></div>
+    </div>
+
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
             <div>
                 <div class="flex items-center gap-3 mb-10">
     
@@ -61,10 +104,10 @@
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white no-print">
                     <i data-lucide="log-out"></i><span>Sign Out</span>
                 </button>
-                <div class="text-xs text-slate-500">
+                <div class="text-xs text-slate-500 no-print">
                     <p>&copy; 2025 Property MS. All rights reserved.</p>
                     <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
                 </div>
@@ -73,14 +116,14 @@
 
         <main class="flex-1 p-8 overflow-y-auto">
             <section id="page-app-access" class="page">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-6 no-print">
                     <h2 class="text-3xl font-bold text-white">App Access Management</h2>
                     <button id="addOtherAccessBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
                         <i data-lucide="plus"></i> Add Other Access
                     </button>
                 </div>
 
-                <div class="mb-6 border-b border-slate-700">
+                <div class="mb-6 border-b border-slate-700 no-print">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button id="tabStaffAccess" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-400 border-blue-400">
                             Staff Access
@@ -92,7 +135,7 @@
                 </div>
 
                 <div id="staffAccessContent">
-                    <div id="staffFiltersDiv" class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                    <div id="staffFiltersDiv" class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4 no-print">
                          <div class="flex-1">
                             <label for="searchByName" class="block mb-2 text-sm font-medium">Search by Name</label>
                             <input type="text" id="searchByName" placeholder="Enter staff name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
@@ -120,27 +163,33 @@
                         <div>
                             <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
                         </div>
+                        <div>
+                            <button id="downloadStaffPdfBtn" class="bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                                <i data-lucide="file-down"></i> PDF
+                            </button>
+                        </div>
                     </div>
                     <div id="staffTableDiv" class="bg-slate-800 rounded-lg overflow-hidden">
-                        <table class="w-full text-left">
+                        <table id="staffTable" class="w-full text-left">
                             <thead class="bg-slate-700">
                                 <tr>
                                     <th class="p-4 font-semibold text-white">Photo</th>
                                     <th class="p-4 font-semibold text-white">Name</th>
                                     <th class="p-4 font-semibold text-white">Role</th>
                                     <th class="p-4 font-semibold text-white">Assigned App Email</th>
-                                    <th class="p-4 font-semibold text-white">Actions</th>
+                                    <th class="p-4 font-semibold text-white">Password</th>
+                                    <th class="p-4 font-semibold text-white no-print no-pdf">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="accessTableBody">
-                                <tr><td colspan="5" class="text-center p-8 text-slate-400">Loading staff data...</td></tr>
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">Loading staff data...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
                 <div id="otherAccessContent" class="hidden">
-                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4 no-print">
                         <div class="flex-1">
                            <label for="searchOtherByName" class="block mb-2 text-sm font-medium">Search by Name</label>
                            <input type="text" id="searchOtherByName" placeholder="Enter name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
@@ -150,25 +199,31 @@
                            <select id="filterOtherUserType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
                                <option value="">All Types</option>
                                <option value="Flat Owner">Flat Owner</option>
-                               <option value="Condominium Manager">Condominium Manager</option>
+                               <option value-"Condominium Manager">Condominium Manager</option>
                            </select>
                        </div>
                        <div>
                            <button id="clearOtherFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</a:role="button">
                        </div>
+                        <div>
+                            <button id="downloadOtherPdfBtn" class="bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                                <i data-lucide="file-down"></i> PDF
+                            </button>
+                        </div>
                    </div>
                    <div class="bg-slate-800 rounded-lg overflow-hidden">
-                        <table class="w-full text-left">
+                        <table id="otherAccessTable" class="w-full text-left">
                             <thead class="bg-slate-700">
                                 <tr>
                                     <th class="p-4 font-semibold text-white">Name</th>
                                     <th class="p-4 font-semibold text-white">User Type</th>
                                     <th class="p-4 font-semibold text-white">Assigned App Email</th>
-                                    <th class="p-4 font-semibold text-white">Actions</th>
+                                    <th class="p-4 font-semibold text-white">Password</th>
+                                    <th class="p-4 font-semibold text-white no-print no-pdf">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="otherAccessTableBody">
-                                <tr><td colspan="4" class="text-center p-8 text-slate-400">Loading other access data...</td></tr>
+                                <tr><td colspan="5" class="text-center p-8 text-slate-400">Loading other access data...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -177,7 +232,7 @@
         </main>
     </div>
 
-    <div id="appAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div id="appAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 no-print">
         <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all modal-content scale-95 opacity-0" id="app-access-modal-content">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-white">Manage Staff App Access</h3>
@@ -205,7 +260,7 @@
         </div>
     </div>
 
-    <div id="otherAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div id="otherAccessModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 no-print">
         <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all modal-content scale-95 opacity-0" id="other-access-modal-content">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="otherAccessModalTitle" class="text-2xl font-bold text-white">Add Other App Access</h3>
@@ -244,14 +299,16 @@
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 no-print">
         <p>Toast message!</p>
     </div>
 
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
 
         const firebaseConfig = {
             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
@@ -267,8 +324,10 @@
         const auth = getAuth(app);
         let currentUserId = null;
         let allStaff = [];
-        let allOtherAccess = []; // *** ALUTH VARIABLE EKA (FILTERING WALATA) ***
+        let allOtherAccess = []; 
 
+        const loadingSpinner = document.getElementById('loading-spinner');
+        
         const appContainer = document.getElementById('app-container');
         const signOutBtn = document.getElementById('signOutBtn');
         const userIdSpan = document.getElementById('userId');
@@ -309,10 +368,15 @@
         const staffAccessContent = document.getElementById('staffAccessContent');
         const otherAccessContent = document.getElementById('otherAccessContent');
         
-        // *** ALUTH FILTER ELEMENTS ***
+        // Other Access Filter Elements
         const searchOtherByNameInput = document.getElementById('searchOtherByName');
         const filterOtherUserTypeSelect = document.getElementById('filterOtherUserType');
         const clearOtherFiltersBtn = document.getElementById('clearOtherFiltersBtn');
+        
+        // === Download Button Elements ===
+        const downloadStaffPdfBtn = document.getElementById('downloadStaffPdfBtn');
+        const downloadOtherPdfBtn = document.getElementById('downloadOtherPdfBtn');
+        // ===================================
 
         const rolesByCategory = {
             condumini: ['Manager', 'Security', 'Cleaner', 'Technician', 'Front Desk'],
@@ -329,10 +393,14 @@
             if (user) {
                 currentUserId = user.uid;
                 userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                
                 appContainer.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                
                 listenForStaffAccessUpdates();
                 listenForOtherAccessUpdates();
             } else {
+                loadingSpinner.classList.add('hidden');
                 window.location.href = './index.html';
             }
         });
@@ -343,7 +411,7 @@
 
         const showToast = (message, isSuccess = true) => {
             toast.textContent = message;
-            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.className = `no-print fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         };
@@ -411,18 +479,20 @@
         function renderAccessTable(staffList) {
              accessTableBody.innerHTML = '';
              if (staffList.length === 0) {
-                 accessTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">No staff members found matching the criteria.</td></tr>`;
+                 accessTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No staff members found matching the criteria.</td></tr>`;
                  return;
              }
              staffList.forEach((staff) => {
                  const row = accessTableBody.insertRow();
                  row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                 // === UPDATED: Added crossOrigin="anonymous" to img tag for better canvas rendering ===
                  row.innerHTML = `
-                     <td class="p-2"><img src="${staff.profilePhotoUrl || 'https://placehold.co/40x40/334155/94a3b8?text=?'}" class="w-10 h-10 rounded-full object-cover"></td>
+                     <td class="p-2"><img src="${staff.profilePhotoUrl || 'https://placehold.co/40x40/334155/94a3b8?text=?'}" class="w-10 h-10 rounded-full object-cover" crossOrigin="anonymous"></td>
                      <td class="p-4">${staff.name}</td>
                      <td class="p-4">${staff.role}</td>
                      <td class="p-4 font-mono text-sm">${staff.appEmail || '<span class="text-slate-500">Not Assigned</span>'}</td>
-                     <td class="p-4">
+                     <td class="p-4 font-mono text-sm">${staff.appPassword || '<span class="text-slate-500">Not Assigned</span>'}</td>
+                     <td class="p-4 no-print no-pdf flex gap-2 items-center">
                         <button data-id="${staff.id}" class="manage-access-btn bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg flex items-center gap-2">
                            <i data-lucide="key-round" class="w-4 h-4"></i> Manage
                         </button>
@@ -496,10 +566,11 @@
             if (manageBtn && currentUserId) {
                 const docId = manageBtn.dataset.id;
                 openAppAccessModal(docId);
+                return;
             }
         });
 
-        // --- *** ALUTH LOGIC EKA (Other Access) *** ---
+        // --- Other Access Logic ---
 
         // 1. Tab Click Handlers
         tabStaffAccess.addEventListener('click', () => {
@@ -604,7 +675,7 @@
         function renderOtherAccessTable(accessList) {
             otherAccessTableBody.innerHTML = '';
              if (accessList.length === 0) {
-                 otherAccessTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-slate-400">No accounts found matching the criteria.</td></tr>`;
+                 otherAccessTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-slate-400">No accounts found matching the criteria.</td></tr>`;
                  return;
              }
              accessList.forEach((acc) => {
@@ -614,7 +685,8 @@
                      <td class="p-4">${acc.name}</td>
                      <td class="p-4">${acc.userType}</td>
                      <td class="p-4 font-mono text-sm">${acc.email}</td>
-                     <td class="p-4 flex gap-2">
+                     <td class="p-4 font-mono text-sm">${acc.password || '<span class="text-slate-500">Not Assigned</span>'}</td>
+                     <td class="p-4 flex gap-2 no-print no-pdf items-center">
                         <button data-id="${acc.id}" class="edit-other-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
                         <button data-id="${acc.id}" class="delete-other-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                      </td>
@@ -627,15 +699,14 @@
         const listenForOtherAccessUpdates = () => {
             if (!currentUserId) return;
             onSnapshot(collection(db, `users/${currentUserId}/app_access`), (snapshot) => {
-                allOtherAccess = []; // *** DATA EKA GLOBAL VARIABLE EKATA DANAWA ***
+                allOtherAccess = []; 
                 snapshot.forEach((doc) => {
                     allOtherAccess.push({id: doc.id, ...doc.data()});
                 });
-                applyOtherFilters(); // *** RENDER KARANNE FILTER FUNCTION EKEN ***
+                applyOtherFilters(); 
             });
         };
         
-        // 6. Other Access Table Click Logic
         otherAccessTableBody.addEventListener('click', async (e) => {
             const editBtn = e.target.closest('.edit-other-btn');
             if (editBtn) {
@@ -659,7 +730,7 @@
             }
         });
 
-        // 7. *** ALUTH FILTER FUNCTION EKA ***
+        // 7. Other Access Filter Function
         function applyOtherFilters() {
             const userType = filterOtherUserTypeSelect.value;
             const searchTerm = searchOtherByNameInput.value.toLowerCase();
@@ -676,7 +747,7 @@
             renderOtherAccessTable(filteredAccess);
         }
 
-        // 8. *** ALUTH FILTER EVENT LISTENERS ***
+        // 8. Other Access Filter Event Listeners
         searchOtherByNameInput.addEventListener('input', applyOtherFilters);
         filterOtherUserTypeSelect.addEventListener('change', applyOtherFilters);
         clearOtherFiltersBtn.addEventListener('click', () => {
@@ -685,8 +756,85 @@
             applyOtherFilters();
         });
 
+        // === PDF FUNCTIONS ===
+        
+        function checkPdfLibraries() {
+            if (typeof window.jspdf === 'undefined' || typeof window.html2canvas === 'undefined') {
+                showToast("PDF libraries failed to load. Please reload.", false);
+                return false;
+            }
+            return true;
+        }
 
-        lucide.createIcons();
+        // === UPDATED: Added useCORS and allowTaint to html2canvas options ===
+        async function downloadTableAsPDF(tableId, title, filename) {
+            if (!checkPdfLibraries()) return;
+
+            const table = document.getElementById(tableId);
+            if (!table) {
+                showToast("Table not found.", false);
+                return;
+            }
+            
+            const elementsToHide = table.querySelectorAll('.no-print, .no-pdf');
+            elementsToHide.forEach(el => el.style.display = 'none');
+             
+            table.classList.add('pdf-export');
+
+            showToast("Generating PDF... Please wait.", true);
+
+            try {
+                // === UPDATED HERE ===
+                const canvas = await html2canvas(table, {
+                    useCORS: true,      // Attempt to load cross-origin images
+                    allowTaint: true,   // Allows tainted canvas (may prevent toDataURL in some browsers)
+                    logging: true       // Show logs in console for debugging
+                });
+                // ====================
+                
+                const imgData = canvas.toDataURL('image/png');
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width + 20, canvas.height + 20] 
+                });
+                
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = doc.internal.pageSize.getHeight();
+                
+                const x = (pdfWidth - canvas.width) / 2;
+                const y = (pdfHeight - canvas.height) / 2;
+
+                doc.addImage(imgData, 'PNG', x, y, canvas.width, canvas.height);
+                doc.save(filename);
+
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showToast("Failed to generate PDF.", false);
+            } finally {
+                elementsToHide.forEach(el => el.style.display = '');
+                table.classList.remove('pdf-export');
+            }
+        }
+
+        // === PDF Download Event Listeners ===
+        downloadStaffPdfBtn.addEventListener('click', () => {
+            downloadTableAsPDF('staffTable', 'Staff Access List', 'staff_access_list.pdf');
+        });
+
+        downloadOtherPdfBtn.addEventListener('click', () => {
+            downloadTableAsPDF('otherAccessTable', 'Other Access List', 'other_access_list.pdf');
+        });
+
+        // === Create icons ===
+        try {
+             lucide.createIcons();
+        } catch (e) {
+            console.error("Lucide icons failed to load.", e);
+        }
+       
     </script>
 </body>
 </html>
