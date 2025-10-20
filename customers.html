@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-   <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers - RSG MANAGER</title>
 
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+
     <style>
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -46,10 +46,10 @@
              font-weight: 600; /* semibold */
              color: #facc15; /* yellow-400 */
          }
-         
+
          /* --- Hide elements in print --- */
          @media print {
-            .no-print { display: none; }
+             .no-print { display: none; }
          }
          /* === Class to hide from PDF === */
          .no-pdf {
@@ -57,106 +57,106 @@
          }
 
          /* === UPDATED: Class for MODAL PDF Export (Lassanata) === */
-        .pdf-export-modal {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            padding: 32px !important; /* More padding */
-            border: none !important; /* No border on the container */
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        .pdf-export-modal h3 { /* "Andrea Metti" */
-            color: #000000 !important;
-            font-size: 28px !important;
-            font-weight: bold;
-            margin-bottom: 24px !important;
-        }
-        .pdf-export-modal .grid { /* Main details grid */
-            font-size: 14px !important;
-            margin-bottom: 24px !important;
-        }
-        .pdf-export-modal .text-slate-400 { /* Labels like "Category:" */
-            color: #4B5563 !important; /* Darker gray */
-            font-weight: normal;
-        }
-        .pdf-export-modal .font-semibold { /* Values like "Condominium" */
-            color: #000000 !important;
-            font-weight: 600 !important;
-        }
-        .pdf-export-modal #detailItemsSection {
-            border-top: 1px solid #9CA3AF !important; /* A solid line */
-            margin-top: 24px !important;
-            padding-top: 24px !important;
-        }
-        .pdf-export-modal h4 { /* "Items / Services" */
-            color: #111827 !important;
-            font-size: 22px !important;
-            font-weight: bold;
-            margin-bottom: 16px !important;
-        }
-        .pdf-export-modal .bg-slate-700 { /* Item list container */
-            background-color: transparent !important; /* No background */
-            border: none !important;
-            padding: 0 !important;
-        }
-        .pdf-export-modal .detail-item {
-            border-bottom: none !important; /* Remove all item borders */
-            padding: 6px 0 !important;
-        }
-        .pdf-export-modal .detail-item.font-semibold { /* The header row */
-            border-bottom: 1px solid #374151 !important; /* Border ONLY on header */
-            color: #111827 !important;
-            padding-bottom: 8px !important;
-            margin-bottom: 8px !important;
-        }
-        .pdf-export-modal .due-day-highlight {
-            color: #D97706 !important; /* A dark yellow/orange */
-            font-weight: bold !important;
-        }
-        /* === UPDATED: Ensure Total Price has space above === */
-        .pdf-export-modal p.mt-2.text-sm { 
-            font-size: 16px !important;
-            margin-top: 16px !important; /* Added margin top */
-            color: #4B5563 !important; /* Label color */
-        }
-        .pdf-export-modal #detailTotalItemPrice {
-            font-size: 16px !important;
-            font-weight: bold !important;
-            color: #000000 !important;
-        }
-        
-        /* --- Style for the appended letterhead --- */
-        .pdf-letterhead-hr {
-             border: none;
-             border-top: 1px solid #9CA3AF !important;
-             margin-top: 24px !important; /* Space above HR */
-             padding-top: 24px !important; /* Space below HR */
-         }
-        .pdf-letterhead {
-            width: 100%;
-            margin-top: 0px; /* Space is now handled by HR padding-top */
-            display: block;
-        }
-        
-         /* === Class for TABLE PDF Export (Kalin wage) === */
-         .pdf-export-table {
+         .pdf-export-modal {
              background-color: #ffffff !important;
              color: #000000 !important;
+             padding: 32px !important; /* More padding */
+             border: none !important; /* No border on the container */
+             max-height: none !important;
+             overflow: visible !important;
+         }
+         .pdf-export-modal h3 { /* "Andrea Metti" */
+             color: #000000 !important;
+             font-size: 28px !important;
+             font-weight: bold;
+             margin-bottom: 24px !important;
+         }
+         .pdf-export-modal .grid { /* Main details grid */
+             font-size: 14px !important;
+             margin-bottom: 24px !important;
+         }
+         .pdf-export-modal .text-slate-400 { /* Labels like "Category:" */
+             color: #4B5563 !important; /* Darker gray */
+             font-weight: normal;
+         }
+         .pdf-export-modal .font-semibold { /* Values like "Condominium" */
+             color: #000000 !important;
+             font-weight: 600 !important;
+         }
+         .pdf-export-modal #detailItemsSection {
+             border-top: 1px solid #9CA3AF !important; /* A solid line */
+             margin-top: 24px !important;
+             padding-top: 24px !important;
+         }
+         .pdf-export-modal h4 { /* "Items / Services" */
+             color: #111827 !important;
+             font-size: 22px !important;
+             font-weight: bold;
+             margin-bottom: 16px !important;
+         }
+         .pdf-export-modal .bg-slate-700 { /* Item list container */
+             background-color: transparent !important; /* No background */
+             border: none !important;
+             padding: 0 !important;
+         }
+         .pdf-export-modal .detail-item {
+             border-bottom: none !important; /* Remove all item borders */
+             padding: 6px 0 !important;
+         }
+         .pdf-export-modal .detail-item.font-semibold { /* The header row */
+             border-bottom: 1px solid #374151 !important; /* Border ONLY on header */
+             color: #111827 !important;
+             padding-bottom: 8px !important;
+             margin-bottom: 8px !important;
+         }
+         .pdf-export-modal .due-day-highlight {
+             color: #D97706 !important; /* A dark yellow/orange */
+             font-weight: bold !important;
+         }
+         /* === UPDATED: Ensure Total Price has space above === */
+         .pdf-export-modal p.mt-2.text-sm {
+             font-size: 16px !important;
+             margin-top: 16px !important; /* Added margin top */
+             color: #4B5563 !important; /* Label color */
+         }
+         .pdf-export-modal #detailTotalItemPrice {
+             font-size: 16px !important;
+             font-weight: bold !important;
+             color: #000000 !important;
+         }
+
+         /* --- Style for the appended letterhead --- */
+         .pdf-letterhead-hr {
+              border: none;
+              border-top: 1px solid #9CA3AF !important;
+              margin-top: 24px !important; /* Space above HR */
+              padding-top: 24px !important; /* Space below HR */
+         }
+         .pdf-letterhead {
+             width: 100%;
+             margin-top: 0px; /* Space is now handled by HR padding-top */
+             display: block;
+         }
+
+         /* === Class for TABLE PDF Export (Kalin wage) === */
+         .pdf-export-table {
+              background-color: #ffffff !important;
+              color: #000000 !important;
          }
          .pdf-export-table th, .pdf-export-table td {
-             color: #000000 !important;
-             border: 1px solid #dddddd;
-             padding: 8px;
-             vertical-align: middle;
+              color: #000000 !important;
+              border: 1px solid #dddddd;
+              padding: 8px;
+              vertical-align: middle;
          }
          .pdf-export-table thead {
-             background-color: #f0f0f0 !important;
+              background-color: #f0f0f0 !important;
          }
          .pdf-export-table .text-slate-500 {
               color: #555555 !important;
          }
          /* === End PDF Export Class === */
-         
+
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
@@ -164,27 +164,28 @@
     <div id="app-container" class="flex h-screen hidden">
         <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
             <div>
-             <div class="flex items-center gap-3 mb-10">
+              <div class="flex items-center gap-3 mb-10">
     
     <div>
         <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
     </div>
     <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
 </div>
-             <nav class="flex flex-col gap-2">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                     <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
-                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
-
+                <nav class="flex flex-col gap-2">
+                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                    <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                    <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                    <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                    <a href="./invoices.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
+                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                    <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
+                    <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
                 </nav>
             </div>
             <div>
@@ -200,7 +201,20 @@
             <section id="page-customers" class="page">
                 <div class="flex justify-between items-center mb-6 no-print">
                     <h2 class="text-3xl font-bold text-white">Customers</h2>
-                    <button id="addCustomerBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> Add New Customer</button>
+                    <div class="flex items-center gap-4">
+                        <div id="currentListTotalDisplay" class="bg-slate-800 p-3 rounded-lg text-center hidden">
+                            <h3 class="text-sm text-slate-400">Current Customer Count</h3>
+                            <p id="currentCustomerCountValue" class="text-xl font-bold text-blue-400 mt-1">0</p>
+                        </div>
+                        
+                        <div id="currentListTotalCashDisplay" class="bg-slate-800 p-3 rounded-lg text-center hidden">
+                            <h3 class="text-sm text-slate-400">Current List Total Cash</h3>
+                            <p id="currentTotalCashValue" class="text-xl font-bold text-green-400 mt-1">€ 0.00</p>
+                        </div>
+                        <button id="addCustomerBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 h-full">
+                            <i data-lucide="plus"></i> Add New Customer
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mb-6 border-b border-slate-700 no-print">
@@ -322,20 +336,20 @@
                      <h4 id="itemManagementTitle" class="text-lg font-semibold text-white mb-4">Manage Items/Services</h4>
                      <div class="bg-slate-700 p-4 rounded-lg mb-4 flex items-end gap-3">
                          <div class="flex-1">
-                            <label for="newItemName" class="block mb-2 text-xs font-medium">Item/Service Name</label>
-                            <input type="text" id="newItemName" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., Condo A1, Room 101">
-                        </div>
+                             <label for="newItemName" class="block mb-2 text-xs font-medium">Item/Service Name</label>
+                             <input type="text" id="newItemName" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., Condo A1, Room 101">
+                         </div>
                          <div class="w-28">
-                            <label for="newItemPrice" class="block mb-2 text-xs font-medium">Fixed Price (€)</label>
-                            <input type="number" step="0.01" min="0" id="newItemPrice" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., 5000">
-                        </div>
-                        <div class="w-20">
-                            <label for="newItemDueDay" class="block mb-2 text-xs font-medium">Due Day</label>
-                            <input type="number" min="1" max="31" id="newItemDueDay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="1-31">
-                        </div>
-                        <div>
-                            <button type="button" id="addItemToListBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm flex items-center gap-1 h-9"><i data-lucide="plus" class="w-4 h-4"></i> Add</button>
-                        </div>
+                             <label for="newItemPrice" class="block mb-2 text-xs font-medium">Fixed Price (€)</label>
+                             <input type="number" step="0.01" min="0" id="newItemPrice" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., 50">
+                         </div>
+                         <div class="w-20">
+                             <label for="newItemDueDay" class="block mb-2 text-xs font-medium">Due Day</label>
+                             <input type="number" min="1" max="31" id="newItemDueDay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="1-31">
+                         </div>
+                         <div>
+                             <button type="button" id="addItemToListBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm flex items-center gap-1 h-9"><i data-lucide="plus" class="w-4 h-4"></i> Add</button>
+                         </div>
                      </div>
                      <h5 class="text-md font-semibold text-slate-300 mb-2 mt-4">Added Items/Services:</h5>
                      <div id="itemsList" class="space-y-2 max-h-40 overflow-y-auto border border-slate-700 rounded-lg p-3 bg-slate-800">
@@ -377,10 +391,10 @@
                      <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="detailTotalItemPrice" class="font-bold text-white">€ 0.00</span></p>
                 </div>
             </div>
-            
+
              <div class="flex justify-between items-center mt-6">
                  <button type="button" id="downloadDetailPdfBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2 no-print no-pdf">
-                    <i data-lucide="file-down"></i> Download PDF
+                     <i data-lucide="file-down"></i> Download PDF
                  </button>
                  <button type="button" id="closeCustomerDetailModalBtnBottom" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700 no-print no-pdf">Close</button>
              </div>
@@ -396,24 +410,24 @@
 
          const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
-            authDomain: "rsgweb-5f36d.firebaseapp.com",
-            projectId: "rsgweb-5f36d",
-            storageBucket: "rsgweb-5f36d.firebasestorage.app",
-            messagingSenderId: "633023905515",
-            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
-        };
+             authDomain: "rsgweb-5f36d.firebaseapp.com",
+             projectId: "rsgweb-5f36d",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app",
+             messagingSenderId: "633023905515",
+             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         let currentUserId = null;
-        
+
         // --- GLOBAL VARIABLES ---
         let allCustomers = [];
         let allTransactions = []; // Transaction data check karanna
         let activeTab = 'allCustomers'; // Default tab
         // --- ---
-        
+
         let tempItems = [];
 
         // --- DOM Elements ---
@@ -446,7 +460,7 @@
         const noItemsMsg = document.getElementById('noItemsMsg');
         const totalItemPriceSpan = document.getElementById('totalItemPrice');
         const customerDetailModal = document.getElementById('customerDetailModal');
-        const customerDetailModalContent = document.getElementById('customer-detail-pdf-content'); 
+        const customerDetailModalContent = document.getElementById('customer-detail-pdf-content');
         const customerDetailName = document.getElementById('customerDetailName');
         const closeCustomerDetailModalBtn = document.getElementById('closeCustomerDetailModalBtn');
         const closeCustomerDetailModalBtnBottom = document.getElementById('closeCustomerDetailModalBtnBottom');
@@ -464,11 +478,20 @@
         const alertsContent = document.getElementById('alertsContent');
         const alertsList = document.getElementById('alertsList');
         const noAlertsMsg = document.getElementById('noAlertsMsg');
-        
+
+        // --- *** VENAS KALA *** --- Total pennana element eka gaththa -> Count pennana element eka gaththa
+        const currentListTotalDisplayDiv = document.getElementById('currentListTotalDisplay');
+        const currentCustomerCountValueSpan = document.getElementById('currentCustomerCountValue');
+
+        // --- *** ALUTHEN EKATHU KALE *** ---
+        const currentListTotalCashDisplayDiv = document.getElementById('currentListTotalCashDisplay');
+        const currentTotalCashValueSpan = document.getElementById('currentTotalCashValue');
+        // --- ---
+
         // --- ADDED: PDF Download Buttons ---
         const downloadDetailPdfBtn = document.getElementById('downloadDetailPdfBtn');
         const downloadListPdfBtn = document.getElementById('downloadListPdfBtn');
-        
+
 
         // --- Authentication (Kalin wage) ---
         onAuthStateChanged(auth, (user) => {
@@ -477,7 +500,7 @@
                 userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
                 appContainer.classList.remove('hidden');
                 listenForCustomerUpdates();
-                listenForTransactionUpdates(); 
+                listenForTransactionUpdates();
             } else {
                 window.location.href = './index.html';
             }
@@ -486,8 +509,8 @@
         signOutBtn.addEventListener('click', () => {
             signOut(auth).catch(error => console.error("Sign out failed:", error));
         });
-        
-        // --- TAB SWITCHING LOGIC (Kalin wage) ---
+
+        // --- *** VENAS KALA *** --- Tab switch karaddi total eka hide/show karanna
         function switchTab(tabId) {
              activeTab = tabId;
              const tabs = [tabAllCustomers, tabAlerts];
@@ -497,21 +520,27 @@
                  tab.classList.add('text-slate-400', 'border-transparent', 'hover:text-slate-300', 'hover:border-slate-300');
              });
              contents.forEach(content => content.classList.add('hidden'));
+
+             // Total/Count display eka handle karanna
              if (tabId === 'allCustomers') {
                  tabAllCustomers.classList.add('text-blue-400', 'border-blue-400');
                  tabAllCustomers.classList.remove('text-slate-400', 'border-transparent');
                  allCustomersContent.classList.remove('hidden');
+                 currentListTotalDisplayDiv.classList.remove('hidden'); // Show count display
+                 currentListTotalCashDisplayDiv.classList.remove('hidden'); // *** ALUTHEN DAMME: Show cash display
                  applyFilters();
              } else if (tabId === 'alerts') {
                  tabAlerts.classList.add('text-blue-400', 'border-blue-400');
                  tabAlerts.classList.remove('text-slate-400', 'border-transparent');
                  alertsContent.classList.remove('hidden');
+                 currentListTotalDisplayDiv.classList.add('hidden'); // Hide count display
+                 currentListTotalCashDisplayDiv.classList.add('hidden'); // *** ALUTHEN DAMME: Hide cash display
                  renderAlerts();
              }
          }
          tabAllCustomers.addEventListener('click', () => switchTab('allCustomers'));
          tabAlerts.addEventListener('click', () => switchTab('alerts'));
-         
+
         // --- Modal Logic Okkoma (Kalin wage) ---
         const openCustomerModal = () => {
             customerModal.classList.remove('hidden');
@@ -611,15 +640,15 @@
             } else {
                 categorySpecificDetailsDiv.classList.add('hidden');
                 if (tempItems.length > 0) {
-                     tempItems = [];
-                     renderItemListInModal();
+                    tempItems = [];
+                    renderItemListInModal();
                 }
             }
         });
         addItemToListBtn.addEventListener('click', () => {
             const name = newItemNameInput.value.trim();
             const price = parseFloat(newItemPriceInput.value) || 0;
-            const dueDay = parseInt(newItemDueDayInput.value) || null; 
+            const dueDay = parseInt(newItemDueDayInput.value) || null;
             if (!name) {
                 showToast("Please enter an item/service name.", false);
                 return;
@@ -748,23 +777,33 @@
         });
 
 
-        // --- Render Table Logic (Kalin wage) ---
+        // --- *** VENAS KALA *** --- Render Table eka haduwa count eka saha total eka pennanna
         async function renderCustomerTable(customerList) {
             customerTableBody.innerHTML = '';
-            if (customerList.length === 0) {
+            const customerCount = customerList.length; // Customer gana gaththa
+            let totalCashSum = 0; // *** ALUTHEN DAMME: Total eka save karanna
+
+            if (customerCount === 0) {
                 customerTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">No customers found matching criteria.</td></tr>`;
+                // Count eka update karanna
+                currentCustomerCountValueSpan.textContent = customerCount; // Count eka pennanna
+                currentTotalCashValueSpan.textContent = `€ 0.00`; // *** ALUTHEN DAMME: Total eka update karanna
                 return;
             }
+
             customerList.forEach((customer) => {
                 const row = customerTableBody.insertRow();
                 row.dataset.docId = customer.id;
                 let detailsHtml = 'N/A';
                 let itemCount = 0;
-                let totalPrice = 0;
+                let totalPrice = 0; // Me totalPrice eka table eke pennanna witharai dan use karanne
+                
                 if (customer.items && Array.isArray(customer.items) && customer.items.length > 0) {
                     itemCount = customer.items.length;
                     totalPrice = customer.items.reduce((sum, item) => sum + (item.price || 0), 0);
                     detailsHtml = `<span class="font-semibold">${itemCount} Item(s)</span><br>€ ${totalPrice.toFixed(2)}`;
+                    
+                    totalCashSum += totalPrice; // *** ALUTHEN DAMME: Total ekata ekathu karanawa
                 }
                 const addedDate = customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString() : 'N/A';
                 row.innerHTML = `
@@ -775,11 +814,17 @@
                     <td class="p-4 text-sm">${detailsHtml}</td>
                     <td class="p-4">${addedDate}</td>
                     <td class="p-4 flex items-center gap-2 no-print no-pdf">
-                       <button data-id="${customer.id}" class="edit-customer-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${customer.id}" class="delete-customer-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${customer.id}" class="edit-customer-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button data-id="${customer.id}" class="delete-customer-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
                     </td>
                 `;
             });
+
+            // --- Loop eken passe count eka update karanawa ---
+            currentCustomerCountValueSpan.textContent = customerCount; // Count eka pennanna
+            currentTotalCashValueSpan.textContent = `€ ${totalCashSum.toFixed(2)}`; // *** ALUTHEN DAMME: Total eka pennanna
+            // --- ---
+
             lucide.createIcons();
         }
 
@@ -796,14 +841,14 @@
                 showToast("Error loading payment data.", false);
             });
         }
-        
+
         // --- CUSTOMER LISTENER (Kalin wage) ---
         const listenForCustomerUpdates = () => {
              if(!currentUserId) return;
              onSnapshot(collection(db, `users/${currentUserId}/customers`), (snapshot) => {
                 allCustomers = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                  allCustomers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                
+
                 if (activeTab === 'allCustomers') {
                     applyFilters();
                 } else if (activeTab === 'alerts') {
@@ -827,7 +872,7 @@
             if (category) {
                 filtered = filtered.filter(c => c.category === category);
             }
-            renderCustomerTable(filtered);
+            renderCustomerTable(filtered); // Render table eka call karaddi count eka auto update wei
         }
         searchByNameInput.addEventListener('input', applyFilters);
         filterCategorySelect.addEventListener('change', applyFilters);
@@ -916,7 +961,7 @@
                  }
             }
         });
-        
+
         // --- ALERTS LOGIC (Kalin wage, typo fixed) ---
         function isPaidThisMonth(customerName, itemName, year, month) {
             if (!allTransactions || allTransactions.length === 0) return false;
@@ -935,12 +980,12 @@
                 return description === expectedDescription;
             });
         }
-        
+
         function renderAlerts() {
             alertsList.innerHTML = '';
             let alertsFound = false;
             const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const sevenDaysFromNow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
             const currentYear = today.getFullYear();
             const currentMonth = today.getMonth();
@@ -951,13 +996,13 @@
                     customer.items.forEach(item => {
                         if (item.dueDay) {
                             const dueDay = parseInt(item.dueDay);
-                            if (isNaN(dueDay) || dueDay < 1 || dueDay > 31) return; 
+                            if (isNaN(dueDay) || dueDay < 1 || dueDay > 31) return;
                             const dateThisMonth = new Date(currentYear, currentMonth, dueDay);
                             const dateNextMonth = new Date(currentYear, currentMonth + 1, dueDay);
                             let dateToCheck = null;
                             if (dateThisMonth >= today && dateThisMonth < sevenDaysFromNow) {
                                 dateToCheck = dateThisMonth;
-                            } 
+                            }
                             else if (dateNextMonth >= today && dateNextMonth < sevenDaysFromNow) {
                                 dateToCheck = dateNextMonth;
                             }
@@ -982,7 +1027,7 @@
             });
 
             upcomingPayments.sort((a,b) => a.date - b.date);
-            
+
             upcomingPayments.forEach(payment => {
                 const alertEl = document.createElement('div');
                 alertEl.className = 'bg-slate-700 p-4 rounded-lg flex flex-col justify-between gap-3';
@@ -1020,7 +1065,7 @@
             }
             lucide.createIcons();
         }
-        
+
         alertsList.addEventListener('click', async (e) => {
              const markPaidBtn = e.target.closest('.mark-as-paid-btn');
              if (markPaidBtn) {
@@ -1034,7 +1079,7 @@
                          const transactionData = {
                              date: new Date(),
                              description: uniqueDescription,
-                             category: `Customer Payment (${category})`, 
+                             category: `Customer Payment (${category})`,
                              type: 'Income',
                              amount: parseFloat(amount) || 0,
                              paymentMethod: 'Cash'
@@ -1050,10 +1095,10 @@
                  }
              }
         });
-        
-        
+
+
         // --- === ADDED/UPDATED: PDF FUNCTIONS === ---
-        
+
         function checkPdfLibraries() {
             if (typeof window.jspdf === 'undefined' || typeof window.html2canvas === 'undefined') {
                 showToast("PDF libraries failed to load. Please reload.", false);
@@ -1072,10 +1117,10 @@
                 showToast("Table not found.", false);
                 return;
             }
-            
+
             const elementsToHide = table.querySelectorAll('.no-print, .no-pdf');
             elementsToHide.forEach(el => el.style.display = 'none');
-            
+
             table.classList.add('pdf-export-table'); // Use table-specific class
             showToast("Generating Full List PDF... Please wait.", true);
 
@@ -1095,13 +1140,13 @@
                 doc.text(title, 20, 25);
                 // Adjust position for title
                 const contentHeight = pdfHeight - 40; // available height after title
-                const contentWidth = pdfWidth - 40;   // available width
+                const contentWidth = pdfWidth - 40;    // available width
                 const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
                 const imgWidthScaled = canvas.width * scale;
                 const imgHeightScaled = canvas.height * scale;
                 const x = (pdfWidth - imgWidthScaled) / 2;
                 const y = 40 + (contentHeight - imgHeightScaled) / 2; // Position below title
-                
+
                 doc.addImage(imgData, 'PNG', x, y, imgWidthScaled, imgHeightScaled);
                 doc.save(filename);
             } catch (error) {
@@ -1129,21 +1174,21 @@
             // --- Letterhead Injection Logic ---
             const letterheadHr = document.createElement('hr');
             letterheadHr.className = 'pdf-letterhead-hr no-pdf no-print'; // Add "line"
-            
+
             const letterheadImg = document.createElement('img');
             letterheadImg.className = 'pdf-letterhead no-pdf no-print';
             letterheadImg.crossOrigin = "anonymous";
             // --- End Injection ---
-            
+
             const elementsToHide = elementToPrint.querySelectorAll('.no-print, .no-pdf');
             elementsToHide.forEach(el => el.style.display = 'none');
-            
+
             elementToPrint.classList.add('pdf-export-modal'); // Use modal-specific class
             showToast("Generating PDF... Please wait.", true);
 
             let hrAdded = false;
             let imgAdded = false;
-            
+
             // --- Await Image Load ---
             await new Promise((resolve) => {
                 letterheadImg.onload = () => {
@@ -1160,7 +1205,7 @@
                     resolve(); // Resolve anyway, just don't append the image
                 };
                 // Set src to trigger the load - UPDATED FILENAME
-                letterheadImg.src = 'l-down.png'; 
+                letterheadImg.src = 'l-down.png';
             });
             // --- End Await ---
 
@@ -1170,7 +1215,7 @@
                     allowTaint: true,
                     scale: 2 // Higher resolution
                 });
-                
+
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
                 const pdfWidth = 595.28; // A4 width in points
@@ -1184,9 +1229,9 @@
                     unit: 'pt',
                     format: [pdfWidth, pdfHeight + 40] // Add padding
                 });
-                
+
                 // Add image at 0,0 - it now contains the title
-                doc.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight); 
+                doc.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight);
                 doc.save(filename);
 
             } catch (error) {
@@ -1195,7 +1240,7 @@
             } finally {
                 elementsToHide.forEach(el => el.style.display = '');
                 elementToPrint.classList.remove('pdf-export-modal');
-                
+
                 // --- Letterhead Removal ---
                 try {
                     // Check if elements were added before removing
@@ -1211,7 +1256,7 @@
                 // --- End Removal ---
             }
         }
-        
+
         // --- ADDED: Listener for Full List PDF Download ---
         downloadListPdfBtn.addEventListener('click', () => {
             downloadTableAsPDF('customerTable', 'Customer List', 'customer_list.pdf');
@@ -1229,6 +1274,8 @@
 
         // --- ---
 
+        // --- Initial setup ---
+        switchTab('allCustomers'); // Set the initial tab and show count display
         lucide.createIcons();
     </script>
 </body>

@@ -56,7 +56,6 @@
 <body class="bg-slate-900 text-slate-300 font-sans">
 
     <div id="app-container" class="flex h-screen hidden">
-        <!-- Sidebar -->
         <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-10">
@@ -66,20 +65,21 @@
     </div>
     <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
 </div>
-           <nav class="flex flex-col gap-2">
+             <nav class="flex flex-col gap-2">
                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="siren"></i><span>Income/Expenses</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
                    <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
                    <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
                    <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./invoices.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./agreement_generator.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
-
+                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
+                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
                 </nav>
             </div>
             <div>
@@ -93,7 +93,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 p-8 overflow-y-auto flex flex-col">
             <section id="page-schedule" class="page flex-1 flex flex-col">
                 <div class="flex justify-between items-center mb-6">
@@ -103,7 +102,6 @@
                     </button>
                 </div>
 
-                <!-- Upcoming Events Alerts -->
                 <div id="upcomingEvents" class="mb-6"></div>
 
                 <div class="flex justify-between items-center mb-6">
@@ -125,7 +123,6 @@
         </main>
     </div>
 
-    <!-- Add/Edit Event Modal -->
     <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
         <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0" id="event-modal-content">
             <div class="flex justify-between items-center mb-6">
@@ -155,7 +152,7 @@
                     </div>
                     <div id="amountWrapper" class="hidden relative">
                          <label for="eventAmount" class="block mb-2 text-sm font-medium">Amount (Rs)</label>
-                         <i data-lucide="siren" class="absolute left-3 bottom-3 text-slate-400"></i>
+                         <i data-lucide="dollar-sign" class="absolute left-3 bottom-3 text-slate-400"></i>
                         <input type="number" id="eventAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 pl-10" placeholder="e.g., 5000">
                     </div>
                 </div>
@@ -224,7 +221,6 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
 
     <script type="module">
@@ -355,13 +351,16 @@
                 if(eventsContainer){
                     const eventEl = document.createElement('div');
                     let completedClass = event.status === 'Completed' ? 'opacity-60 line-through' : '';
-                    eventEl.className = `event-container p-1.5 rounded-md text-white ${event.color} ${completedClass}`;
+                    let vehicleLinkClass = event.vehicleExpenseId ? 'border-l-4 border-yellow-500' : ''; 
+                    
+                    eventEl.className = `event-container p-1.5 rounded-md text-white ${event.color} ${completedClass} ${vehicleLinkClass}`;
                      
-                    const timeString = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    const timeString = event.date.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                     
                     let content = `
                         <div data-id="${event.id}" class="event-header cursor-pointer flex items-center justify-between text-sm">
                             <div class="truncate">
+                                ${event.vehicleExpenseId ? `<i data-lucide="car" class="w-4 h-4 inline-block -mt-1 mr-1"></i>` : ''}
                                 <span class="font-bold">${timeString}</span> - ${event.title}
                                 ${event.type !== 'General' ? `<span class="font-semibold ml-1">(${event.amount} Rs)</span>` : ''}
                             </div>
@@ -395,7 +394,16 @@
         }
         
         // --- Modal & Form ---
+        // --- *** VENAS KALA (Mark Completed) *** ---
         const openEventModal = (id = null) => {
+            // Reset form state
+            document.querySelectorAll('#eventForm input, #eventForm textarea, #eventForm select').forEach(el => el.disabled = false);
+            submitEventBtn.style.display = 'flex';
+            deleteEventBtn.classList.remove('hidden');
+            markCompletedBtn.classList.add('hidden'); // Hide by default
+            const oldMsg = eventForm.querySelector('.vehicle-link-msg');
+            if(oldMsg) oldMsg.remove();
+            
             if (id) {
                 const event = allEvents.find(e => e.id === id);
                 if(event) {
@@ -419,13 +427,34 @@
                         incomeTypeSelect.value = event.incomeType || 'Variable';
                     }
                     eventTypeSelect.dispatchEvent(new Event('change'));
-
                     deleteEventBtn.classList.remove('hidden');
-                    if (event.type !== 'General' && event.status !== 'Completed') {
+                    
+                    // Show "Mark as Completed" for ANY finance event (normal or vehicle) that is not completed
+                    if ((event.type !== 'General' || event.vehicleExpenseId) && event.status !== 'Completed') {
                         markCompletedBtn.classList.remove('hidden');
-                         markCompletedBtn.style.display = 'flex';
+                        markCompletedBtn.style.display = 'flex';
                     } else {
                         markCompletedBtn.classList.add('hidden');
+                    }
+                    
+                    // --- Modified Read-only logic ---
+                    if (event.vehicleExpenseId) {
+                        eventModalTitle.textContent = 'View Linked Vehicle Event';
+                        // 1. Disable all form fields
+                        document.querySelectorAll('#eventForm input, #eventForm textarea, #eventForm select').forEach(el => el.disabled = true);
+                        
+                        // 2. Hide Save & Delete
+                        submitEventBtn.style.display = 'none';
+                        deleteEventBtn.classList.add('hidden'); // Hide delete
+                        
+                        // 3. (MarkCompletedBtn is already handled above)
+                        
+                        // 4. Show a message
+                        const vehicleMsg = document.createElement('div');
+                        vehicleMsg.className = 'vehicle-link-msg p-3 bg-yellow-900/50 border border-yellow-500 text-yellow-300 rounded-lg text-sm mb-4 flex items-center gap-3';
+                        vehicleMsg.innerHTML = `<i data-lucide="car" class="w-5 h-5 flex-shrink-0"></i> <span>This is a linked Vehicle Insurance. You can mark it as completed, but you cannot edit or delete it from here.</span>`;
+                        eventForm.prepend(vehicleMsg);
+                        lucide.createIcons();
                     }
                 }
             } else {
@@ -440,6 +469,7 @@
             setTimeout(() => eventModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
         
+        // --- *** VENAS KALA (Reset) *** ---
         const closeEventModal = () => {
             eventModalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
@@ -450,6 +480,13 @@
                 financeOptionsWrapper.classList.add('hidden');
                 incomeTypeWrapper.classList.add('hidden');
                 expenseTypeWrapper.classList.add('hidden');
+                
+                // --- NEW: Remove message AND re-enable form ---
+                const oldMsg = eventForm.querySelector('.vehicle-link-msg');
+                if(oldMsg) oldMsg.remove();
+                document.querySelectorAll('#eventForm input, #eventForm textarea, #eventForm select').forEach(el => el.disabled = false);
+                submitEventBtn.style.display = 'flex';
+                // --- END NEW ---
             }, 200);
         };
 
@@ -486,6 +523,15 @@
         eventForm.addEventListener('submit', async e => {
             e.preventDefault();
             const docId = document.getElementById('eventDocId').value;
+            
+            if (docId) {
+                const event = allEvents.find(e => e.id === docId);
+                if (event && event.vehicleExpenseId) {
+                    showToast("This is a read-only event. Cannot save changes.", false);
+                    return; 
+                }
+            }
+            
             submitEventBtn.disabled = true;
             submitEventBtnText.classList.add('hidden');
             submitEventSpinner.classList.remove('hidden');
@@ -504,15 +550,17 @@
                     amount: parseFloat(document.getElementById('eventAmount').value) || 0,
                     category: document.getElementById('eventCategory').value,
                     paymentMethod: document.getElementById('eventPaymentMethod').value,
-                    status: 'Pending',
                 };
                  if (data.type === 'Income') data.incomeType = incomeTypeSelect.value;
                  if (data.type === 'Expense') data.expenseType = expenseTypeSelect.value;
 
                 if(docId) {
+                    const oldEvent = allEvents.find(e => e.id === docId);
+                    if(oldEvent) data.status = oldEvent.status || 'Pending';
                     await updateDoc(doc(db, `users/${currentUserId}/schedule`, docId), data);
                     showToast('Event updated!');
                 } else {
+                    data.status = 'Pending'; // Set status for new
                     const recurringType = data.type === 'Income' ? data.incomeType : data.expenseType;
                     if (data.type !== 'General' && recurringType === 'Fixed') {
                         const recurringId = crypto.randomUUID();
@@ -544,6 +592,11 @@
             const docId = document.getElementById('eventDocId').value;
             const event = allEvents.find(e => e.id === docId);
 
+            if (event && event.vehicleExpenseId) {
+                showToast("Cannot delete a linked vehicle event from here. Use the Vehicles page.", false);
+                return;
+            }
+
             if(docId && event){
                 if (event.recurringId && confirm('This is a recurring event. Delete all future occurrences as well?')) {
                     const batch = writeBatch(db);
@@ -563,20 +616,53 @@
             }
         });
 
+        // --- *** VENAS KALA (Mark Completed) *** ---
         markCompletedBtn.addEventListener('click', async () => {
             const docId = document.getElementById('eventDocId').value;
             if (!docId) return;
 
             const event = allEvents.find(e => e.id === docId);
             if (!event) return showToast('Event not found', false);
+            
+            // --- Check if already completed (extra safety) ---
+            if (event.status === 'Completed') {
+                showToast("This event is already marked as completed.", false);
+                return;
+            }
 
             try {
+                const batch = writeBatch(db);
+
+                // 1. Prepare transaction data
                 const transactionData = {
-                    date: event.date, description: `Scheduled: ${event.title}`, category: event.category || 'Scheduled',
-                    type: event.type, amount: event.amount, paymentMethod: event.paymentMethod || 'Cash'
+                    date: event.date,
+                    description: `Scheduled: ${event.title}`,
+                    category: event.category || 'Scheduled',
+                    type: event.type, // Will be 'Expense' or 'Income'
+                    amount: event.amount,
+                    paymentMethod: event.paymentMethod || 'Cash'
                 };
-                await addDoc(collection(db, `users/${currentUserId}/transactions`), transactionData);
-                await updateDoc(doc(db, `users/${currentUserId}/schedule`, docId), { status: 'Completed' });
+
+                // 2. Create the new transaction
+                const newTransactionRef = doc(collection(db, `users/${currentUserId}/transactions`));
+                batch.set(newTransactionRef, transactionData);
+
+                // 3. Mark the schedule event as Completed
+                const scheduleRef = doc(db, `users/${currentUserId}/schedule`, docId);
+                batch.update(scheduleRef, { status: 'Completed' });
+
+                // 4. --- NEW: If it's a vehicle event, update the vehicle_expense record ---
+                if (event.vehicleExpenseId) {
+                    const vehicleExpenseRef = doc(db, `users/${currentUserId}/vehicle_expenses`, event.vehicleExpenseId);
+                    batch.update(vehicleExpenseRef, { isFuturePayment: false });
+                    
+                    // Also link the new transaction back to the vehicle expense
+                    batch.update(newTransactionRef, { vehicleExpenseId: event.vehicleExpenseId });
+                }
+                // --- END NEW ---
+
+                await batch.commit(); // Commit all changes
+                
                 showToast('Event marked as completed & transaction added!');
                 closeEventModal();
             } catch (error) {
@@ -605,9 +691,10 @@
                      alertEl.className = 'bg-slate-700 p-4 rounded-lg flex items-start gap-4';
                      
                      const iconColor = event.type === 'Income' ? 'text-green-400' : event.type === 'Expense' ? 'text-red-400' : 'text-blue-400';
+                     const icon = event.vehicleExpenseId ? 'car' : 'bell-ring';
 
                      alertEl.innerHTML = `
-                        <div><i data-lucide="bell-ring" class="w-5 h-5 ${iconColor}"></i></div>
+                        <div><i data-lucide="${icon}" class="w-5 h-5 ${iconColor}"></i></div>
                         <div>
                             <p class="font-bold">${event.title}</p>
                             <p class="text-sm text-slate-400">${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
@@ -633,4 +720,3 @@
     </script>
 </body>
 </html>
-

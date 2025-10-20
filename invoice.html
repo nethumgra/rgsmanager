@@ -8,6 +8,9 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -48,17 +51,6 @@
         #invoiceModal .modal-scroll-content::-webkit-scrollbar-track { background: #374151; } /* gray-700 */
         #invoiceModal .modal-scroll-content::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } /* gray-500 */
         #invoiceModal .modal-scroll-content::-webkit-scrollbar-thumb:hover { background: #9ca3af; } /* gray-400 */
-
-        /* Input error styling */
-        .input-error {
-            border-color: #f87171; /* red-400 */
-        }
-        .error-text {
-            color: #fca5a5; /* red-300 */
-            font-size: 0.875rem; /* text-sm */
-            margin-top: 0.25rem; /* mt-1 */
-        }
-
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
@@ -101,13 +93,20 @@
 
         <main class="flex-1 p-8 overflow-y-auto">
             <section id="page-invoices" class="page">
+                
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-white">Invoices</h2>
-                    <button id="addInvoiceBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
-                        <i data-lucide="plus"></i> Add New Invoice
-                    </button>
+                    <div class="flex gap-4">
+                        <button id="downloadAllPdfsBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                            <i data-lucide="download-cloud"></i> 
+                            <span id="downloadAllPdfsBtnText">Download All PDFs</span>
+                            <div id="downloadAllPdfsSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                        </button>
+                        <button id="addInvoiceBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                            <i data-lucide="plus"></i> Add New Invoice
+                        </button>
+                    </div>
                 </div>
-
                 <div class="bg-slate-800 rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                      <div class="md:col-span-2">
                          <label for="searchInvoice" class="block mb-2 text-sm font-medium">Search by Invoice No or Client</label>
@@ -126,8 +125,7 @@
                                 <th class="p-4 font-semibold text-white">Date</th>
                                 <th class="p-4 font-semibold text-white">Invoice No</th>
                                 <th class="p-4 font-semibold text-white">Client Name</th>
-                                <th class="p-4 font-semibold text-white text-right">Amount (€)</th>
-                                <th class="p-4 font-semibold text-white">PDF</th>
+                                <th class="p-4 font-semibold text-white text-right">Amount (€)</th> <th class="p-4 font-semibold text-white">PDF</th>
                                 <th class="p-4 font-semibold text-white">Actions</th>
                             </tr>
                         </thead>
@@ -141,8 +139,7 @@
     </div>
 
     <div id="invoiceModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10 px-4">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[95vh]" id="invoice-modal-content">
-            <div class="flex justify-between items-center mb-6 flex-shrink-0">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[95vh]" id="invoice-modal-content"> <div class="flex justify-between items-center mb-6 flex-shrink-0">
                 <h3 id="invoiceModalTitle" class="text-2xl font-bold text-white">Add New Invoice</h3>
                 <button id="closeInvoiceModalBtn" class="text-slate-400 hover:text-white">&times;</button>
             </div>
@@ -170,19 +167,16 @@
                          <div>
                              <label for="modalAmountWithoutTax" class="block mb-2 text-sm font-medium text-slate-300">Amount (Without Tax)</label>
                              <input type="number" step="0.01" min="0" id="modalAmountWithoutTax" placeholder="e.g., 1000.00" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
-                             <p id="amountWithoutTaxError" class="error-text hidden">Amount must be a positive number.</p>
                          </div>
                          <div>
-                             <label for="modalAmountWithTax" class="block mb-2 text-sm font-medium text-slate-300">Amount (With Tax)</label>
-                             <input type="number" step="0.01" min="0" id="modalAmountWithTax" placeholder="e.g., 1100.00" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
-                             <p id="amountWithTaxError" class="error-text hidden">Must be >= Amount Without Tax.</p>
+                             <label for="modalTaxAmountInput" class="block mb-2 text-sm font-medium text-slate-300">Tax Amount (€)</label>
+                             <input type="number" step="0.01" min="0" id="modalTaxAmountInput" placeholder="e.g., 100.00" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500">
                          </div>
                          <div>
-                             <label class="block mb-2 text-sm font-medium text-slate-300">Calculated Tax Amount</label>
-                             <p id="modalTaxAmountDisplay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2.5 min-h-[42px] font-semibold">€ 0.00</p>
+                             <label class="block mb-2 text-sm font-medium text-slate-300">Amount (With Tax)</label>
+                             <p id="modalAmountWithTaxDisplay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2.5 min-h-[42px] font-semibold">€ 0.00</p>
                          </div>
                     </div>
-
                     <div class="mb-6 border-t border-slate-700 pt-6 mt-6">
                          <label for="modalPdfFile" class="block mb-2 text-sm font-medium text-slate-300">Upload Related PDF</label>
                          <label for="modalPdfFile" class="file-input-label">Choose PDF File</label>
@@ -206,7 +200,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Removed 'where' as it's not used in this version
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
@@ -215,7 +209,7 @@
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
             authDomain: "rsgweb-5f36d.firebaseapp.com",
             projectId: "rsgweb-5f36d",
-            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app", // <-- මේකයි හරි නම
             messagingSenderId: "633023905515",
             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
         };
@@ -236,6 +230,13 @@
         const addInvoiceBtn = document.getElementById('addInvoiceBtn');
         const searchInput = document.getElementById('searchInvoice');
         const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        
+        // අලුතින් එකතු කළා (DOM Elements)
+        const downloadAllPdfsBtn = document.getElementById('downloadAllPdfsBtn');
+        const downloadAllPdfsBtnText = document.getElementById('downloadAllPdfsBtnText');
+        const downloadAllPdfsSpinner = document.getElementById('downloadAllPdfsSpinner');
+        // /අලුතින් එකතු කළා
+
 
         // Modal Elements
         const invoiceModal = document.getElementById('invoiceModal');
@@ -249,14 +250,14 @@
         const invoiceForm = document.getElementById('invoiceForm');
         // Simplified Modal Form Elements
         const modalAmountWithoutTaxInput = document.getElementById('modalAmountWithoutTax');
-        const modalAmountWithTaxInput = document.getElementById('modalAmountWithTax');
-        const modalTaxAmountDisplay = document.getElementById('modalTaxAmountDisplay');
+        const modalTaxAmountInput = document.getElementById('modalTaxAmountInput'); // <-- MODIFIED
+        const modalAmountWithTaxDisplay = document.getElementById('modalAmountWithTaxDisplay');
         const modalPdfFileInput = document.getElementById('modalPdfFile');
         const modalPdfFileNameDisplay = document.getElementById('modalPdfFileName');
         const modalExistingPdfLink = document.getElementById('modalExistingPdfLink');
-        // Error message elements
-        const amountWithoutTaxError = document.getElementById('amountWithoutTaxError');
-        const amountWithTaxError = document.getElementById('amountWithTaxError');
+
+
+        // const TAX_RATE = 0.10; // 10% Tax Rate  <-- REMOVED
 
         // --- Auth ---
         onAuthStateChanged(auth, (user) => {
@@ -273,6 +274,91 @@
         signOutBtn.addEventListener('click', () => signOut(auth).then(() => {
              window.location.href = './index.html';
         }));
+
+
+        // අලුතින් එකතු කළා (Download All PDFs Function)
+        const handleDownloadAllPdfs = async () => {
+            downloadAllPdfsBtn.disabled = true;
+            downloadAllPdfsBtnText.classList.add('hidden');
+            downloadAllPdfsSpinner.classList.remove('hidden');
+            showToast('Starting PDF download... This may take a while.', true);
+
+            // Search එකෙන් filter වෙලා තිබ්බත්, 'allInvoices' වලින්ම අරගන්නවා
+            const invoicesWithPdfs = allInvoices.filter(inv => inv.pdfUrl);
+
+            if (invoicesWithPdfs.length === 0) {
+                showToast('No invoices with PDFs found to download.', false);
+                downloadAllPdfsBtn.disabled = false;
+                downloadAllPdfsBtnText.classList.remove('hidden');
+                downloadAllPdfsSpinner.classList.add('hidden');
+                return;
+            }
+
+            const zip = new JSZip(); // JSZip library එකෙන් අලුත් zip object එකක් හදනවා
+            let failedDownloads = [];
+            console.log(`Attempting to download ${invoicesWithPdfs.length} PDFs...`);
+
+            const fetchPromises = invoicesWithPdfs.map(async (inv) => {
+                try {
+                    // *** වැදගත්: ***
+                    // මෙම fetch() ක්‍රියාව බොහෝවිට CORS දෝෂයක් ලබා දෙනු ඇත.
+                    // විසඳුම සඳහා Firebase Storage > Permissions > CORS settings වෙනස් කරන්න.
+                    const response = await fetch(inv.pdfUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch PDF for ${inv.invoiceNo} (status: ${response.status})`);
+                    }
+                    const blob = await response.blob(); // PDF එක blob එකක් විදියට ගන්නවා
+
+                    // ගොනු නාමය පිරිසිදු කිරීම (invalid characters අයින් කිරීම)
+                    const safeInvoiceNo = inv.invoiceNo?.replace(/[^a-z0-9-]/gi, '_') || 'NoNum';
+                    const safeClientName = inv.clientName?.replace(/[^a-z0-9-]/gi, '_') || 'NoClient';
+                    const datePrefix = inv.date?.toDate()?.toISOString()?.split('T')[0] || 'UnknownDate';
+                    
+                    const fileName = `${datePrefix}_${safeInvoiceNo}_${safeClientName}.pdf`;
+                    zip.file(fileName, blob, { binary: true }); // Zip එකට file එක එකතු කරනවා
+                    
+                } catch (error) {
+                    console.error(`Failed to download file for invoice ${inv.invoiceNo} (URL: ${inv.pdfUrl}):`, error);
+                    if (error.message.includes('Failed to fetch')) {
+                         failedDownloads.push(`${inv.invoiceNo || 'Unknown'} (Network/CORS Error)`);
+                    } else {
+                         failedDownloads.push(inv.invoiceNo || 'Unknown');
+                    }
+                }
+            });
+
+            // සියලුම download requests අවසන් වන තෙක් රැඳී සිටීම
+            await Promise.all(fetchPromises);
+
+            if (Object.keys(zip.files).length === 0) {
+                 showToast('Could not download any PDFs. Check console for CORS errors.', false);
+                 console.error("No PDFs were added to the zip. This is likely a CORS issue. Please check your Firebase Storage CORS settings.");
+            } else {
+                try {
+                    // ZIP ගොනුව ජනනය කිරීම
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    // ZIP ගොනුව Save කිරීම (FileSaver.js library එකෙන්)
+                    saveAs(content, 'RSG_Manager_All_Invoices.zip');
+                    
+                    if (failedDownloads.length > 0) {
+                        showToast(`Download complete, but failed to get ${failedDownloads.length} PDFs. Check console.`, false);
+                    } else {
+                        showToast('All PDFs downloaded and zipped successfully!', true);
+                    }
+                } catch (error) {
+                    console.error("Error generating ZIP file:", error);
+                    showToast('Error creating ZIP file. See console for details.', false);
+                }
+            }
+
+            // බොත්තම නැවත සක්‍රීය කිරීම
+            downloadAllPdfsBtn.disabled = false;
+            downloadAllPdfsBtnText.classList.remove('hidden');
+            downloadAllPdfsSpinner.classList.add('hidden');
+        };
+        // /අලුතින් එකතු කළා
+
 
          // --- Toast ---
         const showToast = (message, isSuccess = true) => {
@@ -300,7 +386,10 @@
         };
 
         const deleteFileFromStorage = async (deletePath) => {
-             if (!deletePath) { return Promise.resolve(); }
+             if (!deletePath) {
+                 console.log("No valid storage path provided for deletion.");
+                 return Promise.resolve();
+             }
              const fileRef = ref(storage, deletePath);
              try {
                  await deleteObject(fileRef);
@@ -315,50 +404,23 @@
         };
 
 
-        // --- Invoice Modal Calculation Logic (NEW) ---
+        // --- Invoice Modal Calculation Logic ---
         function calculateModalTax() {
-            // *** CORRECTED VARIABLE NAMES HERE ***
-            modalAmountWithoutTaxInput.classList.remove('input-error'); // Use modal variable
-            modalAmountWithTaxInput.classList.remove('input-error'); // Use modal variable
-            amountWithoutTaxError.classList.add('hidden');
-            amountWithTaxError.classList.add('hidden');
-            modalTaxAmountDisplay.textContent = '€ 0.00';
+            const amountWithoutTax = parseFloat(modalAmountWithoutTaxInput.value) || 0;
+            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; // <-- MODIFIED: Read from new input
 
-            const amountWithoutTax = parseFloat(modalAmountWithoutTaxInput.value); // Use modal variable
-            const amountWithTax = parseFloat(modalAmountWithTaxInput.value); // Use modal variable
-            let hasError = false;
-
-            if (isNaN(amountWithoutTax) || amountWithoutTax < 0) {
-                 if (modalAmountWithoutTaxInput.value.trim() !== '') {
-                    modalAmountWithoutTaxInput.classList.add('input-error'); // Use modal variable
-                    amountWithoutTaxError.classList.remove('hidden');
-                 } else {}
-                 hasError = true;
-            }
-
-             if (isNaN(amountWithTax) || amountWithTax < 0) {
-                  if (modalAmountWithTaxInput.value.trim() !== '') {
-                    modalAmountWithTaxInput.classList.add('input-error'); // Use modal variable
-                    amountWithTaxError.textContent = 'Amount must be a positive number.';
-                    amountWithTaxError.classList.remove('hidden');
-                  } else {}
-                 hasError = true;
-            }
-
-            if (!isNaN(amountWithoutTax) && !isNaN(amountWithTax) && amountWithoutTax >= 0 && amountWithTax >= 0 && amountWithTax < amountWithoutTax) {
-                 modalAmountWithTaxInput.classList.add('input-error'); // Use modal variable
-                 amountWithTaxError.textContent = 'Must be >= Amount Without Tax.';
-                 amountWithTaxError.classList.remove('hidden');
-                 hasError = true;
-            }
-
-            if (!hasError && !isNaN(amountWithoutTax) && !isNaN(amountWithTax)) {
-                 const taxAmount = amountWithTax - amountWithoutTax;
-                 modalTaxAmountDisplay.textContent = `€ ${taxAmount.toFixed(2)}`;
+            if (amountWithoutTax >= 0 && taxAmount >= 0) {
+                const amountWithTax = amountWithoutTax + taxAmount;
+                // modalTaxAmountDisplay.textContent = ... <-- REMOVED
+                modalAmountWithTaxDisplay.textContent = `€ ${amountWithTax.toFixed(2)}`;
+            } else {
+                // modalTaxAmountDisplay.textContent = '€ 0.00'; <-- REMOVED
+                modalAmountWithTaxDisplay.textContent = '€ 0.00';
             }
         }
+        // Add event listener to BOTH input fields
         modalAmountWithoutTaxInput.addEventListener('input', calculateModalTax);
-        modalAmountWithTaxInput.addEventListener('input', calculateModalTax);
+        modalTaxAmountInput.addEventListener('input', calculateModalTax); // <-- ADDED
 
 
         // --- Invoice Modal Open/Close ---
@@ -368,13 +430,6 @@
             modalExistingPdfLink.classList.add('hidden');
             modalExistingPdfLink.href = '#';
             document.getElementById('invoiceDocId').value = docId || '';
-            // *** CORRECTED VARIABLE NAMES HERE ***
-            modalAmountWithoutTaxInput.classList.remove('input-error'); // Use modal variable
-            modalAmountWithTaxInput.classList.remove('input-error'); // Use modal variable
-            amountWithoutTaxError.classList.add('hidden');
-            amountWithTaxError.classList.add('hidden');
-            modalTaxAmountDisplay.textContent = '€ 0.00';
-
 
             if (docId) {
                 invoiceModalTitle.textContent = 'Edit Invoice';
@@ -387,8 +442,9 @@
                          document.getElementById('modalInvoiceDate').value = data.date?.toDate()?.toISOString()?.split('T')[0] || '';
                          document.getElementById('modalInvoiceNo').value = data.invoiceNo || '';
                          document.getElementById('modalClientName').value = data.clientName || '';
-                         modalAmountWithoutTaxInput.value = data.amountWithoutTax?.toFixed(2) || '';
-                         modalAmountWithTaxInput.value = data.totalAmount?.toFixed(2) || '';
+                         // Populate amount without tax
+                         modalAmountWithoutTaxInput.value = data.amountWithoutTax?.toFixed(2) || '0.00';
+                         modalTaxAmountInput.value = data.taxAmount?.toFixed(2) || '0.00'; // <-- ADDED: Populate tax input
 
                          if (data.pdfUrl) {
                              modalPdfFileNameDisplay.textContent = 'PDF previously uploaded.';
@@ -410,12 +466,12 @@
                 invoiceModalTitle.textContent = 'Add New Invoice';
                 submitInvoiceBtnText.textContent = 'Save Invoice';
                 document.getElementById('modalInvoiceDate').valueAsDate = new Date();
-                modalAmountWithoutTaxInput.value = '';
-                modalAmountWithTaxInput.value = '';
+                modalAmountWithoutTaxInput.value = ''; // Clear amount field for new invoice
+                modalTaxAmountInput.value = ''; // <-- ADDED: Clear tax field for new invoice
                 delete invoiceForm.dataset.existingPdfDeleteUrl;
             }
 
-            calculateModalTax();
+            calculateModalTax(); // Calculate totals when opening
             invoiceModal.classList.remove('hidden');
             setTimeout(() => invoiceModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
@@ -428,19 +484,13 @@
                 modalPdfFileNameDisplay.textContent = 'No file chosen';
                 modalExistingPdfLink.classList.add('hidden');
                  delete invoiceForm.dataset.existingPdfDeleteUrl;
-                 modalTaxAmountDisplay.textContent = '€ 0.00';
-                 // *** CORRECTED VARIABLE NAMES HERE ***
-                 modalAmountWithoutTaxInput.classList.remove('input-error'); // Use modal variable
-                 modalAmountWithTaxInput.classList.remove('input-error'); // Use modal variable
-                 amountWithoutTaxError.classList.add('hidden');
-                 amountWithTaxError.classList.add('hidden');
+                 // Reset calculated fields
+                 // modalTaxAmountDisplay.textContent = '€ 0.00'; // <-- REMOVED
+                 modalAmountWithTaxDisplay.textContent = '€ 0.00';
             }, 300);
         };
 
-        addInvoiceBtn.addEventListener('click', () => {
-             console.log("Add Invoice Button Clicked!");
-             openInvoiceModal();
-        });
+        addInvoiceBtn.addEventListener('click', () => openInvoiceModal());
         closeInvoiceModalBtn.addEventListener('click', closeInvoiceModal);
         cancelInvoiceModalBtn.addEventListener('click', closeInvoiceModal);
         invoiceModal.addEventListener('click', (e) => { if(e.target === invoiceModal) closeInvoiceModal(); });
@@ -448,43 +498,42 @@
         // --- Save/Update Invoice ---
         submitInvoiceBtn.addEventListener('click', async () => {
             if (!currentUserId) return;
-            calculateModalTax();
 
             const docId = document.getElementById('invoiceDocId').value;
             const invoiceDate = document.getElementById('modalInvoiceDate').value;
             const invoiceNo = document.getElementById('modalInvoiceNo').value.trim();
             const clientName = document.getElementById('modalClientName').value.trim();
-            const amountWithoutTaxStr = modalAmountWithoutTaxInput.value;
-            const amountWithTaxStr = modalAmountWithTaxInput.value;
+            const amountWithoutTax = parseFloat(modalAmountWithoutTaxInput.value);
+            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; // <-- MODIFIED: Get tax from input (default to 0)
 
-            // *** CORRECTED VARIABLE NAMES HERE for validation check ***
-            if (!invoiceDate || !invoiceNo || !clientName || amountWithoutTaxStr === '' || amountWithTaxStr === '' || modalAmountWithoutTaxInput.classList.contains('input-error') || modalAmountWithTaxInput.classList.contains('input-error') ) {
-                showToast("Please correct the errors in the form before saving.", false);
+            // <-- MODIFIED: Updated validation check
+            if (!invoiceDate || !invoiceNo || !clientName || isNaN(amountWithoutTax) || amountWithoutTax < 0 || isNaN(taxAmount) || taxAmount < 0) {
+                showToast("Please fill in Date, Invoice No, Client Name, and valid Base & Tax Amounts.", false);
                 return;
             }
-
-            const amountWithoutTax = parseFloat(amountWithoutTaxStr);
-            const amountWithTax = parseFloat(amountWithTaxStr);
-            const taxAmount = amountWithTax - amountWithoutTax;
 
             submitInvoiceBtn.disabled = true;
             submitInvoiceBtnText.classList.add('hidden');
             submitInvoiceSpinner.classList.remove('hidden');
 
             try {
+                // <-- MODIFIED: Recalculation no longer uses TAX_RATE
+                const totalAmount = amountWithoutTax + taxAmount;
+
                 const invoiceData = {
                     date: Timestamp.fromDate(new Date(invoiceDate)),
                     invoiceNo: invoiceNo,
                     clientName: clientName,
-                    amountWithoutTax: amountWithoutTax,
-                    taxAmount: taxAmount,
-                    totalAmount: amountWithTax,
+                    amountWithoutTax: amountWithoutTax, 
+                    taxAmount: taxAmount, // <-- MODIFIED: Save the manually entered tax amount
+                    totalAmount: totalAmount, 
                     userId: currentUserId
                 };
 
+                // --- PDF Handling ---
                 const pdfFile = modalPdfFileInput.files[0];
                 const existingPdfDeleteUrl = invoiceForm.dataset.existingPdfDeleteUrl;
-                let pdfNeedsUpdate = false;
+                let pdfNeedsUpdate = false; // Flag to check if PDF info changed
 
                 if (pdfFile) {
                      pdfNeedsUpdate = true;
@@ -499,19 +548,25 @@
                          throw new Error("PDF upload failed, invoice not saved.");
                      }
                  } else if (docId && existingPdfDeleteUrl && !modalExistingPdfLink.classList.contains('hidden') && modalPdfFileNameDisplay.textContent === 'No file chosen') {
-                      pdfNeedsUpdate = true;
-                      await deleteFileFromStorage(existingPdfDeleteUrl);
-                      invoiceData.pdfUrl = null;
+                      // Case: Editing, existing PDF link was shown, but now "No file chosen" is displayed (meaning user cleared selection or wants to remove)
+                      pdfNeedsUpdate = true; // Mark that PDF info needs update in Firestore
+                      await deleteFileFromStorage(existingPdfDeleteUrl); // Delete from storage
+                      invoiceData.pdfUrl = null; // Remove Firestore fields
                       invoiceData.pdfDeleteUrl = null;
                   }
+                  // If editing and existing link is shown and file input wasn't touched, pdfUrl/pdfDeleteUrl are not included in invoiceData,
+                  // so Firestore keeps the existing values.
+
 
                 if (docId) {
-                     if (pdfNeedsUpdate && Object.keys(invoiceData).length === 3) {
-                          await updateDoc(doc(db, `users/${currentUserId}/invoices`, docId), {
+                     // If only PDF was changed, update only those fields
+                     if (pdfNeedsUpdate && Object.keys(invoiceData).length === 3) { // Only pdfUrl, pdfDeleteUrl, userId
+                         await updateDoc(doc(db, `users/${currentUserId}/invoices`, docId), {
                              pdfUrl: invoiceData.pdfUrl,
                              pdfDeleteUrl: invoiceData.pdfDeleteUrl
                          });
-                      } else {
+                     } else {
+                         // Update all fields
                          await updateDoc(doc(db, `users/${currentUserId}/invoices`, docId), invoiceData);
                      }
                     showToast('Invoice updated!');
@@ -563,19 +618,29 @@
                 row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
 
                 const dateStr = inv.date?.toDate()?.toLocaleDateString() || 'N/A';
+                // Display Amount WITH Tax in the table
                 const displayAmountStr = inv.totalAmount?.toFixed(2) || '0.00';
-
+                
+                // --- PDF Link Hena thana ---
                 let pdfLinkHtml = '<span class="text-slate-500 text-xs">N/A</span>';
                 if(inv.pdfUrl){
-                    pdfLinkHtml = `<a href="${inv.pdfUrl}" target="_blank" class="text-blue-400 hover:text-blue-300 hover:underline" title="View PDF"><i data-lucide="file-type-pdf" class="w-5 h-5 inline-block"></i></a>`;
+                    // View (eye) icon එකකුයි, Download icon එකකුයි දෙකක් දානවා
+                    pdfLinkHtml = `
+                        <a href="${inv.pdfUrl}" target="_blank" class="text-blue-400 hover:text-blue-300 hover:underline inline-block mr-3" title="View PDF">
+                            <i data-lucide="eye" class="w-5 h-5 pointer-events-none"></i>
+                        </a>
+                        <a href="${inv.pdfUrl}" target="_blank" download class="text-green-400 hover:text-green-300 hover:underline inline-block" title="Download PDF">
+                            <i data-lucide="download" class="w-5 h-5 pointer-events-none"></i>
+                        </a>
+                    `;
                 }
+                // --- /PDF Link Hena thana ---
 
                 row.innerHTML = `
                     <td class="p-4">${dateStr}</td>
                     <td class="p-4 font-mono">${inv.invoiceNo || 'N/A'}</td>
                     <td class="p-4">${inv.clientName || 'N/A'}</td>
-                    <td class="p-4 text-right font-semibold">€ ${displayAmountStr}</td>
-                    <td class="p-4 text-center">${pdfLinkHtml}</td>
+                    <td class="p-4 text-right font-semibold">€ ${displayAmountStr}</td> <td class="p-4 text-center">${pdfLinkHtml}</td>
                     <td class="p-4 flex items-center gap-2">
                        <button data-id="${inv.id}" class="edit-invoice-btn text-blue-400 hover:text-blue-300" title="Edit Invoice"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
                        <button data-id="${inv.id}" data-pdf-delete-url="${inv.pdfDeleteUrl || ''}" class="delete-invoice-btn text-red-400 hover:text-red-300" title="Delete Invoice"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
@@ -604,6 +669,11 @@
             searchInput.value = '';
             applyFiltersAndRenderTable();
         });
+
+
+        // අලුතින් එකතු කළා (Event Listener for Download Button)
+        downloadAllPdfsBtn.addEventListener('click', handleDownloadAllPdfs);
+        // /අලුතින් එකතු කළා
 
 
         // --- Edit/Delete Event Listeners for Table ---
@@ -637,7 +707,9 @@
         // PDF file name display in modal
         modalPdfFileInput.addEventListener('change', () => {
              modalPdfFileNameDisplay.textContent = modalPdfFileInput.files[0]?.name || 'No file chosen';
+             // Hide existing link if user chooses a new file or clears selection
              if(!modalPdfFileInput.files[0]){
+                 // If selection is cleared, potentially show existing link again IF it was there
                  if(invoiceForm.dataset.existingPdfDeleteUrl) {
                      modalPdfFileNameDisplay.textContent = 'PDF previously uploaded.';
                      modalExistingPdfLink.classList.remove('hidden');
