@@ -47,6 +47,16 @@
         .completed-row:hover {
             opacity: 0.8;
         }
+        
+        /* --- NEW STYLES FOR ACCORDION --- */
+        .year-toggle-row .year-icon {
+            transition: transform 0.2s ease-in-out;
+            display: inline-block; /* Ensure transform works */
+        }
+        .year-toggle-row.open .year-icon {
+            transform: rotate(90deg);
+        }
+        /* --- END NEW STYLES --- */
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
@@ -60,7 +70,7 @@
                     </div>
                     <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
                 </div>
-               <nav class="flex flex-col gap-2">
+                <nav class="flex flex-col gap-2">
                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
@@ -71,7 +81,7 @@
                    <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
                    <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./invoices.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
+                   <a href="./invoice.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
                    <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
                    <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
@@ -272,6 +282,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        // --- THIS LINE IS NOW FIXED ---
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, query, where, getDocs, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
@@ -568,94 +579,184 @@
             }
         });
 
-        // === TABLE RENDER (ALUTH DELETE LOGIC EKKA VENAS KALA) ===
+        // === TABLE RENDER (MODIFIED FOR INSURANCE TAB) ===
         function renderTable(displayData) { 
             transactionTableBody.innerHTML = '';
             if (!displayData || displayData.length === 0) {
                 transactionTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">No transactions found matching criteria.</td></tr>`;
                 return;
             }
-            displayData.forEach(item => {
-                 const dateObj = item.date instanceof Timestamp ? item.date.toDate() : item.date;
-                 if (!dateObj) {
-                     console.warn("Skipping item with invalid date:", item);
+
+            // --- NEW LOGIC FOR INSURANCE TAB ---
+            if (activeTab === 'insurance') {
+                // 1. Group by year
+                const groupedByYear = displayData.reduce((acc, item) => {
+                    const dateObj = item.date instanceof Timestamp ? item.date.toDate() : item.date;
+                    if (!dateObj) return acc; // Skip invalid dates
+                    const year = dateObj.getFullYear();
+                    if (!acc[year]) acc[year] = [];
+                    acc[year].push(item);
+                    return acc;
+                }, {});
+
+                // 2. Get sorted years (descending)
+                const years = Object.keys(groupedByYear).sort((a, b) => b - a);
+
+                if (years.length === 0) {
+                     transactionTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">No transactions found matching criteria.</td></tr>`;
                      return;
-                 }
-                 const dateStr = dateObj.toLocaleDateString();
-
-                const row = transactionTableBody.insertRow();
-                const typeClass = item.type === 'Income' ? 'text-green-400' : 'text-red-400';
-
-                let billHTML = '';
-                if (item.billUrl) {
-                    billHTML = `<button data-url="${item.billUrl}" class="view-bill-btn bg-slate-600 hover:bg-slate-500 text-white text-xs px-2 py-1 rounded-md">View Bill</button>`;
-                } else {
-                    billHTML = '<span class="text-slate-500">N/A</span>';
                 }
 
-                // --- Status Tag & Row Class ---
-                let statusTag = '';
-                let rowClass = 'border-b border-slate-700 hover:bg-slate-700/50';
+                // 3. Iterate and build rows
+                years.forEach((year, index) => {
+                    const items = groupedByYear[year];
+                    // Sort items within the year (descending)
+                    items.sort((a,b) => {
+                        const dateA = a.date instanceof Timestamp ? a.date.toDate() : a.date;
+                        const dateB = b.date instanceof Timestamp ? b.date.toDate() : b.date;
+                        return (dateB || 0) - (dateA || 0);
+                    });
 
-                if (item.isScheduledEvent) { 
-                    if (item.status === 'Pending') {
-                        statusTag = '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">PENDING</span>';
-                        rowClass += ' scheduled-row'; 
-                    } else if (item.status === 'Completed') {
-                        statusTag = '<span class="ml-2 bg-green-600 text-green-100 text-xs font-medium px-2 py-0.5 rounded-full">COMPLETED</span>';
-                        rowClass += ' completed-row'; // === VENAS KALA ===
-                    }
-                } else if (item.isFuturePayment) { 
-                    statusTag = '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">SCHEDULED</span>';
-                    rowClass += ' scheduled-row';
-                }
-                row.className = rowClass;
+                    const isFirstYear = index === 0; // Show first year by default
+                    
+                    // 4. Create Year Header Row
+                    const headerRow = transactionTableBody.insertRow();
+                    headerRow.className = `year-toggle-row bg-slate-600 hover:bg-slate-500 cursor-pointer ${isFirstYear ? 'open' : ''}`; // Use bg-slate-600
+                    headerRow.dataset.year = year;
+                    headerRow.innerHTML = `
+                        <td colspan="8" class="p-4 font-semibold text-white">
+                            <i data-lucide="chevron-right" class="year-icon w-5 h-5 mr-2"></i>
+                            Year ${year} (${items.length} entries)
+                        </td>
+                    `;
+                    
+                    // 5. Create Data Rows for this year
+                    items.forEach(item => {
+                        const dateObj = item.date instanceof Timestamp ? item.date.toDate() : item.date;
+                        const dateStr = dateObj.toLocaleDateString();
+                        const row = transactionTableBody.insertRow();
+                        const typeClass = 'text-red-400'; // Always expense for this tab
 
-                // --- Disable Actions ---
-                const isLinkedTransaction = item.materialDocId || item.vehicleExpenseId; // Transaction link
-                const isInsuranceSchedule = item.isFuturePayment; // Insurance schedule item
+                        let billHTML = '';
+                        if (item.billUrl) {
+                            billHTML = `<button data-url="${item.billUrl}" class="view-bill-btn bg-slate-600 hover:bg-slate-500 text-white text-xs px-2 py-1 rounded-md">View Bill</button>`;
+                        } else {
+                            billHTML = '<span class="text-slate-500">N/A</span>';
+                        }
+                        
+                        let statusTag = '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">SCHEDULED</span>';
+                        let rowClass = 'border-b border-slate-700 hover:bg-slate-700/50 scheduled-row';
+                        rowClass += ` data-year-row="${year}"`; // Add data attribute
+                        if (!isFirstYear) {
+                            rowClass += ' hidden'; // Hide if not first year
+                        }
+                        row.className = rowClass;
+
+                        // --- Disable Actions ---
+                        const disableEdit = true; 
+                        const editTitle = "Cannot edit scheduled insurance here. Edit from Vehicles.";
+                        const disableDelete = true;
+                        const deleteTitle = "Cannot delete scheduled insurance here. Delete from Vehicles.";
+                        let deleteDataAttributes = `data-id="${item.id}"`; 
+
+                        row.innerHTML = `
+                            <td class="p-4 align-top">${dateStr} ${statusTag}</td>
+                            <td class="p-4 align-top">${item.description || 'N/A'}</td>
+                            <td class="p-4 align-top">${item.category || 'N/A'}</td>
+                            <td class="p-4 align-top">${item.paymentMethod || 'N/A'}</td>
+                            <td class="p-4 align-top">${billHTML}</td>
+                            <td class="p-4 align-top font-semibold ${typeClass}">${item.type || 'N/A'}</td>
+                            <td class="p-4 align-top">${(item.amount != null ? item.amount.toFixed(2) : '0.00')}</td>
+                            <td class="p-4 align-top flex items-center gap-2">
+                               <button data-id="${item.id}" class="edit-btn text-blue-400 hover:text-blue-300 opacity-50 cursor-not-allowed" disabled title="${editTitle}"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                               <button ${deleteDataAttributes} class="delete-btn text-red-400 hover:text-red-300 opacity-50 cursor-not-allowed" disabled title="${deleteTitle}"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                            </td>
+                        `;
+                    });
+                });
+                lucide.createIcons();
                 
-                // === VENAS KALA: Edit logic ===
-                const disableEdit = isLinkedTransaction || isInsuranceSchedule || item.isScheduledEvent; 
-                let editTitle = '';
-                if (isLinkedTransaction) editTitle = "Cannot edit linked items here. Edit from Materials/Vehicles.";
-                if (isInsuranceSchedule) editTitle = "Cannot edit scheduled insurance here. Edit from Vehicles.";
-                if (item.isScheduledEvent) editTitle = "Cannot edit expected events here. Edit from Schedule.";
+            } else {
+                // --- EXISTING LOGIC FOR ALL OTHER TABS ---
+                displayData.forEach(item => {
+                    const dateObj = item.date instanceof Timestamp ? item.date.toDate() : item.date;
+                    if (!dateObj) {
+                        console.warn("Skipping item with invalid date:", item);
+                        return;
+                    }
+                    const dateStr = dateObj.toLocaleDateString();
 
-                // === VENAS KALA: Delete logic ===
-                const disableDelete = isLinkedTransaction || isInsuranceSchedule; // Expected events delete karanna puluwan
-                let deleteTitle = '';
-                if (isLinkedTransaction) deleteTitle = "Cannot delete linked items here. Delete from Materials/Vehicles.";
-                if (isInsuranceSchedule) deleteTitle = "Cannot delete scheduled insurance here. Delete from Vehicles.";
-                if (item.isScheduledEvent) deleteTitle = "Delete this scheduled event?"; // Expected events walata title
+                    const row = transactionTableBody.insertRow();
+                    const typeClass = item.type === 'Income' ? 'text-green-400' : 'text-red-400';
+
+                    let billHTML = '';
+                    if (item.billUrl) {
+                        billHTML = `<button data-url="${item.billUrl}" class="view-bill-btn bg-slate-600 hover:bg-slate-500 text-white text-xs px-2 py-1 rounded-md">View Bill</button>`;
+                    } else {
+                        billHTML = '<span class="text-slate-500">N/A</span>';
+                    }
+
+                    // --- Status Tag & Row Class ---
+                    let statusTag = '';
+                    let rowClass = 'border-b border-slate-700 hover:bg-slate-700/50';
+
+                    if (item.isScheduledEvent) { 
+                        if (item.status === 'Pending') {
+                            statusTag = '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">PENDING</span>';
+                            rowClass += ' scheduled-row'; 
+                        } else if (item.status === 'Completed') {
+                            statusTag = '<span class="ml-2 bg-green-600 text-green-100 text-xs font-medium px-2 py-0.5 rounded-full">COMPLETED</span>';
+                            rowClass += ' completed-row';
+                        }
+                    } else if (item.isFuturePayment) { 
+                        statusTag = '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">SCHEDULED</span>';
+                        rowClass += ' scheduled-row';
+                    }
+                    row.className = rowClass;
+
+                    // --- Disable Actions ---
+                    const isLinkedTransaction = item.materialDocId || item.vehicleExpenseId; // Transaction link
+                    const isInsuranceSchedule = item.isFuturePayment; // Insurance schedule item
+                    
+                    const disableEdit = isLinkedTransaction || isInsuranceSchedule || item.isScheduledEvent; 
+                    let editTitle = '';
+                    if (isLinkedTransaction) editTitle = "Cannot edit linked items here. Edit from Materials/Vehicles.";
+                    if (isInsuranceSchedule) editTitle = "Cannot edit scheduled insurance here. Edit from Vehicles.";
+                    if (item.isScheduledEvent) editTitle = "Cannot edit expected events here. Edit from Schedule.";
+
+                    const disableDelete = isLinkedTransaction || isInsuranceSchedule; // Expected events delete karanna puluwan
+                    let deleteTitle = '';
+                    if (isLinkedTransaction) deleteTitle = "Cannot delete linked items here. Delete from Materials/Vehicles.";
+                    if (isInsuranceSchedule) deleteTitle = "Cannot delete scheduled insurance here. Delete from Vehicles.";
+                    if (item.isScheduledEvent) deleteTitle = "Delete this scheduled event?"; // Expected events walata title
 
 
-                // === ALUTH: Data attributes for deletion ===
-                let deleteDataAttributes = `data-id="${item.id}"`; 
-                if (item.isScheduledEvent) {
-                    deleteDataAttributes += ` data-schedule-id="${item.id}"`; // Use item.id as schedule ID here
-                    deleteDataAttributes += ` data-recurring-id="${item.recurringId || ''}"`;
-                    deleteDataAttributes += ` data-vehicle-expense-id="${item.vehicleExpenseId || ''}"`;
-                } else { // Normal transaction
-                     deleteDataAttributes += ` data-material-id="${item.materialDocId || ''}"`;
-                     deleteDataAttributes += ` data-vehicle-id="${item.vehicleExpenseId || ''}"`;
-                }
+                    let deleteDataAttributes = `data-id="${item.id}"`; 
+                    if (item.isScheduledEvent) {
+                        deleteDataAttributes += ` data-schedule-id="${item.id}"`; // Use item.id as schedule ID here
+                        deleteDataAttributes += ` data-recurring-id="${item.recurringId || ''}"`;
+                        deleteDataAttributes += ` data-vehicle-expense-id="${item.vehicleExpenseId || ''}"`;
+                    } else { // Normal transaction
+                        deleteDataAttributes += ` data-material-id="${item.materialDocId || ''}"`;
+                        deleteDataAttributes += ` data-vehicle-id="${item.vehicleExpenseId || ''}"`;
+                    }
 
-                row.innerHTML = `
-                    <td class="p-4 align-top">${dateStr} ${statusTag}</td>
-                    <td class="p-4 align-top">${item.description || 'N/A'}</td>
-                    <td class="p-4 align-top">${item.category || 'N/A'}</td>
-                    <td class="p-4 align-top">${item.paymentMethod || 'N/A'}</td>
-                    <td class="p-4 align-top">${billHTML}</td>
-                    <td class="p-4 align-top font-semibold ${typeClass}">${item.type || 'N/A'}</td>
-                    <td class="p-4 align-top">${(item.amount != null ? item.amount.toFixed(2) : '0.00')}</td>
-                    <td class="p-4 align-top flex items-center gap-2">
-                       <button data-id="${item.id}" class="edit-btn text-blue-400 hover:text-blue-300 ${disableEdit ? 'opacity-50 cursor-not-allowed' : ''}" ${disableEdit ? `disabled title="${editTitle}"` : 'title="Edit Transaction"'}><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button ${deleteDataAttributes} class="delete-btn text-red-400 hover:text-red-300 ${disableDelete ? 'opacity-50 cursor-not-allowed' : ''}" ${disableDelete ? `disabled title="${deleteTitle}"` : `title="${deleteTitle}"`}><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
-                    </td>
-                `;
-            });
-            lucide.createIcons();
+                    row.innerHTML = `
+                        <td class="p-4 align-top">${dateStr} ${statusTag}</td>
+                        <td class="p-4 align-top">${item.description || 'N/A'}</td>
+                        <td class="p-4 align-top">${item.category || 'N/A'}</td>
+                        <td class="p-4 align-top">${item.paymentMethod || 'N/A'}</td>
+                        <td class="p-4 align-top">${billHTML}</td>
+                        <td class="p-4 align-top font-semibold ${typeClass}">${item.type || 'N/A'}</td>
+                        <td class="p-4 align-top">${(item.amount != null ? item.amount.toFixed(2) : '0.00')}</td>
+                        <td class="p-4 align-top flex items-center gap-2">
+                        <button data-id="${item.id}" class="edit-btn text-blue-400 hover:text-blue-300 ${disableEdit ? 'opacity-50 cursor-not-allowed' : ''}" ${disableEdit ? `disabled title="${editTitle}"` : 'title="Edit Transaction"'}><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                        <button ${deleteDataAttributes} class="delete-btn text-red-400 hover:text-red-300 ${disableDelete ? 'opacity-50 cursor-not-allowed' : ''}" ${disableDelete ? `disabled title="${deleteTitle}"` : `title="${deleteTitle}"`}><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                        </td>
+                    `;
+                });
+                lucide.createIcons();
+            }
         }
 
         // --- TRANSACTION LISTENER ---
@@ -743,8 +844,25 @@
              }
         }
 
-        // === DELETE LOGIC (ALUTH LOGIC EKKA VENAS KALA) ===
+        // === DELETE/EDIT/CLICK LOGIC (MODIFIED FOR YEAR TOGGLE) ===
         transactionTableBody.addEventListener('click', async (e) => {
+            // --- NEW: YEAR TOGGLE (FOR INSURANCE TAB) ---
+            const yearToggleBtn = e.target.closest('.year-toggle-row');
+            if (yearToggleBtn) {
+                const year = yearToggleBtn.dataset.year;
+                const rowsToToggle = transactionTableBody.querySelectorAll(`tr[data-year-row="${year}"]`);
+                
+                // Toggle the 'open' class on the header row
+                yearToggleBtn.classList.toggle('open');
+                
+                // Toggle the 'hidden' class on data rows
+                rowsToToggle.forEach(row => {
+                    row.classList.toggle('hidden');
+                });
+                return; // Stop processing other clicks
+            }
+
+
             const delBtn = e.target.closest('.delete-btn');
             
             // --- EDIT BUTTON ---
