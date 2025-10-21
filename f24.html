@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F24 Tax Payments - RSG MANAGER</title>
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* Loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* File input */
+        .file-input-label { display: inline-block; padding: 10px 16px; font-size: 14px; background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+        .file-input-label:hover { background-color: #2563eb; }
+        .file-input { display: none; }
+        /* Table row hover */
+        #f24TableBody tr:hover td:not(:last-child){ background-color: #334155; }
+        #f24TableBody td:not(:last-child){ cursor: pointer; } /* Make rows clickable except actions */
+         /* Download link styling */
+        .download-doc-link {
+             display: inline-block;
+             background-color: #10b981; /* green-600 */
+             color: white;
+             font-size: 0.75rem; /* text-xs */
+             padding: 0.25rem 0.5rem; /* px-2 py-1 */
+             border-radius: 0.375rem; /* rounded-md */
+             text-decoration: none;
+             transition: background-color 0.2s;
+        }
+        .download-doc-link:hover {
+             background-color: #059669; /* green-700 */
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+            <div>
+             <div class="flex items-center gap-3 mb-10">
+                <div>
+                    <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                </div>
+                <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
+            </div>
+             <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
+                   <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
+                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white"><i data-lucide="log-out"></i><span>Sign Out</span></button>
+                <div class="text-xs text-slate-500">
+                    <p>&copy; 2025 Property MS. All rights reserved.</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <section id="page-f24" class="page">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-white">F24 Tax Management</h2>
+                    <button id="addF24Btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> Add New F24</button>
+                </div>
+
+                <div class="mb-6 border-b border-slate-700">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tabF24List" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-400 border-blue-400">
+                            All F24 Entries
+                        </button>
+                        <button id="tabF24Summary" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-400 border-transparent hover:text-slate-300 hover:border-slate-300">
+                            Tax Summary
+                        </button>
+                    </nav>
+                </div>
+
+                <div id="f24ListView">
+                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                        <div class="flex-1">
+                            <label for="filterMonth" class="block mb-2 text-sm font-medium">Filter by Month</label>
+                            <div class="flex gap-2">
+                                <select id="filterYear" class="w-1/2 bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                    <option value="">Year</option>
+                                </select>
+                                <select id="filterMonthSelect" class="w-1/2 bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                    <option value="">Month</option>
+                                    <option value="01">January</option>
+                                    <option value="02">February</option>
+                                    <option value="03">March</option>
+                                    <option value="04">April</option>
+                                    <option value="05">May</option>
+                                    <option value="06">June</option>
+                                    <option value="07">July</option>
+                                    <option value="08">August</option>
+                                    <option value="09">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label for="searchByDescription" class="block mb-2 text-sm font-medium">Search by Description</label>
+                            <input type="text" id="searchByDescription" placeholder="Enter description..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                        </div>
+                        <div class="flex-1">
+                            <label for="filterStatus" class="block mb-2 text-sm font-medium">Filter by Status</label>
+                            <select id="filterStatus" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                <option value="">All Statuses</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-lg overflow-hidden">
+                        <table id="f24Table" class="w-full text-left">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="p-4 font-semibold text-white">Date Paid</th>
+                                    <th class="p-4 font-semibold text-white">Description</th>
+                                    <th class="p-4 font-semibold text-white">Expire Date</th>
+                                    <th class="p-4 font-semibold text-white">Total Amount</th>
+                                    <th class="p-4 font-semibold text-white">Status</th>
+                                    <th class="p-4 font-semibold text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="f24TableBody">
+                                <tr><td colspan="6" class="text-center p-8 text-slate-400">Loading F24 data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="f24SummaryView" class="hidden">
+                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
+                        <div>
+                            <label for="summaryYearFilter" class="block mb-2 text-sm font-medium">Select Year for Summary</label>
+                            <select id="summaryYearFilter" class="bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="bg-slate-800 rounded-lg p-8">
+                            <h3 class="text-xl font-semibold text-slate-400">Total Tax <span class="text-green-400">Paid</span> (<span id="summaryYearDisplayPaid">All Time</span>)</h3>
+                            <p id="totalTaxAmountDisplayPaid" class="text-5xl font-bold text-white my-4">€ 0.00</p>
+                            <p id="totalF24CountPaid" class="text-slate-400">from 0 paid entries</p>
+                        </div>
+
+                        <div class="bg-slate-800 rounded-lg p-8">
+                            <h3 class="text-xl font-semibold text-slate-400">Total Tax <span class="text-red-400">Unpaid</span> (<span id="summaryYearDisplayUnpaid">All Time</span>)</h3>
+                            <p id="totalTaxAmountDisplayUnpaid" class="text-5xl font-bold text-white my-4">€ 0.00</p>
+                            <p id="totalF24CountUnpaid" class="text-slate-400">from 0 unpaid entries</p>
+                        </div>
+
+                    </div>
+                    </div>
+
+            </section>
+        </main>
+    </div>
+
+    <div id="f24Modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all scale-95 opacity-0" id="f24-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="f24ModalTitle" class="text-2xl font-bold text-white">Add New F24</h3>
+                <button id="closeF24ModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <form id="f24Form">
+                <input type="hidden" id="f24DocId">
+                <input type="hidden" id="f24ExistingDeleteUrl">
+
+                <div class="mb-4">
+                    <label for="f24Description" class="block mb-2 text-sm font-medium">Description</label>
+                    <input type="text" id="f24Description" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="e.g., IMU Tax 2024, Q4 VAT" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="f24Date" class="block mb-2 text-sm font-medium">Date Paid</label>
+                        <input type="date" id="f24Date" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                    </div>
+                    <div>
+                        <label for="f24ExpireDate" class="block mb-2 text-sm font-medium">Expire Date</label>
+                        <input type="date" id="f24ExpireDate" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="f24TotalAmount" class="block mb-2 text-sm font-medium">Total Amount (€)</label>
+                    <input type="number" id="f24TotalAmount" step="0.01" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="e.g., 1200.50" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm font-medium">Status</label>
+                    <div class="flex rounded-lg bg-slate-700 p-1">
+                        <button type="button" id="statusBtnPaid" class="status-btn flex-1 px-4 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white">Paid</button>
+                        <button type="button" id="statusBtnUnpaid" class="status-btn flex-1 px-4 py-1.5 text-sm font-medium rounded-md text-slate-300">Unpaid</button>
+                    </div>
+                    <input type="hidden" id="f24Status" value="Paid">
+                </div>
+
+
+                 <div class="mt-6 border-t border-slate-700 pt-4">
+                    <label for="f24File" class="block mb-2 text-sm font-medium">Upload F24 File</label>
+                    <label for="f24File" class="file-input-label">Choose File</label>
+                    <input type="file" id="f24File" class="file-input" accept=".pdf,image/*">
+                    <span id="f24FileName" class="ml-4 text-slate-400 text-sm">No file chosen</span>
+                    <a href="#" id="f24ExistingFileLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing File</a>
+                 </div>
+
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelF24ModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
+                    <button type="submit" id="submitF24Btn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                        <span id="submitF24BtnText">Save F24</span>
+                        <div id="submitF24Spinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="f24DetailModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0" id="f24-detail-modal-content"> 
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="detailF24Title" class="text-2xl font-bold text-white">F24 Details</h3>
+                <button id="closeF24DetailModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                 <div class="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                    <span class="text-slate-400">Description:</span><span id="detailDescription" class="col-span-2 font-semibold"></span>
+                    <span class="text-slate-400">Date Paid:</span><span id="detailDatePaid" class="col-span-2 font-semibold"></span>
+                    <span class="text-slate-400">Expire Date:</span><span id="detailExpireDate" class="col-span-2 font-semibold"></span>
+                    <span class="text-slate-400">Status:</span><span id="detailStatus" class="col-span-2 font-semibold"></span>
+                    <span class="text-slate-400">Total Amount:</span><span id="detailTotalAmount" class="col-span-2 font-semibold text-lg text-blue-300"></span>
+                 </div>
+
+                 <div id="detailF24FileSection" class="mt-6 border-t border-slate-700 pt-4 hidden">
+                    <span class="text-slate-400 text-sm">F24 File:</span>
+                    <a href="#" id="detailF24FileLink" class="text-blue-400 hover:underline ml-2">View File</a>
+                    <a href="#" id="detailF24FileDownloadLink" download class="download-doc-link ml-2">Download</a>
+                 </div>
+
+                 <div id="detailF24FilePreviewContainer" class="mt-4 border-t border-slate-700 pt-4 hidden">
+                    <iframe id="detailFilePdfPreview" class="w-full h-96 rounded-lg" style="display:none; border: none;"></iframe>
+                    <img id="detailFileImagePreview" src="" alt="F24 Preview" class="w-full max-w-full h-auto rounded-lg" style="display:none;">
+                 </div>
+
+            </div>
+             <div class="flex justify-end mt-6 border-t border-slate-700 pt-4">
+                 <button type="button" id="closeF24DetailModalBtnBottom" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Close</button>
+             </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"><p>Toast message!</p></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app", 
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        let currentUserId = null;
+        let allF24Entries = [];
+
+        // --- DOM Elements ---
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const toast = document.getElementById('toast');
+        const f24TableBody = document.getElementById('f24TableBody');
+        const filterYearSelect = document.getElementById('filterYear');
+        const filterMonthSelect = document.getElementById('filterMonthSelect');
+        const searchByDescriptionInput = document.getElementById('searchByDescription');
+        const filterStatusSelect = document.getElementById('filterStatus');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+
+        // Tab Elements
+        const tabF24List = document.getElementById('tabF24List');
+        const tabF24Summary = document.getElementById('tabF24Summary');
+        const f24ListView = document.getElementById('f24ListView');
+        const f24SummaryView = document.getElementById('f24SummaryView');
+
+        // Summary Tab Elements (*** WENAS KALA ***)
+        const summaryYearFilter = document.getElementById('summaryYearFilter');
+        const summaryYearDisplayPaid = document.getElementById('summaryYearDisplayPaid');
+        const totalTaxAmountDisplayPaid = document.getElementById('totalTaxAmountDisplayPaid');
+        const totalF24CountPaid = document.getElementById('totalF24CountPaid');
+        const summaryYearDisplayUnpaid = document.getElementById('summaryYearDisplayUnpaid');
+        const totalTaxAmountDisplayUnpaid = document.getElementById('totalTaxAmountDisplayUnpaid');
+        const totalF24CountUnpaid = document.getElementById('totalF24CountUnpaid');
+
+        // F24 Modal Elements
+        const f24Modal = document.getElementById('f24Modal');
+        const f24ModalContent = document.getElementById('f24-modal-content');
+        const f24ModalTitle = document.getElementById('f24ModalTitle');
+        const addF24Btn = document.getElementById('addF24Btn');
+        const closeF24ModalBtn = document.getElementById('closeF24ModalBtn');
+        const cancelF24ModalBtn = document.getElementById('cancelF24ModalBtn');
+        const f24Form = document.getElementById('f24Form');
+        const submitF24Btn = document.getElementById('submitF24Btn');
+        const submitF24BtnText = document.getElementById('submitF24BtnText');
+        const submitF24Spinner = document.getElementById('submitF24Spinner');
+        const f24DescriptionInput = document.getElementById('f24Description');
+        const f24DateInput = document.getElementById('f24Date');
+        const f24ExpireDateInput = document.getElementById('f24ExpireDate');
+        const f24TotalAmountInput = document.getElementById('f24TotalAmount');
+        const f24FileInput = document.getElementById('f24File');
+        const f24FileNameSpan = document.getElementById('f24FileName');
+        const f24ExistingFileLink = document.getElementById('f24ExistingFileLink');
+        const statusBtnPaid = document.getElementById('statusBtnPaid');
+        const statusBtnUnpaid = document.getElementById('statusBtnUnpaid');
+        const f24StatusInput = document.getElementById('f24Status');
+
+        // F24 Detail Modal Elements
+        const f24DetailModal = document.getElementById('f24DetailModal');
+        const f24DetailModalContent = document.getElementById('f24-detail-modal-content');
+        const detailF24Title = document.getElementById('detailF24Title');
+        const closeF24DetailModalBtn = document.getElementById('closeF24DetailModalBtn');
+        const detailDescription = document.getElementById('detailDescription');
+        const detailDatePaid = document.getElementById('detailDatePaid');
+        const detailExpireDate = document.getElementById('detailExpireDate');
+        const detailTotalAmount = document.getElementById('detailTotalAmount');
+        const detailStatus = document.getElementById('detailStatus');
+        const detailF24FileSection = document.getElementById('detailF24FileSection');
+        const detailF24FileLink = document.getElementById('detailF24FileLink');
+        const detailF24FileDownloadLink = document.getElementById('detailF24FileDownloadLink');
+        const closeF24DetailModalBtnBottom = document.getElementById('closeF24DetailModalBtnBottom');
+        const detailF24FilePreviewContainer = document.getElementById('detailF24FilePreviewContainer');
+        const detailFilePdfPreview = document.getElementById('detailFilePdfPreview');
+        const detailFileImagePreview = document.getElementById('detailFileImagePreview');
+
+        // --- Authentication ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                populateYearFilters();
+                listenForF24Entries();
+            } else {
+                window.location.href = './index.html';
+            }
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            signOut(auth).catch(error => console.error("Sign out failed:", error));
+        });
+
+        // --- Tab Switching ---
+        const allTabs = { tabF24List, tabF24Summary };
+        const allViews = { f24ListView, f24SummaryView };
+
+        function switchTab(activeTabId) {
+            Object.values(allViews).forEach(view => view.classList.add('hidden'));
+            Object.values(allTabs).forEach(tab => {
+                tab.classList.remove('text-blue-400', 'border-blue-400');
+                tab.classList.add('text-slate-400', 'border-transparent', 'hover:text-slate-300', 'hover:border-slate-300');
+            });
+
+            if (activeTabId === 'tabF24List') allViews.f24ListView.classList.remove('hidden');
+            if (activeTabId === 'tabF24Summary') {
+                allViews.f24SummaryView.classList.remove('hidden');
+                renderSummaryTab(); // Recalculate summary when switching to tab
+            }
+            
+            const activeTab = allTabs[activeTabId];
+            if (activeTab) { 
+                activeTab.classList.add('text-blue-400', 'border-blue-400');
+                activeTab.classList.remove('text-slate-400', 'border-transparent');
+            }
+        }
+        tabF24List.addEventListener('click', () => switchTab('tabF24List'));
+        tabF24Summary.addEventListener('click', () => switchTab('tabF24Summary'));
+
+
+        // --- Toast ---
+        const showToast = (message, isSuccess = true) => {
+             toast.textContent = message;
+             toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+             toast.classList.remove('translate-y-20', 'opacity-0');
+             setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+         };
+
+        // --- File Upload/Delete (Firebase Storage) ---
+        const uploadFile = async (file) => {
+            if (!file || !currentUserId) return { url: null, deleteUrl: null };
+            
+            const fileTimestamp = Date.now();
+            const storagePath = `users/${currentUserId}/f24_documents/${fileTimestamp}-${file.name}`;
+            const storageRef = ref(storage, storagePath);
+
+            try {
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return { url: downloadURL, deleteUrl: storagePath }; 
+            } catch (error) {
+                console.error("Upload Error:", error);
+                showToast(`File upload failed: ${error.message}`, false);
+                return { url: null, deleteUrl: null };
+            }
+        };
+
+        const deleteFile = async (deletePath) => {
+             if (!deletePath) {
+                 console.log("No storage path provided, nothing to delete.");
+                 return Promise.resolve();
+             }
+             if (deletePath.startsWith('http')) {
+                 console.warn("Cannot auto-delete old ImgBB/other URL:", deletePath);
+                 return Promise.resolve();
+             }
+             const fileRef = ref(storage, deletePath);
+             try {
+                 await deleteObject(fileRef);
+                 console.log("File deleted successfully from Storage:", deletePath);
+             } catch (error) {
+                 if (error.code === 'storage/object-not-found') {
+                     console.log("File not found in storage, might be already deleted.");
+                 } else {
+                     console.error("Error deleting file from Storage:", error);
+                 }
+             }
+        };
+
+        // --- Populate Year Filters ---
+        function populateYearFilters() {
+            const currentYear = new Date().getFullYear();
+            filterYearSelect.innerHTML = '<option value="">Year</option>';
+            summaryYearFilter.innerHTML = '<option value="">All Time</option>'; // Summary filter
+            
+            for (let year = currentYear + 1; year >= currentYear - 5; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                filterYearSelect.appendChild(option);
+                summaryYearFilter.appendChild(option.cloneNode(true));
+            }
+            summaryYearFilter.value = currentYear.toString(); // Default summary to current year
+        }
+
+        // --- Data Listener ---
+        function listenForF24Entries() {
+            if (!currentUserId) return;
+            const q = query(collection(db, `users/${currentUserId}/f24`), orderBy("date", "desc"));
+            onSnapshot(q, (snapshot) => {
+                allF24Entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                applyFilters(); 
+                renderSummaryTab(); // Update summary whenever data changes
+            }, error => {
+                console.error("Error listening for F24 entries:", error);
+                f24TableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-400">Error loading F24 data.</td></tr>`;
+                showToast("Error loading F24 data.", false);
+            });
+        }
+
+       // --- F24 Modal Logic ---
+        const openF24Modal = () => {
+             f24Form.reset();
+             f24Form.querySelector('#f24DocId').value = '';
+             f24Form.querySelector('#f24ExistingDeleteUrl').value = '';
+             f24ModalTitle.textContent = 'Add New F24';
+             submitF24BtnText.textContent = 'Save F24';
+             f24FileNameSpan.textContent = 'No file chosen';
+             f24ExistingFileLink.classList.add('hidden');
+             f24ExistingFileLink.href = '#';
+             f24DateInput.valueAsDate = new Date();
+             setF24Status('Paid'); // Default to "Paid"
+
+             f24Modal.classList.remove('hidden');
+             setTimeout(() => f24ModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+         };
+
+         const closeF24Modal = () => {
+             f24ModalContent.classList.add('scale-95', 'opacity-0');
+             setTimeout(() => {
+                 f24Modal.classList.add('hidden');
+             }, 200);
+         };
+
+         addF24Btn.addEventListener('click', openF24Modal);
+         closeF24ModalBtn.addEventListener('click', closeF24Modal);
+         cancelF24ModalBtn.addEventListener('click', closeF24Modal);
+         f24Modal.addEventListener('click', (e) => { if(e.target === f24Modal) closeF24Modal(); });
+
+        f24FileInput.addEventListener('change', () => {
+            if (f24FileInput.files.length > 0) {
+                f24FileNameSpan.textContent = f24FileInput.files[0].name;
+                f24ExistingFileLink.classList.add('hidden'); // Hide "View Existing" if a new file is chosen
+            } else {
+                f24FileNameSpan.textContent = 'No file chosen';
+            }
+        });
+
+        // --- ALUTH STATUS BUTTON LOGIC EKA ---
+        function setF24Status(status) {
+            if (status === 'Paid') {
+                f24StatusInput.value = 'Paid';
+                statusBtnPaid.classList.add('bg-green-600', 'text-white');
+                statusBtnPaid.classList.remove('text-slate-300');
+                statusBtnUnpaid.classList.add('text-slate-300');
+                statusBtnUnpaid.classList.remove('bg-red-600', 'text-white');
+            } else {
+                f24StatusInput.value = 'Unpaid';
+                statusBtnUnpaid.classList.add('bg-red-600', 'text-white');
+                statusBtnUnpaid.classList.remove('text-slate-300');
+                statusBtnPaid.classList.add('text-slate-300');
+                statusBtnPaid.classList.remove('bg-green-600', 'text-white');
+            }
+        }
+        statusBtnPaid.addEventListener('click', () => setF24Status('Paid'));
+        statusBtnUnpaid.addEventListener('click', () => setF24Status('Unpaid'));
+
+        // --- F24 Detail Modal ---
+        const openF24DetailModal = (f24) => {
+             if (!f24) return;
+             
+             // Clear preview
+             detailF24FilePreviewContainer.classList.add('hidden');
+             detailFilePdfPreview.style.display = 'none';
+             detailFilePdfPreview.src = '';
+             detailFileImagePreview.style.display = 'none';
+             detailFileImagePreview.src = '';
+
+             detailF24Title.textContent = `F24 Details: ${f24.description || 'N/A'}`;
+             detailDescription.textContent = f24.description || 'N/A';
+             detailDatePaid.textContent = f24.date?.toDate()?.toLocaleDateString() || 'N/A';
+             detailExpireDate.textContent = f24.expireDate?.toDate()?.toLocaleDateString() || 'N/A';
+             detailTotalAmount.textContent = `€ ${f24.totalAmount?.toFixed(2) || '0.00'}`;
+
+             if (f24.status === 'Paid') {
+                detailStatus.textContent = 'Paid';
+                detailStatus.className = 'col-span-2 font-semibold text-green-400';
+             } else {
+                detailStatus.textContent = 'Unpaid';
+                detailStatus.className = 'col-span-2 font-semibold text-red-400';
+             }
+
+            if (f24.f24FileUrl) {
+                detailF24FileLink.href = f24.f24FileUrl;
+                detailF24FileDownloadLink.href = f24.f24FileUrl;
+
+                const dateStr = f24.date?.toDate()?.toISOString().slice(0, 10) || 'unknown_date';
+                const safeName = (f24.description || 'f24').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const fileExtension = f24.f24FileUrl.includes('.pdf') ? '.pdf' : '.jpg'; // Basic extension check
+                detailF24FileDownloadLink.download = `${safeName}_${dateStr}${fileExtension}`;
+
+                detailF24FileSection.classList.remove('hidden');
+            } else {
+                detailF24FileSection.classList.add('hidden');
+            }
+
+             f24DetailModal.classList.remove('hidden');
+             setTimeout(() => f24DetailModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        };
+
+        const closeF24DetailModal = () => {
+             f24DetailModalContent.classList.add('scale-95', 'opacity-0');
+             setTimeout(() => {
+                 f24DetailModal.classList.add('hidden');
+                 detailF24FilePreviewContainer.classList.add('hidden');
+                 detailFilePdfPreview.src = '';
+                 detailFileImagePreview.src = '';
+             }, 200);
+         };
+
+         closeF24DetailModalBtn.addEventListener('click', closeF24DetailModal);
+         closeF24DetailModalBtnBottom.addEventListener('click', closeF24DetailModal);
+         f24DetailModal.addEventListener('click', (e) => { if(e.target === f24DetailModal) closeF24DetailModal(); });
+
+        // Detail Modal View File Click
+        detailF24FileLink.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            const url = e.target.href;
+            if (!url || url.endsWith('#')) return; 
+
+            detailFilePdfPreview.style.display = 'none';
+            detailFileImagePreview.style.display = 'none';
+
+            if (url.toLowerCase().includes('.pdf')) {
+                detailFilePdfPreview.src = url;
+                detailFilePdfPreview.style.display = 'block';
+            } else {
+                detailFileImagePreview.src = url;
+                detailFileImagePreview.style.display = 'block';
+            }
+            detailF24FilePreviewContainer.classList.remove('hidden');
+        });
+
+
+         // --- F24 FORM SUBMIT ---
+         f24Form.addEventListener('submit', async (e) => {
+             e.preventDefault();
+             if (!currentUserId) return;
+
+             const docId = f24Form.querySelector('#f24DocId').value;
+             const description = f24DescriptionInput.value;
+             const date = f24DateInput.value;
+             const expireDate = f24ExpireDateInput.value;
+             const totalAmount = parseFloat(f24TotalAmountInput.value);
+             const status = f24StatusInput.value;
+
+             if (!description || !date || isNaN(totalAmount) ) {
+                 showToast("Please fill in Description, Date Paid, and Total Amount.", false);
+                 return;
+             }
+             
+             submitF24Btn.disabled = true; 
+             submitF24BtnText.classList.add('hidden');
+             submitF24Spinner.classList.remove('hidden');
+
+             try {
+                 const data = {
+                     description: description,
+                     date: Timestamp.fromDate(new Date(date)),
+                     expireDate: expireDate ? Timestamp.fromDate(new Date(expireDate)) : null,
+                     totalAmount: totalAmount,
+                     status: status
+                 };
+
+                 // Handle file upload
+                 let existingUrl = null;
+                 let existingDeleteUrl = null;
+                 
+                 if (docId) {
+                     const docSnap = await getDoc(doc(db, `users/${currentUserId}/f24`, docId));
+                     if (docSnap.exists()) {
+                         existingUrl = docSnap.data().f24FileUrl;
+                         existingDeleteUrl = docSnap.data().f24FileDeleteUrl; // Storage path
+                     }
+                 }
+
+                 const file = f24FileInput.files[0];
+                 if (file) {
+                     const uploadResult = await uploadFile(file);
+                     if (uploadResult.url) {
+                         data.f24FileUrl = uploadResult.url;
+                         data.f24FileDeleteUrl = uploadResult.deleteUrl;
+                         if (existingDeleteUrl) {
+                             await deleteFile(existingDeleteUrl);
+                         }
+                     } else {
+                         throw new Error("File upload failed, saving data canceled.");
+                     }
+                 } else if (docId && existingUrl) {
+                     data.f24FileUrl = existingUrl;
+                     data.f24FileDeleteUrl = existingDeleteUrl;
+                 } else {
+                     delete data.f24FileUrl;
+                     delete data.f24FileDeleteUrl;
+                 }
+
+                 if (docId) {
+                     await updateDoc(doc(db, `users/${currentUserId}/f24`, docId), data);
+                     showToast('F24 entry updated successfully!');
+                 } else {
+                     data.createdAt = Timestamp.now();
+                     await addDoc(collection(db, `users/${currentUserId}/f24`), data);
+                     showToast('F24 entry added successfully!');
+                 }
+                 closeF24Modal();
+
+             } catch (error) {
+                 console.error("Error saving F24:", error);
+                 showToast(`Error saving F24: ${error.message}`, false);
+             } finally {
+                 submitF24Btn.disabled = false;
+                 submitF24BtnText.classList.remove('hidden');
+                 submitF24Spinner.classList.add('hidden');
+             }
+         });
+
+
+        // --- Render F24 Table ---
+        function renderF24Table(f24sToRender) {
+             f24TableBody.innerHTML = '';
+             if (f24sToRender.length === 0) {
+                 f24TableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No F24 entries found matching criteria.</td></tr>`;
+                 return;
+             }
+             f24sToRender.forEach(f24 => {
+                 const row = f24TableBody.insertRow();
+                 row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                 row.dataset.f24Data = JSON.stringify(f24);
+
+                 const datePaidStr = f24.date?.toDate()?.toLocaleDateString() || 'N/A';
+                 const expireDateStr = f24.expireDate?.toDate()?.toLocaleDateString() || 'N/A';
+                 const amountStr = `€ ${f24.totalAmount?.toFixed(2) || '0.00'}`;
+
+                 let statusHtml = '';
+                 if (f24.status === 'Paid') {
+                     statusHtml = `<span class="bg-green-600 text-green-100 text-xs font-medium px-2.5 py-0.5 rounded-full">Paid</span>`;
+                 } else if (f24.status === 'Unpaid') {
+                     statusHtml = `<span class="bg-red-600 text-red-100 text-xs font-medium px-2.5 py-0.5 rounded-full">Unpaid</span>`;
+                 } else {
+                     statusHtml = `<span class="bg-slate-600 text-slate-100 text-xs font-medium px-2.5 py-0.5 rounded-full">N/A</span>`;
+                 }
+
+
+                 row.innerHTML = `
+                     <td class="p-4">${datePaidStr}</td>
+                     <td class="p-4 font-semibold">${f24.description || 'N/A'}</td>
+                     <td class="p-4">${expireDateStr}</td>
+                     <td class="p-4 text-blue-300">${amountStr}</td>
+                     <td class="p-4">${statusHtml}</td>
+                     <td class="p-4 flex items-center gap-2">
+                         <button data-id="${f24.id}" class="edit-f24-btn text-blue-400 hover:text-blue-300" title="Edit F24"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
+                         <button data-id="${f24.id}" class="delete-f24-btn text-red-400 hover:text-red-300" title="Delete F24"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                     </td>
+                 `;
+             });
+             lucide.createIcons();
+        }
+
+        // --- Filtering Logic (List View) ---
+        function applyFilters() {
+            const year = filterYearSelect.value;
+            const month = filterMonthSelect.value;
+            const searchTerm = searchByDescriptionInput.value.toLowerCase();
+            const status = filterStatusSelect.value;
+            let filtered = allF24Entries;
+
+            if (year && month) {
+                 const startFilter = new Date(parseInt(year), parseInt(month) - 1, 1);
+                 const endFilter = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+                 filtered = filtered.filter(p => {
+                     if (!p.date || !p.date.toDate) return false;
+                     const d = p.date.toDate();
+                     return d >= startFilter && d <= endFilter;
+                 });
+             } else if (year) {
+                 filtered = filtered.filter(p => {
+                    if (!p.date || !p.date.toDate) return false;
+                    return p.date.toDate().getFullYear() === parseInt(year);
+                });
+             } else if (month) {
+                 filtered = filtered.filter(p => {
+                    if (!p.date || !p.date.toDate) return false;
+                    return (p.date.toDate().getMonth() + 1) === parseInt(month);
+                });
+             }
+
+            if (searchTerm) {
+                filtered = filtered.filter(p => p.description && p.description.toLowerCase().includes(searchTerm));
+            }
+
+            if (status) {
+                filtered = filtered.filter(p => p.status === status);
+            }
+
+            renderF24Table(filtered);
+        }
+
+        filterYearSelect.addEventListener('change', applyFilters);
+        filterMonthSelect.addEventListener('change', applyFilters);
+        searchByDescriptionInput.addEventListener('input', applyFilters);
+        filterStatusSelect.addEventListener('change', applyFilters);
+        
+        clearFiltersBtn.addEventListener('click', () => {
+            filterYearSelect.value = '';
+            filterMonthSelect.value = '';
+            searchByDescriptionInput.value = '';
+            filterStatusSelect.value = '';
+            applyFilters();
+        });
+
+        // --- Summary Tab Logic (*** WENAS KALA ***) ---
+        function renderSummaryTab() {
+            const year = summaryYearFilter.value;
+            const yearText = year ? year : 'All Time';
+            
+            summaryYearDisplayPaid.textContent = yearText;
+            summaryYearDisplayUnpaid.textContent = yearText;
+
+            // --- Paid Calculation ---
+            let paidEntries = allF24Entries.filter(f => f.status === 'Paid');
+            let filteredPaid = paidEntries;
+            if (year) {
+                filteredPaid = paidEntries.filter(f => f.date?.toDate()?.getFullYear() === parseInt(year));
+            }
+            const totalAmountPaid = filteredPaid.reduce((sum, entry) => sum + (entry.totalAmount || 0), 0);
+            const countPaid = filteredPaid.length;
+            totalTaxAmountDisplayPaid.textContent = `€ ${totalAmountPaid.toFixed(2)}`;
+            totalF24CountPaid.textContent = `from ${countPaid} ${countPaid === 1 ? 'paid entry' : 'paid entries'}`;
+
+            // --- Unpaid Calculation ---
+            let unpaidEntries = allF24Entries.filter(f => f.status === 'Unpaid');
+            let filteredUnpaid = unpaidEntries;
+            if (year) {
+                filteredUnpaid = unpaidEntries.filter(f => f.date?.toDate()?.getFullYear() === parseInt(year));
+            }
+            const totalAmountUnpaid = filteredUnpaid.reduce((sum, entry) => sum + (entry.totalAmount || 0), 0);
+            const countUnpaid = filteredUnpaid.length;
+            totalTaxAmountDisplayUnpaid.textContent = `€ ${totalAmountUnpaid.toFixed(2)}`;
+            totalF24CountUnpaid.textContent = `from ${countUnpaid} ${countUnpaid === 1 ? 'unpaid entry' : 'unpaid entries'}`;
+        }
+        summaryYearFilter.addEventListener('change', renderSummaryTab);
+
+
+        // --- EDIT F24 MODAL ---
+        async function openEditF24Modal(docId) {
+             try {
+                 const docRef = doc(db, `users/${currentUserId}/f24`, docId);
+                 const docSnap = await getDoc(docRef);
+                 if (docSnap.exists()) {
+                     const f24 = { id: docSnap.id, ...docSnap.data() };
+
+                     f24Form.reset(); 
+                     f24Form.querySelector('#f24DocId').value = docId;
+                     f24Form.querySelector('#f24ExistingDeleteUrl').value = f24.f24FileDeleteUrl || '';
+
+                     f24ModalTitle.textContent = 'Edit F24 Entry';
+                     submitF24BtnText.textContent = 'Update F24';
+                     
+                     f24DescriptionInput.value = f24.description || '';
+                     f24TotalAmountInput.value = f24.totalAmount || '';
+                     f24DateInput.value = f24.date?.toDate()?.toISOString()?.split('T')[0] || '';
+                     f24ExpireDateInput.value = f24.expireDate?.toDate()?.toISOString()?.split('T')[0] || '';
+
+                     setF24Status(f24.status || 'Paid'); // Default to 'Paid' if not set
+
+                     if (f24.f24FileUrl) {
+                        f24FileNameSpan.textContent = 'F24 file uploaded.';
+                        f24ExistingFileLink.href = f24.f24FileUrl;
+                        f24ExistingFileLink.classList.remove('hidden');
+                     } else {
+                        f24FileNameSpan.textContent = 'No file chosen';
+                        f24ExistingFileLink.classList.add('hidden');
+                        f24ExistingFileLink.href = '#';
+                     }
+
+                     f24Modal.classList.remove('hidden');
+                     setTimeout(() => f24ModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+
+                 } else {
+                     showToast("F24 entry not found.", false);
+                 }
+             } catch (error) {
+                 console.error("Error fetching F24 for edit:", error);
+                 showToast(`Error loading F24 data: ${error.message}`, false);
+             }
+         }
+
+
+        // --- DELETE F24 ---
+        async function deleteF24(docId) {
+            if (!currentUserId || !docId) return;
+            if (confirm('Are you sure you want to delete this F24 record? This will also delete the file. This action cannot be undone.')) {
+                try {
+                    const docRef = doc(db, `users/${currentUserId}/f24`, docId);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const deleteUrl = docSnap.data().f24FileDeleteUrl;
+                        if (deleteUrl) {
+                            await deleteFile(deleteUrl);
+                        }
+                    }
+                    
+                    await deleteDoc(docRef);
+                    showToast('F24 entry deleted successfully.');
+                    
+                } catch (error) {
+                    console.error("Error deleting F24:", error);
+                    showToast(`Error deleting F24: ${error.message}`, false);
+                }
+            }
+        }
+
+        // --- Table Click Listener ---
+        f24TableBody.addEventListener('click', (e) => {
+             const editBtn = e.target.closest('.edit-f24-btn');
+             if (editBtn) {
+                 openEditF24Modal(editBtn.dataset.id);
+                 return;
+             }
+
+             const deleteBtn = e.target.closest('.delete-f24-btn');
+             if (deleteBtn) {
+                 deleteF24(deleteBtn.dataset.id);
+                 return;
+             }
+
+             const row = e.target.closest('tr');
+             if (row && row.dataset.f24Data && !e.target.closest('td:last-child')) {
+                 try {
+                     const f24Data = JSON.parse(row.dataset.f24Data);
+                      if (f24Data.date && f24Data.date.seconds) {
+                        f24Data.date = new Timestamp(f24Data.date.seconds, f24Data.date.nanoseconds);
+                     }
+                      if (f24Data.expireDate && f24Data.expireDate.seconds) {
+                        f24Data.expireDate = new Timestamp(f24Data.expireDate.seconds, f24Data.expireDate.nanoseconds);
+                     }
+                     openF24DetailModal(f24Data);
+                 } catch (parseError) {
+                     console.error("Error parsing F24 data from row:", parseError);
+                     showToast("Could not display F24 details.", false);
+                 }
+             }
+        });
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
