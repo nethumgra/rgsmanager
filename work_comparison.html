@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+   <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Comparison - RSG MANAGER</title>
+
+    <link rel="icon" href="logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans">
+
+    <div id="app-container" class="flex h-screen hidden">
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+            <div>
+               <div class="flex items-center gap-3 mb-10">
+                    <div>
+                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                    </div>
+                    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
+                </div>
+                <nav class="flex flex-col gap-2">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                   
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   
+                   <a href="./work_comparison.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition bg-slate-700 text-white"><i data-lucide="compare"></i><span>Work Comparison</span></a>
+                   
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                   <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
+                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
+                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
+                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>General Schedule</span></a>
+                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
+                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
+                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
+                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
+                   <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
+                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                </nav>
+            </div>
+            <div>
+                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
+                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500">
+                     <p>&copy; 2025 RSG MANAGER ADMIN. All rights reserved.Developed By Mathizz</p>
+                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+            <section id="page-work-comparison" class="page flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-white">Compare Staff Work</h2>
+                </div>
+
+                <div class="bg-slate-800 rounded-lg p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div class="lg:col-span-2">
+                            <label for="staffSelectA" class="block mb-2 text-sm font-medium">Compare Staff A</label>
+                            <select id="staffSelectA" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                <option value="">Loading staff...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="lg:col-span-2">
+                            <label for="staffSelectB" class="block mb-2 text-sm font-medium">With Staff B</label>
+                            <select id="staffSelectB" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                                <option value="">Loading staff...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="dateFrom" class="block mb-2 text-sm font-medium">From Date</label>
+                            <input type="date" id="dateFrom" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5">
+                        </div>
+
+                        <div>
+                            <label for="dateTo" class="block mb-2 text-sm font-medium">To Date</label>
+                            <input type="date" id="dateTo" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5">
+                        </div>
+
+                        <div class="lg:col-span-5">
+                            <button id="compareBtn" class="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center justify-center gap-2">
+                                <i data-lucide="compare"></i>
+                                <span>Load Comparison</span>
+                                <div id="compareSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="comparisonResults" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div id="resultsColumnA" class="bg-slate-800 rounded-lg p-4 flex flex-col gap-2 overflow-y-auto min-h-[300px]">
+                        <h3 id="headerA" class="text-xl font-semibold text-white text-center p-4">Select Staff A</h3>
+                        </div>
+
+                    <div id="resultsColumnB" class="bg-slate-800 rounded-lg p-4 flex flex-col gap-2 overflow-y-auto min-h-[300px]">
+                        <h3 id="headerB" class="text-xl font-semibold text-white text-center p-4">Select Staff B</h3>
+                        </div>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        // Main App Config
+        const firebaseConfig = {
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+
+        // App Initialization
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserId = null;
+        let allStaff = [];
+        let allStaffWork = [];
+
+        // DOM Elements
+        const appContainer = document.getElementById('app-container');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const userIdSpan = document.getElementById('userId');
+        const toast = document.getElementById('toast');
+
+        // New DOM Elements for this page
+        const staffSelectA = document.getElementById('staffSelectA');
+        const staffSelectB = document.getElementById('staffSelectB');
+        const dateFromInput = document.getElementById('dateFrom');
+        const dateToInput = document.getElementById('dateTo');
+        const compareBtn = document.getElementById('compareBtn');
+        const compareSpinner = document.getElementById('compareSpinner');
+        const resultsColumnA = document.getElementById('resultsColumnA');
+        const resultsColumnB = document.getElementById('resultsColumnB');
+        const headerA = document.getElementById('headerA');
+        const headerB = document.getElementById('headerB');
+
+        // --- Date Helper Functions (Copied from staff_schedule) ---
+        function getLocalDateString(date) {
+            if (!date) return '';
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getLocalTimeString(date) {
+            if (!date) return '';
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        // --- End of Date Helpers ---
+
+        // Authentication
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                appContainer.classList.remove('hidden');
+                
+                // Set default dates
+                const today = new Date();
+                const sevenDaysAgo = new Date(today);
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                dateFromInput.value = getLocalDateString(sevenDaysAgo);
+                dateToInput.value = getLocalDateString(today);
+
+                listenForStaff();
+                listenForWorkSchedule();
+            } else {
+                window.location.href = './index.html';
+            }
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // Data Loading
+        function listenForStaff() {
+            if (!currentUserId) return;
+            onSnapshot(collection(db, `users/${currentUserId}/staff`), snapshot => {
+                allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allStaff.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
+                populateStaffDropdowns();
+            }, error => {
+                console.error("Error listening for staff:", error);
+                showToast("Error loading staff list.", false);
+            });
+        }
+
+        function listenForWorkSchedule() {
+            if (!currentUserId) return;
+            onSnapshot(collection(db, `users/${currentUserId}/staff_work`), snapshot => {
+                allStaffWork = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // We don't render automatically, only on button click
+            }, error => {
+                console.error("Error listening for work schedule:", error);
+                showToast("Error loading work schedule.", false);
+            });
+        }
+
+        // --- New Function to populate BOTH dropdowns ---
+        function populateStaffDropdowns() {
+            staffSelectA.innerHTML = '';
+            staffSelectB.innerHTML = '';
+            
+            const defaultOptionA = document.createElement('option');
+            defaultOptionA.value = "";
+            defaultOptionA.textContent = "-- Select Staff A --";
+            staffSelectA.appendChild(defaultOptionA);
+
+            const defaultOptionB = document.createElement('option');
+            defaultOptionB.value = "";
+            defaultOptionB.textContent = "-- Select Staff B --";
+            staffSelectB.appendChild(defaultOptionB);
+
+             allStaff.forEach(staff => {
+                const optionA = document.createElement('option');
+                optionA.value = staff.id;
+                optionA.textContent = staff.name || 'Unnamed Staff';
+                staffSelectA.appendChild(optionA);
+
+                const optionB = document.createElement('option');
+                optionB.value = staff.id;
+                optionB.textContent = staff.name || 'Unnamed Staff';
+                staffSelectB.appendChild(optionB);
+             });
+        }
+        
+        // --- Main Comparison Logic ---
+        compareBtn.addEventListener('click', () => {
+            const staffIdA = staffSelectA.value;
+            const staffIdB = staffSelectB.value;
+            const staffNameA = staffSelectA.options[staffSelectA.selectedIndex].text;
+            const staffNameB = staffSelectB.options[staffSelectB.selectedIndex].text;
+            
+            const dateFromStr = dateFromInput.value;
+            const dateToStr = dateToInput.value;
+
+            if (!staffIdA || !staffIdB || !dateFromStr || !dateToStr) {
+                showToast("Please select two staff members and a full date range.", false);
+                return;
+            }
+
+            if (staffIdA === staffIdB) {
+                showToast("Please select two different staff members to compare.", false);
+                return;
+            }
+
+            compareSpinner.classList.remove('hidden');
+            compareBtn.disabled = true;
+
+            try {
+                // Set start of 'from' date and end of 'to' date for accurate range
+                const startDate = new Date(`${dateFromStr}T00:00:00`);
+                const endDate = new Date(`${dateToStr}T23:59:59`);
+                
+                // Filter for Staff A
+                const tasksA = allStaffWork.filter(work => {
+                    if (work.staffId !== staffIdA) return false;
+                    const workDate = work.date.toDate();
+                    return workDate >= startDate && workDate <= endDate;
+                }).sort((a,b) => a.date.toDate() - b.date.toDate()); // Sort by date
+
+                // Filter for Staff B
+                const tasksB = allStaffWork.filter(work => {
+                    if (work.staffId !== staffIdB) return false;
+                    const workDate = work.date.toDate();
+                    return workDate >= startDate && workDate <= endDate;
+                }).sort((a,b) => a.date.toDate() - b.date.toDate()); // Sort by date
+
+                // Render results
+                renderResults(resultsColumnA, headerA, tasksA, staffNameA);
+                renderResults(resultsColumnB, headerB, tasksB, staffNameB);
+
+            } catch (err) {
+                showToast(`Error filtering results: ${err.message}`, false);
+                console.error(err);
+            } finally {
+                compareSpinner.classList.add('hidden');
+                compareBtn.disabled = false;
+            }
+        });
+
+        function renderResults(columnElement, headerElement, tasks, staffName) {
+            // Clear previous results
+            columnElement.innerHTML = '';
+            
+            // Set header
+            headerElement.textContent = `${staffName} (${tasks.length} Tasks)`;
+            columnElement.appendChild(headerElement); // Add header back
+
+            if (tasks.length === 0) {
+                const noTasksEl = document.createElement('p');
+                noTasksEl.className = 'text-slate-400 text-center italic p-4';
+                noTasksEl.textContent = 'No tasks found in this period.';
+                columnElement.appendChild(noTasksEl);
+                return;
+            }
+
+            // Add new tasks
+            tasks.forEach(task => {
+                const taskDate = task.date.toDate();
+                const taskEl = document.createElement('div');
+                taskEl.className = 'bg-slate-700 p-3 rounded-md';
+                
+                const locationName = task.customerItemName;
+                const customerName = task.customerName ? `(${task.customerName})` : '';
+
+                taskEl.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold text-white">${task.taskTitle || 'No Title'}</span>
+                        <span class="text-sm font-mono text-blue-300">${getLocalDateString(taskDate)}</span>
+                    </div>
+                    <div class="text-xs text-slate-300 mb-2">${task.workCategory || 'Uncategorized'}</div>
+                    ${locationName ? `<div class="text-xs text-cyan-400 mb-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i><span>${locationName} ${customerName}</span></div>` : ''}
+                    <div class="text-xs text-blue-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i><span>${getLocalTimeString(taskDate)}</span></div>
+                `;
+                columnElement.appendChild(taskEl);
+            });
+            lucide.createIcons();
+        }
+
+        // Toast Function
+        const showToast = (message, isSuccess = true) => {
+            toast.textContent = message;
+            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        };
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
