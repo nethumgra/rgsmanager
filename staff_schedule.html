@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
@@ -25,6 +25,7 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Individual View Grid */
         .week-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -33,12 +34,39 @@
         .day-column {
             min-height: 120px;
         }
+
+        /* Team View Styles */
+        .team-grid-header {
+            display: grid;
+            grid-template-columns: 200px repeat(7, minmax(140px, 1fr)); /* Staff Name + 7 Days */
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .team-grid-row {
+            display: grid;
+            grid-template-columns: 200px repeat(7, minmax(140px, 1fr)); /* Staff Name + 7 Days */
+            min-height: 100px; /* Each staff row height */
+        }
+        
+        /* Team view eke Add button eka penne hover karama */
+        .day-column .team-add-btn {
+            opacity: 0; /* Default hidden */
+            transition: opacity 0.2s;
+        }
+        .day-column:hover .team-add-btn {
+            opacity: 0.7; /* Show on cell hover */
+        }
+        .day-column .team-add-btn:hover {
+            opacity: 1; /* Full opacity on button hover */
+        }
+
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 font-sans">
 
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between overflow-y-auto">
             <div>
                <div class="flex items-center gap-3 mb-10">
 
@@ -49,7 +77,10 @@
 </div>     <nav class="flex flex-col gap-2">
                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
+                   
                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition bg-slate-700 text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
+                   
+                   <a href="./work_comparison.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="compare"></i><span>Work Comparison</span></a>
                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
@@ -82,8 +113,8 @@
                     <h2 class="text-3xl font-bold text-white">Staff Work Schedule</h2>
                 </div>
 
-                <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
-                     <div class="flex-1">
+                <div class="bg-slate-800 rounded-lg p-4 mb-4 flex items-end gap-4">
+                     <div id="individualFilters" class="flex-1">
                         <label for="staffSearchInput" class="block mb-2 text-sm font-medium">Search Staff</label>
                         <input type="text" id="staffSearchInput" placeholder="Type name to search..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 mb-2">
 
@@ -99,14 +130,26 @@
                     </div>
                 </div>
 
+                <div id="viewTabs" class="flex items-center gap-2 mb-4">
+                    <button id="individualTabBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold">Individual View</button>
+                    <button id="teamTabBtn" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold">Team View</button>
+                </div>
+
                 <h3 id="weekRangeDisplay" class="text-xl font-semibold text-white mb-4 text-center"></h3>
 
-                <div class="flex-1 flex flex-col bg-slate-800 rounded-lg overflow-hidden">
+                <div id="individualView" class="flex-1 flex flex-col bg-slate-800 rounded-lg overflow-hidden">
                     <div id="weekGridHeader" class="week-grid border-b border-slate-700" style="min-height: auto;">
                     </div>
                     <div id="weekGridBody" class="week-grid flex-1 overflow-y-auto">
                     </div>
                 </div>
+                
+                <div id="teamView" class="flex-1 flex-col bg-slate-800 rounded-lg overflow-auto hidden"> <div id="teamGridHeader" class="team-grid-header bg-slate-700 border-b-2 border-slate-600">
+                        </div>
+                    <div id="teamGridBody" class="min-h-[400px]">
+                        </div>
+                </div>
+
             </section>
         </main>
     </div>
@@ -210,26 +253,45 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Global State
         let currentUserId = null;
         let allStaff = [];
         let allStaffWork = [];
         let allCustomers = [];
         let loadedCustomerItems = [];
         let currentWeekStart = new Date();
+        let currentView = 'individual'; // 'individual' or 'team'
+        let isStaffLoading = true;
+        let isWorkLoading = true;
 
         // DOM Elements
         const appContainer = document.getElementById('app-container');
         const signOutBtn = document.getElementById('signOutBtn');
         const userIdSpan = document.getElementById('userId');
         const toast = document.getElementById('toast');
+
+        // === ALUTH DOM ELEMENTS ===
+        const individualFilters = document.getElementById('individualFilters');
+        const individualTabBtn = document.getElementById('individualTabBtn');
+        const teamTabBtn = document.getElementById('teamTabBtn');
+        const individualView = document.getElementById('individualView');
+        const teamView = document.getElementById('teamView');
+        const teamGridHeader = document.getElementById('teamGridHeader');
+        const teamGridBody = document.getElementById('teamGridBody');
+
+        // Individual View Elements
         const staffSelect = document.getElementById('staffSelect');
         const staffSearchInput = document.getElementById('staffSearchInput');
         const weekGridHeader = document.getElementById('weekGridHeader');
         const weekGridBody = document.getElementById('weekGridBody');
+        
+        // Podu Elements
         const weekRangeDisplay = document.getElementById('weekRangeDisplay');
         const prevWeekBtn = document.getElementById('prevWeekBtn');
         const nextWeekBtn = document.getElementById('nextWeekBtn');
         const todayWeekBtn = document.getElementById('todayWeekBtn');
+        
+        // Modal Elements
         const workModal = document.getElementById('workModal');
         const workModalContent = document.getElementById('work-modal-content');
         const workModalTitle = document.getElementById('workModalTitle');
@@ -246,7 +308,7 @@
         const customerItemDropdownWrapper = document.getElementById('customerItemDropdownWrapper');
         const customerItemSelect = document.getElementById('customerItemSelect');
 
-        // Date Helper
+        // === DATE HELPER FUNCTIONS (TimeZone Fix) ===
         function getStartOfWeek(date) {
             const d = new Date(date);
             const day = d.getDay();
@@ -255,23 +317,20 @@
             d.setHours(0, 0, 0, 0);
             return d;
         }
-
-        // --- ADDED NEW FUNCTIONS ---
         function getLocalDateString(date) {
-            if (!date) return ''; // Handle cases where date might be null
+            if (!date) return '';
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const day = date.getDate().toString().padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-
         function getLocalTimeString(date) {
-            if (!date) return ''; // Handle cases where date might be null
+            if (!date) return '';
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             return `${hours}:${minutes}`;
         }
-        // --- END OF NEW FUNCTIONS ---
+        // --- End of Date Helpers ---
 
         // Authentication
         onAuthStateChanged(auth, (user) => {
@@ -291,27 +350,51 @@
         signOutBtn.addEventListener('click', () => {
             signOut(auth);
         });
-
+        
         // Data Loading
+        function checkInitialLoad() {
+             if (!isStaffLoading && !isWorkLoading) {
+                 // Default view eka render karanna
+                 if (currentView === 'individual') {
+                     filterStaffDropdown(); // Mekath renderWeekGrid() call karanawa
+                 } else {
+                     renderTeamGrid();
+                 }
+             }
+        }
+
         function listenForStaff() {
             if (!currentUserId) return;
             onSnapshot(collection(db, `users/${currentUserId}/staff`), snapshot => {
+                isStaffLoading = false;
                 allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allStaff.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
-                filterStaffDropdown(); // Initial population
-                // Don't call renderWeekGrid here initially, let filterStaffDropdown handle it if needed
+                
+                filterStaffDropdown(); // Individual view eke dropdown eka update karanna
+                
+                if (currentView === 'team') {
+                    renderTeamGrid(); // Team view eka active nam, staff list eka change unama ekath update karanna
+                }
+                checkInitialLoad();
             }, error => {
                 console.error("Error listening for staff:", error);
                 showToast("Error loading staff list.", false);
             });
         }
 
-
         function listenForWorkSchedule() {
             if (!currentUserId) return;
             onSnapshot(collection(db, `users/${currentUserId}/staff_work`), snapshot => {
+                isWorkLoading = false;
                 allStaffWork = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderWeekGrid(); // Update grid when work changes
+                
+                // Dan active eke thiyena view eka refresh karanna
+                if (currentView === 'individual') {
+                    renderWeekGrid();
+                } else {
+                    renderTeamGrid();
+                }
+                checkInitialLoad();
             }, error => {
                 console.error("Error listening for work schedule:", error);
                 showToast("Error loading work schedule.", false);
@@ -328,105 +411,83 @@
             });
         }
 
-        // Load Customers for Selected Category
+        // Customer/Item loading (Modal eka sadaha)
         function loadCustomersForCategory(category) {
             customerSelect.innerHTML = `<option value="">Loading Customers...</option>`;
             customerDropdownWrapper.classList.remove('hidden');
             customerItemDropdownWrapper.classList.add('hidden');
             customerItemSelect.innerHTML = '<option value="">Select Customer First</option>';
-
             if (!category) {
                 customerSelect.innerHTML = `<option value="">Select Category First</option>`;
                 customerDropdownWrapper.classList.add('hidden');
                 return;
             }
-
             const categoryCustomers = allCustomers.filter(c => c.category === category);
             populateCustomerDropdown(category, categoryCustomers);
         }
-
-        // Populate Customer Dropdown
         function populateCustomerDropdown(category, customers) {
             const currentVal = customerSelect.value;
             customerSelect.innerHTML = `<option value="">-- Select Customer for ${category} --</option>`;
-
             customers.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
-
             if (customers.length === 0) {
                 customerSelect.innerHTML = `<option value="">No customers found for ${category}</option>`;
                 return;
             }
-
             customers.forEach(customer => {
                 const option = document.createElement('option');
                 option.value = customer.id;
                 option.textContent = customer.name || 'Unnamed Customer';
                 customerSelect.appendChild(option);
             });
-
             const previouslySelectedCustomerExists = customers.some(c => c.id === currentVal);
             if (previouslySelectedCustomerExists) {
                 customerSelect.value = currentVal;
-                loadCustomerItems(currentVal); // Auto-load items if restoring selection
+                loadCustomerItems(currentVal);
             } else {
-                 customerSelect.value = ""; // Clear selection if previous not found
-                 customerItemDropdownWrapper.classList.add('hidden'); // Ensure item dropdown is hidden
+                 customerSelect.value = "";
+                 customerItemDropdownWrapper.classList.add('hidden');
             }
         }
-
-
-        // Load Items for Selected Customer
         function loadCustomerItems(customerId) {
             customerItemSelect.innerHTML = `<option value="">Loading Items...</option>`;
             customerItemDropdownWrapper.classList.remove('hidden');
             loadedCustomerItems = [];
-
             if (!customerId) {
                 customerItemSelect.innerHTML = `<option value="">Select Customer First</option>`;
                 customerItemDropdownWrapper.classList.add('hidden');
                 return;
             }
-
             const selectedCustomer = allCustomers.find(c => c.id === customerId);
-
             if (selectedCustomer && selectedCustomer.items && Array.isArray(selectedCustomer.items)) {
                 loadedCustomerItems = selectedCustomer.items.map(item => ({
                     name: item.name || 'Unnamed Item'
                 }));
             }
-
             populateCustomerItemsDropdown(loadedCustomerItems);
         }
-
-        // Populate Dropdown with Customer Items
         function populateCustomerItemsDropdown(items) {
             const currentVal = customerItemSelect.value;
             customerItemSelect.innerHTML = `<option value="">-- Select Item/Location --</option>`;
-
             items.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
-
             if (items.length === 0) {
                 customerItemSelect.innerHTML = `<option value="">No items found for this customer</option>`;
                 return;
             }
-
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.name;
                 option.textContent = item.name;
                 customerItemSelect.appendChild(option);
             });
-
             const previouslySelectedItemExists = items.some(item => item.name === currentVal);
              if (previouslySelectedItemExists) {
                   customerItemSelect.value = currentVal;
              } else {
-                  customerItemSelect.value = ""; // Clear selection if not found
+                  customerItemSelect.value = "";
              }
         }
 
-
-        // --- MODIFIED: renderWeekGrid Function ---
+        // === VIEW 1 RENDER: renderWeekGrid (Individual) ===
         function renderWeekGrid() {
             const selectedStaffId = staffSelect.value;
             weekGridHeader.innerHTML = '';
@@ -448,7 +509,7 @@
             for (let i = 0; i < 7; i++) {
                 const day = new Date(startDate);
                 day.setDate(startDate.getDate() + i);
-                const dayString = getLocalDateString(day); // <-- FIXED: Use local date string
+                const dayString = getLocalDateString(day);
 
                 const headerEl = document.createElement('div');
                 headerEl.className = 'p-4 text-center';
@@ -462,19 +523,17 @@
                 bodyEl.className = 'day-column border-t border-l border-slate-700 p-2 overflow-y-auto relative';
 
                 const tasksForDay = weekWork
-                    .filter(work => getLocalDateString(work.date.toDate()) === dayString) // <-- FIXED: Compare local strings
+                    .filter(work => getLocalDateString(work.date.toDate()) === dayString)
                     .sort((a,b) => a.date.toDate() - b.date.toDate());
 
                 tasksForDay.forEach(task => {
-                    const taskTime = getLocalTimeString(task.date.toDate()); // <-- FIXED: Use local time string
+                    const taskTime = getLocalTimeString(task.date.toDate());
                     const taskEl = document.createElement('div');
                     taskEl.className = 'bg-slate-700 p-2 rounded-md mb-2 cursor-pointer hover:bg-slate-600 transition-colors duration-150';
                     taskEl.dataset.id = task.id;
                     taskEl.addEventListener('click', () => openWorkModal(task.id));
-
                     const locationName = task.customerItemName;
                     const customerNameForDisplay = task.customerName ? `(${task.customerName})` : '';
-
                     taskEl.innerHTML = `
                         <div class="font-semibold text-sm text-white">${task.taskTitle || 'No Title'}</div>
                         <div class="text-xs text-slate-300">${task.workCategory || 'Uncategorized'}</div>
@@ -486,13 +545,12 @@
 
                 if (selectedStaffId) {
                     const addTaskBtn = document.createElement('button');
-                    // --- INCREASED PADDING & FONT SIZE ---
-                    addTaskBtn.className = 'sticky bottom-1 left-1 right-1 w-auto mx-auto mt-2 text-center px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-600/80 text-blue-100 transition text-sm flex items-center justify-center gap-1 font-medium'; // Larger padding, slightly larger text, bold
-                    addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Add Work`; // Added "Work" text
-                    addTaskBtn.dataset.date = dayString; // <-- FIXED: Use local date string
+                    addTaskBtn.className = 'sticky bottom-1 left-1 right-1 w-auto mx-auto mt-2 text-center px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-600/80 text-blue-100 transition text-sm flex items-center justify-center gap-1 font-medium';
+                    addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Add Work`;
+                    addTaskBtn.dataset.date = dayString;
                     addTaskBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        openWorkModal(null, e.currentTarget.dataset.date); // <-- FIXED: Get date from dataset
+                        openWorkModal(null, e.currentTarget.dataset.date);
                     });
                     bodyEl.appendChild(addTaskBtn);
                 }
@@ -501,79 +559,229 @@
             lucide.createIcons();
         }
 
-        // Week Navigation & Staff Filters
+        // === VIEW 2 RENDER: renderTeamGrid (Aluth eka) ===
+        function renderTeamGrid() {
+            teamGridHeader.innerHTML = '';
+            teamGridBody.innerHTML = '';
+
+            if (isStaffLoading || isWorkLoading) {
+                 teamGridBody.innerHTML = '<div class="flex justify-center items-center h-64"><div class="loader"></div></div>';
+                 return;
+            }
+            if (allStaff.length === 0) {
+                 teamGridBody.innerHTML = '<p class="text-center p-10">No staff members found.</p>';
+                 return;
+            }
+
+            const startDate = new Date(currentWeekStart);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            weekRangeDisplay.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+
+            // Filter work for the current week once
+            const weekWork = allStaffWork.filter(work => {
+                if (!work.date || !work.date.toDate) return false;
+                const workDate = work.date.toDate();
+                workDate.setHours(0,0,0,0);
+                return workDate >= startDate && workDate <= endDate;
+            });
+
+            // 1. Render Header Row
+            const staffHeaderCell = document.createElement('div');
+            staffHeaderCell.className = 'p-4 font-bold text-white text-left sticky left-0 z-10 bg-slate-700 border-r border-slate-600';
+            staffHeaderCell.textContent = 'Staff Member';
+            teamGridHeader.appendChild(staffHeaderCell);
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
+                const headerEl = document.createElement('div');
+                headerEl.className = 'p-4 text-center border-r border-slate-600';
+                headerEl.innerHTML = `
+                    <div class="font-bold text-white">${day.toLocaleString('en-US', { weekday: 'short' })}</div>
+                    <div class="text-sm text-slate-400">${day.getDate()}</div>
+                `;
+                teamGridHeader.appendChild(headerEl);
+            }
+
+            // 2. Render Staff Rows
+            allStaff.forEach(staff => {
+                const staffRowEl = document.createElement('div');
+                staffRowEl.className = 'team-grid-row border-t border-slate-700';
+
+                const nameCell = document.createElement('div');
+                nameCell.className = 'p-3 font-semibold text-white sticky left-0 bg-slate-800 border-r border-slate-600';
+                nameCell.textContent = staff.name || 'Unnamed Staff';
+                staffRowEl.appendChild(nameCell);
+
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(startDate);
+                    day.setDate(startDate.getDate() + i);
+                    const dayString = getLocalDateString(day);
+                    const dayCell = document.createElement('div');
+                    // --- CSS WENASAK --- Day column eka relative karanna one Add button eka nisa
+                    dayCell.className = 'day-column border-r border-slate-700 p-2 overflow-y-auto flex flex-col gap-2 relative'; 
+
+                    const tasksForDay = weekWork
+                        .filter(work => work.staffId === staff.id && getLocalDateString(work.date.toDate()) === dayString)
+                        .sort((a,b) => a.date.toDate() - b.date.toDate());
+                    
+                    tasksForDay.forEach(task => {
+                        const taskTime = getLocalTimeString(task.date.toDate());
+                        const taskEl = document.createElement('div');
+                        taskEl.className = 'bg-slate-700 p-2 rounded-md cursor-pointer hover:bg-slate-600';
+                        taskEl.title = task.description || 'No description';
+                        
+                        taskEl.addEventListener('click', () => {
+                            staffSelect.value = task.staffId; 
+                            individualTabBtn.click(); 
+                            setTimeout(() => { 
+                                openWorkModal(task.id);
+                            }, 50);
+                        });
+
+                        const locationName = task.customerItemName;
+                        taskEl.innerHTML = `
+                            <div class="font-semibold text-sm text-white truncate">${task.taskTitle || 'No Title'}</div>
+                            ${locationName ? `<div class="text-xs text-cyan-400 mt-1 flex items-center gap-1 truncate"><i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0"></i><span>${locationName}</span></div>` : ''}
+                            <div class="text-xs text-blue-400 mt-1 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 flex-shrink-0"></i><span>${taskTime}</span></div>
+                        `;
+                        dayCell.appendChild(taskEl);
+                    });
+                    
+                    // === ALUTH "ADD WORK" BUTTON EKA (TEAM VIEW) ===
+                    const addTaskBtn = document.createElement('button');
+                    // Sticky button ekak widiyata hadamu
+                    addTaskBtn.className = 'team-add-btn sticky bottom-1 w-full mt-auto text-center px-2 py-1 rounded-md bg-blue-600/70 hover:bg-blue-600 text-white transition text-xs flex items-center justify-center gap-1'; 
+                    addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-3 h-3"></i> Add`;
+                    addTaskBtn.dataset.date = dayString;
+                    addTaskBtn.dataset.staffId = staff.id;
+                    
+                    addTaskBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const staffId = e.currentTarget.dataset.staffId;
+                        const date = e.currentTarget.dataset.date;
+
+                        // Switch to individual view
+                        individualTabBtn.click(); 
+
+                        // Set the staff select dropdown
+                        staffSelect.value = staffId;
+
+                        // Wait for tab switch to process, then open modal
+                        setTimeout(() => {
+                            openWorkModal(null, date);
+                        }, 50);
+                    });
+                    dayCell.appendChild(addTaskBtn);
+                    // --- Aluth Button eka iwarai ---
+
+                    staffRowEl.appendChild(dayCell);
+                }
+                teamGridBody.appendChild(staffRowEl);
+            });
+            lucide.createIcons();
+        }
+
+        // === ALUTH TAB SWITCHING LOGIC ===
+        individualTabBtn.addEventListener('click', () => {
+            currentView = 'individual';
+            
+            // Button styles
+            individualTabBtn.classList.add('bg-blue-600', 'text-white');
+            individualTabBtn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+            teamTabBtn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+            teamTabBtn.classList.remove('bg-blue-600', 'text-white');
+
+            // Show/Hide elements
+            individualFilters.classList.remove('hidden');
+            individualView.classList.remove('hidden');
+            individualView.classList.add('flex');
+            teamView.classList.add('hidden');
+            teamView.classList.remove('flex');
+
+            renderWeekGrid(); // Adala view eka render karanna
+        });
+
+        teamTabBtn.addEventListener('click', () => {
+            currentView = 'team';
+            
+            // Button styles
+            teamTabBtn.classList.add('bg-blue-600', 'text-white');
+            teamTabBtn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+            individualTabBtn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
+            individualTabBtn.classList.remove('bg-blue-600', 'text-white');
+            
+            // Show/Hide elements
+            individualFilters.classList.add('hidden'); // Filters hide karanna
+            individualView.classList.add('hidden');
+            individualView.classList.remove('flex');
+            teamView.classList.remove('hidden');
+            teamView.classList.add('flex'); // Meka flex widiyata pennanna
+
+            renderTeamGrid(); // Adala view eka render karanna
+        });
+
+
+        // === PODU WEEK NAVIGATION (WENAS KARAPU) ===
         prevWeekBtn.addEventListener('click', () => {
             currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-            renderWeekGrid();
+            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
         });
         nextWeekBtn.addEventListener('click', () => {
             currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-            renderWeekGrid();
+            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
         });
         todayWeekBtn.addEventListener('click', () => {
             currentWeekStart = getStartOfWeek(new Date());
-            renderWeekGrid();
+            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
         });
 
-        // --- MODIFIED: Trigger grid render on selection change ---
+        // Individual Staff Filters
         staffSelect.addEventListener('change', renderWeekGrid);
-
-        // --- MODIFIED: Auto-select and render grid on search filter ---
         function filterStaffDropdown() {
              const searchTerm = staffSearchInput.value.toLowerCase();
-             const currentSelectedId = staffSelect.value; // Store current selection before clearing
-             staffSelect.innerHTML = ''; // Clear options
+             const currentSelectedId = staffSelect.value;
+             staffSelect.innerHTML = '';
              const defaultOption = document.createElement('option');
              defaultOption.value = "";
              defaultOption.textContent = "-- Select a Staff Member --";
              staffSelect.appendChild(defaultOption);
-
-             const matchingStaff = []; // Keep track of staff that match
-
+             const matchingStaff = [];
              allStaff.forEach(staff => {
                  if ((staff.name || '').toLowerCase().includes(searchTerm)) {
                      const option = document.createElement('option');
                      option.value = staff.id;
                      option.textContent = staff.name || 'Unnamed Staff';
                      staffSelect.appendChild(option);
-                     matchingStaff.push(staff.id); // Add matching staff ID
+                     matchingStaff.push(staff.id);
                  }
              });
-
-             let newSelectedId = ""; // ID to be selected after filtering
-
-             // Check if the previously selected staff is still in the list
+             let newSelectedId = "";
              if (matchingStaff.includes(currentSelectedId)) {
-                 newSelectedId = currentSelectedId; // Keep the current selection
+                 newSelectedId = currentSelectedId;
              }
-             // If only one staff member matches the search, automatically select them
              else if (matchingStaff.length === 1) {
                  newSelectedId = matchingStaff[0];
              }
-             // Otherwise (multiple matches or no matches), keep the default "-- Select --" (value="")
-
-             staffSelect.value = newSelectedId; // Set the determined selection
-
-             // IMPORTANT: Always call renderWeekGrid after filtering and potentially changing selection
-             renderWeekGrid();
+             staffSelect.value = newSelectedId;
+             renderWeekGrid(); // Filter karama individual view eka render karanna
          }
         staffSearchInput.addEventListener('input', filterStaffDropdown);
 
 
-        // --- MODIFIED: openWorkModal Function ---
+        // === WORK MODAL LOGIC (Wenasak Na) ===
         const openWorkModal = async (docId = null, date = null) => {
             workForm.reset();
             document.getElementById('workDocId').value = docId || '';
             deleteWorkBtn.classList.add('hidden');
             customerDropdownWrapper.classList.add('hidden');
             customerItemDropdownWrapper.classList.add('hidden');
-
             const selectedStaffId = staffSelect.value;
             if (!selectedStaffId && !docId) {
                 showToast("Please select a staff member first.", false); return;
             }
-
-            if (docId) { // Editing
+            if (docId) {
                 workModalTitle.textContent = 'Edit Work';
                 submitWorkBtnText.textContent = 'Update';
                 try {
@@ -581,24 +789,22 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const work = docSnap.data();
-                        const localWorkDate = work.date?.toDate(); // <-- Get local date object once
+                        const localWorkDate = work.date?.toDate();
                         document.getElementById('taskTitle').value = work.taskTitle || '';
                         document.getElementById('workCategory').value = work.workCategory || '';
-                        document.getElementById('taskDate').value = getLocalDateString(localWorkDate); // <-- FIXED
-                        document.getElementById('taskTime').value = getLocalTimeString(localWorkDate); // <-- FIXED
+                        document.getElementById('taskDate').value = getLocalDateString(localWorkDate);
+                        document.getElementById('taskTime').value = getLocalTimeString(localWorkDate);
                         document.getElementById('taskDescription').value = work.description || '';
                         deleteWorkBtn.classList.remove('hidden');
-
                         const category = work.workCategory;
                         const savedCustomerId = work.customerId;
                         const savedItemName = work.customerItemName;
-
                         if (category) {
-                            loadCustomersForCategory(category); // Load customers first
+                            loadCustomersForCategory(category);
                             setTimeout(() => {
                                 if (savedCustomerId) {
                                     customerSelect.value = savedCustomerId;
-                                    loadCustomerItems(savedCustomerId); // Load items
+                                    loadCustomerItems(savedCustomerId);
                                     setTimeout(() => {
                                          if (savedItemName) {
                                              customerItemSelect.value = savedItemName;
@@ -613,18 +819,16 @@
                 } catch (err) {
                     showToast(`Error fetching work: ${err.message}`, false); console.error("Error fetching work:", err); return;
                 }
-            } else if (date) { // Adding
+            } else if (date) {
                 workModalTitle.textContent = 'Add Work';
                 submitWorkBtnText.textContent = 'Save';
-                document.getElementById('taskDate').value = date; // 'date' is already the local YYYY-MM-DD string
+                document.getElementById('taskDate').value = date;
             } else {
                  console.error("openWorkModal called incorrectly"); return;
             }
-
             workModal.classList.remove('hidden');
             setTimeout(() => workModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
-
         const closeWorkModal = () => {
             workModalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
@@ -634,12 +838,9 @@
                 customerItemDropdownWrapper.classList.add('hidden');
             }, 200);
         };
-
         closeWorkModalBtn.addEventListener('click', closeWorkModal);
         cancelWorkModalBtn.addEventListener('click', closeWorkModal);
         workModal.addEventListener('click', e => { if(e.target === workModal) closeWorkModal(); });
-
-        // Category Selection Change -> Load Customers
         workCategorySelect.addEventListener('change', e => {
             const selectedCategory = e.target.value;
             customerDropdownWrapper.classList.add('hidden');
@@ -650,8 +851,6 @@
                 loadCustomersForCategory(selectedCategory);
             }
         });
-
-        // Customer Selection Change -> Load Items
         customerSelect.addEventListener('change', e => {
             const selectedCustomerId = e.target.value;
             customerItemDropdownWrapper.classList.add('hidden');
@@ -661,36 +860,28 @@
             }
         });
 
-
         // Form Submit
         workForm.addEventListener('submit', async e => {
             e.preventDefault();
             const docId = document.getElementById('workDocId').value;
-            const selectedStaffId = staffSelect.value;
+            const selectedStaffId = staffSelect.value; // Modal eka open wenne individual view eken, nisa meka hari
             const selectedStaffOption = staffSelect.options[staffSelect.selectedIndex];
             const selectedStaffName = selectedStaffOption ? selectedStaffOption.text : 'Unknown Staff';
-
             if (!selectedStaffId) { showToast("No staff member selected.", false); return; }
-
             const taskTitle = document.getElementById('taskTitle').value.trim();
             const dateStr = document.getElementById('taskDate').value;
             const timeStr = document.getElementById('taskTime').value;
-
             if (!taskTitle || !dateStr || !timeStr) { showToast("Please fill in Title, Date, and Time.", false); return; }
-
             submitWorkBtn.disabled = true;
             submitWorkBtnText.classList.add('hidden');
             submitWorkSpinner.classList.remove('hidden');
-
             try {
-                // This correctly creates a Date object from local time strings
                 const fullDate = Timestamp.fromDate(new Date(`${dateStr}T${timeStr}`));
                 const selectedWorkCategory = document.getElementById('workCategory').value;
                 const selectedCustomerId = customerSelect.value;
                 const selectedCustomerOption = customerSelect.options[customerSelect.selectedIndex];
                 const selectedCustomerName = selectedCustomerId ? selectedCustomerOption.text : null;
                 const selectedCustomerItemName = customerItemSelect.value;
-
                 const data = {
                     staffId: selectedStaffId,
                     staffName: selectedStaffName,
@@ -702,7 +893,6 @@
                     customerName: selectedCustomerName,
                     customerItemName: selectedCustomerItemName || null,
                 };
-
                 if (docId) {
                     await updateDoc(doc(db, `users/${currentUserId}/staff_work`, docId), data);
                     showToast('Work assignment updated!');
