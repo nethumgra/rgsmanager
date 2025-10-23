@@ -226,7 +226,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Added Timestamp
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -298,6 +298,7 @@
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
+            today.setHours(0,0,0,0); // Compare dates only
 
             for (let i = 0; i < firstDay; i++) {
                 calendarGrid.innerHTML += '<div></div>';
@@ -335,16 +336,20 @@
 
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
+            const timeZone = 'Europe/Rome'; // Define target timezone
+
             const monthEvents = allEvents.filter(e => {
                 if (!e.date || !e.date.toDate) return false;
-                const eventDate = e.date.toDate();
-                return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+                // Get event date in Italy time
+                const eventDateItaly = new Date(e.date.toDate().toLocaleString('en-US', { timeZone }));
+                return eventDateItaly.getFullYear() === year && eventDateItaly.getMonth() === month;
             });
 
             monthEvents.forEach(event => {
-                const eventDate = event.date.toDate();
-                const day = eventDate.getDate();
+                const eventDateItaly = new Date(event.date.toDate().toLocaleString('en-US', { timeZone }));
+                const day = eventDateItaly.getDate(); // Use Italy date's day
                 const eventsContainer = document.getElementById(`events-${day}`);
+
                 if(eventsContainer){
                     const eventEl = document.createElement('div');
                     let completedClass = event.status === 'Completed' ? 'opacity-60 line-through' : '';
@@ -352,14 +357,15 @@
 
                     eventEl.className = `event-container p-1.5 rounded-md text-white ${event.color || 'bg-blue-500'} ${completedClass} ${vehicleLinkClass}`;
 
-                    const timeString = event.date.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    // Format time using Italy timezone
+                    const timeString = event.date.toDate().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: timeZone, hour12: false });
 
                     let content = `
                         <div data-id="${event.id}" class="event-header cursor-pointer flex items-center justify-between text-sm">
                             <div class="truncate">
                                 ${event.vehicleExpenseId ? `<i data-lucide="car" class="w-4 h-4 inline-block -mt-1 mr-1"></i>` : ''}
                                 <span class="font-bold">${timeString}</span> - ${event.title}
-                                ${event.type !== 'General' ? `<span class="font-semibold ml-1">(€ ${(event.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>` : ''}
+                                ${event.type !== 'General' ? `<span class="font-semibold ml-1">(€ ${(event.amount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>` : ''}
                             </div>
                             <div class="flex items-center flex-shrink-0">
                                 ${event.status === 'Completed' ? `<i data-lucide="check-circle" class="w-4 h-4 ml-1"></i>` : ''}
@@ -380,11 +386,12 @@
             lucide.createIcons();
         }
 
+
         function listenForEvents() {
             if(!currentUserId) return;
             onSnapshot(collection(db, `users/${currentUserId}/schedule`), snapshot => {
                 allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderCalendar();
+                renderCalendar(); // Re-render calendar which calls renderEvents
                 checkForUpcomingEvents();
             }, error => {
                 console.error("Error listening for events:", error);
@@ -400,16 +407,22 @@
             const oldMsg = eventForm.querySelector('.vehicle-link-msg');
             if(oldMsg) oldMsg.remove();
 
+            const timeZone = 'Europe/Rome';
+
             if (id) {
                 const event = allEvents.find(e => e.id === id);
                 if(event) {
                     const eventDate = event.date.toDate();
+                    // Get date and time strings formatted for Italy timezone
+                    const dateStringItaly = eventDate.toLocaleDateString('sv-SE', { timeZone }); // YYYY-MM-DD
+                    const timeStringItaly = eventDate.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone, hour12: false }); // HH:MM
+
                     eventModalTitle.textContent = 'Edit Event';
                     document.getElementById('eventDocId').value = id;
                     document.getElementById('eventTitle').value = event.title;
                     document.getElementById('eventDescription').value = event.description || '';
-                    document.getElementById('eventDate').value = eventDate.toISOString().split('T')[0];
-                    document.getElementById('eventTime').value = eventDate.toTimeString().split(' ')[0].substring(0, 5);
+                    document.getElementById('eventDate').value = dateStringItaly; // Use Italy date string
+                    document.getElementById('eventTime').value = timeStringItaly; // Use Italy time string
                     if(document.querySelector(`input[name="color"][value="${event.color}"]`)) {
                         document.querySelector(`input[name="color"][value="${event.color}"]`).checked = true;
                     } else {
@@ -450,6 +463,7 @@
                 }
             } else {
                 eventModalTitle.textContent = 'Add New Event';
+                // Set default date/time based on Italy time? Or user's local time? Let's use user's local for adding.
                 document.getElementById('eventDate').valueAsDate = new Date();
                 const now = new Date();
                 document.getElementById('eventTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -462,6 +476,7 @@
             eventModal.classList.remove('hidden');
             setTimeout(() => eventModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
+
 
         const closeEventModal = () => {
             eventModalContent.classList.add('scale-95', 'opacity-0');
@@ -529,12 +544,14 @@
             try {
                 const dateStr = document.getElementById('eventDate').value;
                 const timeStr = document.getElementById('eventTime').value || '00:00';
-                const fullDate = new Date(`${dateStr}T${timeStr}`);
+                // IMPORTANT: Create Date object based on user input, assuming it's for Italy time if entered there
+                // Firestore will store the correct UTC equivalent automatically
+                const localDate = new Date(`${dateStr}T${timeStr}`); // This assumes input fields represent local time
 
                 const data = {
                     title: document.getElementById('eventTitle').value,
                     description: document.getElementById('eventDescription').value,
-                    date: fullDate,
+                    date: Timestamp.fromDate(localDate), // Convert local Date object to Firestore Timestamp
                     color: document.querySelector('input[name="color"]:checked').value,
                     type: document.getElementById('eventType').value,
                     amount: parseFloat(document.getElementById('eventAmount').value) || 0,
@@ -564,10 +581,10 @@
                         const recurringId = crypto.randomUUID();
                         const batch = writeBatch(db);
                         for(let i=0; i < 12; i++) {
-                            const futureDate = new Date(fullDate);
-                            futureDate.setMonth(fullDate.getMonth() + i);
+                            const futureDate = new Date(localDate); // Start from the initial local date
+                            futureDate.setMonth(localDate.getMonth() + i);
                             const newDocRef = doc(collection(db, `users/${currentUserId}/schedule`));
-                            batch.set(newDocRef, {...data, date: futureDate, recurringId});
+                            batch.set(newDocRef, {...data, date: Timestamp.fromDate(futureDate), recurringId}); // Use Timestamp for future dates
                         }
                         await batch.commit();
                         showToast(`Recurring ${data.type.toLowerCase()} scheduled for 12 months!`);
@@ -586,6 +603,7 @@
                 submitEventSpinner.classList.add('hidden');
             }
         });
+
 
         deleteEventBtn.addEventListener('click', async () => {
             const docId = document.getElementById('eventDocId').value;
@@ -647,7 +665,7 @@
                 const batch = writeBatch(db);
 
                 const transactionData = {
-                    date: event.date,
+                    date: event.date, // Keep the original timestamp for transaction
                     description: `Scheduled: ${event.title}`,
                     category: event.category || 'Scheduled',
                     type: event.type,
@@ -674,7 +692,6 @@
                      } catch (veError) {
                           console.error("Error checking/updating vehicle expense:", veError);
                      }
-
                 }
 
                 await batch.commit();
@@ -695,9 +712,11 @@
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const sevenDaysFromNow = new Date(todayStart);
             sevenDaysFromNow.setDate(todayStart.getDate() + 7);
+            const timeZone = 'Europe/Rome'; // Target timezone
 
             const upcoming = allEvents.filter(event => {
                 if (!event.date || !event.date.toDate) return false;
+                // Compare using UTC timestamps or consistent local time (browser's local used here implicitly)
                 const eventDate = event.date.toDate();
                 return event.status !== 'Completed' && eventDate >= todayStart && eventDate < sevenDaysFromNow;
             }).sort((a,b) => a.date.toDate() - b.date.toDate());
@@ -708,6 +727,10 @@
                  list.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
                  upcoming.forEach(event => {
                      const eventDate = event.date.toDate();
+                     // Format date and time for display using Italy timezone
+                     const displayDateStr = eventDate.toLocaleDateString('it-IT', { timeZone });
+                     const displayTimeStr = eventDate.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit', timeZone, hour12: false});
+
                      const alertEl = document.createElement('div');
                      alertEl.className = 'bg-slate-700 p-4 rounded-lg flex items-start gap-4 cursor-pointer hover:bg-slate-600 transition-colors';
                      alertEl.dataset.id = event.id;
@@ -715,13 +738,12 @@
                      const iconColor = event.type === 'Income' ? 'text-green-400' : event.type === 'Expense' ? 'text-red-400' : 'text-blue-400';
                      const icon = event.vehicleExpenseId ? 'car' : 'bell-ring';
 
-                     // === CHANGED Rs to € ===
                      alertEl.innerHTML = `
                         <div><i data-lucide="${icon}" class="w-5 h-5 ${iconColor} mt-1"></i></div>
                         <div class="flex-1">
                             <p class="font-bold">${event.title}</p>
-                            <p class="text-sm text-slate-400">${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                            ${event.type !== 'General' ? `<p class="font-semibold">€ ${(event.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>` : ''}
+                            <p class="text-sm text-slate-400">${displayDateStr} at ${displayTimeStr}</p>
+                            ${event.type !== 'General' ? `<p class="font-semibold">€ ${(event.amount || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>` : ''}
                         </div>
                      `;
                      list.appendChild(alertEl);
@@ -739,7 +761,6 @@
             }
 
         }
-
 
         const showToast = (message, isSuccess = true) => {
             toast.textContent = message;
