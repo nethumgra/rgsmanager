@@ -1452,7 +1452,7 @@
                  }
             });
             
-            // --- MODIFIED: SUMMARY CARD LOGIC (Uses ALL filters) ---
+            // === START: MODIFIED SUMMARY CARD LOGIC (Handles YTD Profit) ===
             
             // Get all current filter values
             const year = selectedYear;
@@ -1461,59 +1461,77 @@
             const type = filterType.value;
             const categoryInput = filterCategory.value.toLowerCase();
 
-            // We only filter from *actual transactions* for the summary cards
-            let filteredSummaryTrans = allTransactions; 
-
-            // Apply filters sequentially:
+            // --- 1. Calculate totals for the selected period (for Income/Expense cards) ---
+            let periodTransactions = allTransactions; 
             
-            // 1. Date Filter (if set, it overrides Year/Month)
             if (dateInput) {
                 try {
                     const filterDateVal = new Date(dateInput).setHours(0,0,0,0);
-                    filteredSummaryTrans = filteredSummaryTrans.filter(t => {
+                    periodTransactions = periodTransactions.filter(t => {
                         const itemDate = t.date?.toDate();
                         return itemDate && itemDate.setHours(0,0,0,0) === filterDateVal;
                     });
                 } catch(e) { /* invalid date */ }
             } else {
-                // 2. Year Filter
-                filteredSummaryTrans = filteredSummaryTrans.filter(t => {
+                periodTransactions = periodTransactions.filter(t => {
                     const itemDate = t.date?.toDate();
                     return itemDate && itemDate.getFullYear() === year;
                 });
-                
-                // 3. Month Filter (if not "All Months")
-                if (month !== 0) {
-                     filteredSummaryTrans = filteredSummaryTrans.filter(t => {
+                if (month !== 0) { // If a specific month is selected (not "All Months")
+                     periodTransactions = periodTransactions.filter(t => {
                         const itemDate = t.date?.toDate();
-                        return itemDate && itemDate.getMonth() === (month - 1); // Adjust index
+                        return itemDate && itemDate.getMonth() === (month - 1); // Adjust index (JS month is 0-11)
                     });
                 }
             }
-            
-            // 4. Type Filter
             if (type) {
-                filteredSummaryTrans = filteredSummaryTrans.filter(t => t.type === type);
+                periodTransactions = periodTransactions.filter(t => t.type === type);
             }
-
-            // 5. Category Filter
             if (categoryInput) {
                  if (categoryInput === "customer payment" || categoryInput === "customer payments") {
-                     filteredSummaryTrans = filteredSummaryTrans.filter(t => t.category && t.category.toLowerCase().startsWith("customer payment"));
+                     periodTransactions = periodTransactions.filter(t => t.category && t.category.toLowerCase().startsWith("customer payment"));
                  } else if (categoryInput === "insurance" || categoryInput === "vehicle insurance") {
-                      filteredSummaryTrans = filteredSummaryTrans.filter(t => t.category && t.category.toLowerCase().includes("insurance"));
+                      periodTransactions = periodTransactions.filter(t => t.category && t.category.toLowerCase().includes("insurance"));
                  }
                  else {
-                    filteredSummaryTrans = filteredSummaryTrans.filter(t => t.category && t.category.toLowerCase().includes(categoryInput));
+                    periodTransactions = periodTransactions.filter(t => t.category && t.category.toLowerCase().includes(categoryInput));
                  }
             }
 
-            // Now, calculate totals based on this `filteredSummaryTrans`
-            const income = filteredSummaryTrans.reduce((sum, t) => sum + (t.type === 'Income' ? (t.amount || 0) : 0), 0);
-            const expenses = filteredSummaryTrans.reduce((sum, t) => sum + (t.type === 'Expense' ? (t.amount || 0) : 0), 0);
-            const profit = income - expenses;
+            // Calculate Income and Expenses for the selected period
+            const periodIncome = periodTransactions.reduce((sum, t) => sum + (t.type === 'Income' ? (t.amount || 0) : 0), 0);
+            const periodExpenses = periodTransactions.reduce((sum, t) => sum + (t.type === 'Expense' ? (t.amount || 0) : 0), 0);
             
-            // Update summary card titles dynamically
+            // --- 2. Calculate Profit (default to period profit) ---
+            let finalProfit = periodIncome - periodExpenses;
+            let profitTitle = 'Profit';
+            
+            // --- 3. OVERWRITE Profit with YTD calculation IF no filters are applied ---
+            const noFiltersApplied = !dateInput && !type && !categoryInput;
+            
+            if (noFiltersApplied) {
+                // Determine the last month to include in YTD calculation
+                // month: 0=All, 1=Jan, ..., 12=Dec. JS getMonth(): 0=Jan, ..., 11=Dec
+                const lastMonthIndex = (month === 0) ? 11 : (month - 1); // 11 (Dec) if 'All Months', else 0-10
+                
+                const ytdTransactions = allTransactions.filter(t => {
+                    const itemDate = t.date?.toDate();
+                    if (!itemDate) return false;
+                    // Check year AND month is less than or equal to the last month index
+                    return itemDate.getFullYear() === year && itemDate.getMonth() <= lastMonthIndex;
+                });
+                
+                // Calculate YTD Profit (Income - Expenses)
+                const ytdProfit = ytdTransactions.reduce((sum, t) => {
+                    const amount = t.amount || 0;
+                    return sum + (t.type === 'Income' ? amount : -amount);
+                }, 0);
+                
+                finalProfit = ytdProfit; // Overwrite the profit value
+                profitTitle = (month === 0) ? 'Total Profit' : 'Profit (YTD)'; // Change title
+            }
+            
+            // --- 4. Update Titles ---
             let titleSuffix = '';
             if (dateInput) {
                 titleSuffix = `(${dateInput})`;
@@ -1521,19 +1539,23 @@
                 const monthName = availableMonths[month];
                 titleSuffix = `(${monthName}, ${year})`;
             }
-            
-            // Add filter indicators to title
             if (type) titleSuffix += ` [${type}]`;
             if (categoryInput) titleSuffix += ` [${categoryInput}]`;
             
             totalIncomeTitle.textContent = `Total Income ${titleSuffix}`;
             totalExpensesTitle.textContent = `Total Expenses ${titleSuffix}`;
-            totalProfitTitle.textContent = `Profit ${titleSuffix}`;
+            totalProfitTitle.textContent = `${profitTitle} ${titleSuffix}`;
 
-            // Update summary card values
-            document.getElementById('totalIncome').textContent = `€ ${income.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('totalExpenses').textContent = `€ ${expenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('totalProfit').textContent = `€ ${profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            // --- 5. Update Values ---
+            document.getElementById('totalIncome').textContent = `€ ${periodIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            // !!!!!!!!!!   MEKA THAMAI HADAPU THANA (THIS IS THE FIX) !!!!!!!!!!
+            document.getElementById('totalExpenses').textContent = `€ ${periodExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            // !!!!!!!!!!   END OF FIX   !!!!!!!!!!
+
+            document.getElementById('totalProfit').textContent = `€ ${finalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            // === END: MODIFIED SUMMARY CARD LOGIC ===
         }
         
         lucide.createIcons();
