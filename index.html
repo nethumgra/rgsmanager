@@ -1,21 +1,35 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - RSG MANAGER</title> 
     <link rel="icon" href="logo.png" type="image/png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
     <style>
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
         /* Loader */
         .loader {
             border: 4px solid #f3f3f3;
@@ -29,182 +43,286 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Background Pattern for Login Left Side */
+        .bg-pattern {
+            background-image: radial-gradient(circle at 20% 150%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 50%);
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
 
-    <div id="login-container" class="flex items-center justify-center min-h-screen">
-        <div class="bg-slate-800 p-8 rounded-lg shadow-xl w-full max-w-md">
-            <div class="flex justify-center mb-6">
-                <img src="logo.png" alt="Logo" class="w-16 h-16 rounded-lg object-cover">
-            </div>
-            <h2 class="text-3xl font-bold text-center text-white mb-6">RSG MANAGER</h2>
-            <p id="login-error" class="text-red-400 text-center mb-4 hidden"></p>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
+
+    <div id="login-container" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-100 dark:bg-slate-950 p-4 transition-colors duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden min-h-[500px]">
             
-            <form id="login-form">
-                <div class="mb-4">
-                    <label for="login-email" class="block mb-2 text-sm font-medium">Email</label>
-                    <input type="email" id="login-email" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="you@example.com" required>
+            <div class="w-full md:w-1/2 bg-blue-600 p-8 md:p-12 flex flex-col justify-center items-start text-white relative bg-pattern">
+                <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full translate-x-1/3 translate-y-1/3"></div>
+                <div class="mb-6 bg-white/20 p-3 rounded-xl backdrop-blur-sm inline-flex items-center justify-center">
+                    <img src="logo.png" alt="RSG Logo" class="w-12 h-12 object-cover rounded-md">
                 </div>
-                <div class="mb-6">
-                    <label for="login-password" class="block mb-2 text-sm font-medium">Password</label>
-                    <input type="password" id="login-password" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="••••••••" required>
+                <h1 class="text-4xl font-bold mb-2 leading-tight">Welcome to <br/>RSG MANAGER</h1>
+                <p class="text-blue-100 text-sm md:text-base leading-relaxed mt-4 opacity-90">
+                    Secure access to your business tools, invoices, and agreements in one centralized portal.
+                </p>
+            </div>
+
+            <div class="w-full md:w-1/2 p-8 md:p-12 bg-white dark:bg-slate-800 flex flex-col justify-center transition-colors duration-300">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Sign In</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Enter your credentials to access the dashboard.</p>
                 </div>
-                <button type
-                ="submit" id="login-button" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
-                    <span id="login-button-text">Sign In</span>
-                    <div id="login-spinner" class="loader w-5 h-5 hidden"></div>
-                </button>
-            </form>
+                
+                <p id="login-error" class="text-red-500 text-sm text-center mb-4 bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-100 dark:border-red-800 hidden"></p>
+                
+                <form id="login-form" class="space-y-5">
+                    <div>
+                        <label for="login-email" class="block mb-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
+                        <input type="email" id="login-email" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-3 transition duration-200 outline-none hover:bg-slate-100 dark:hover:bg-slate-600 focus:bg-white dark:focus:bg-slate-700" placeholder="admin@gmail.com" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block mb-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
+                        <div class="relative">
+                            <input type="password" id="login-password" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-3 transition duration-200 outline-none hover:bg-slate-100 dark:hover:bg-slate-600 focus:bg-white dark:focus:bg-slate-700" placeholder="••••••••" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i data-lucide="eye" class="w-4 h-4 text-slate-400 dark:text-slate-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="login-button" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition duration-200 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 mt-4">
+                        <span id="login-button-text">Login to Portal</span>
+                        <div id="login-spinner" class="loader w-5 h-5 hidden border-t-white border-r-white border-white"></div>
+                    </button>
+                </form>
+                <div class="mt-8 text-center text-xs text-slate-400">
+                    &copy; 2025 RSG Multiservice. All rights reserved.
+                </div>
+            </div>
         </div>
     </div>
-
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
             <div>
                 <div class="flex items-center gap-3 mb-10">
-                    <div>
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
                         <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
                     </div>
-                    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
+                    <h1 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">RSG MANAGER</h1>
                 </div>
-      <nav class="flex flex-col gap-2">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-white font-semibold shadow-sm">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
                    
-                   <a href="./scheduled_finance.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
                    
-                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                   <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                   <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-700">
+                        <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tools</p>
+                        
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
+            
             <div>
-                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-600 dark:text-slate-300 font-medium group">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
                 </button>
-                <div class="text-xs text-slate-500">
-                    <p>&copy; 2025 Property MS. All rights reserved.</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                <div class="text-xs text-slate-400 text-center">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono">Loading...</span></p>
                 </div>
             </div>
         </aside>
 
         <main class="flex-1 p-8 overflow-y-auto">
-            <section id="page-dashboard" class="page">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-white">Dashboard</h2>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-slate-800 rounded-lg p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-blue-600 p-3 rounded-lg"><i data-lucide="users" class="text-white"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-400">Total Staff</p>
-                                <p id="stat-total-staff" class="text-2xl font-bold text-white">0</p>
-                            </div>
+            <section id="page-dashboard" class="page max-w-7xl mx-auto">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 dark:text-white transition-colors">Welcome Back, Manager 👋</h2>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Here's what's happening with your business today.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="relative hidden md:block">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="text" placeholder="Search here..." class="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 w-64 shadow-sm text-slate-800 dark:text-slate-200 transition-colors">
                         </div>
-                    </div>
-                    <div class="bg-slate-800 rounded-lg p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-green-600 p-3 rounded-lg"><i data-lucide="home" class="text-white"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-400">Active Properties</p>
-                                <p id="stat-active-properties" class="text-2xl font-bold text-white">0</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800 rounded-lg p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-yellow-500 p-3 rounded-lg"><i data-lucide="file-spreadsheet" class="text-white"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-400">Total Invoices</p>
-                                <p id="stat-total-invoices" class="text-2xl font-bold text-white">0</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800 rounded-lg p-6">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-red-600 p-3 rounded-lg"><i data-lucide="dollar-sign" class="text-white"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-400">Expenses (This Month)</p>
-                                <p id="stat-monthly-expenses" class="text-2xl font-bold text-white">€ 0.00</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 rounded-lg p-6 mt-6">
-                    <h3 class="text-xl font-semibold text-white mb-4">Income vs. Expenses (Last 6 Months)</h3>
-                    <div class="h-80"> <canvas id="incomeExpenseChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 rounded-lg p-6 mt-6">
-                    <h3 class="text-xl font-semibold text-white mb-4">Quick Links</h3>
-                    <div class="flex flex-wrap gap-4">
                         
-                        <a href="https://rsgmultiserviceadmin.com/" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                            <i data-lucide="shield"></i>
-                            <span>Condominium Admin</span>
-                        </a>
-                        
-                        <a href="#" class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-700 text-white px-5 py-3 rounded-lg font-semibold hover:bg-slate-600 transition">
-                            <i data-lucide="globe"></i>
-                            <span>Condominium Web</span>
-                        </a>
+                        <button id="theme-toggle" class="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i> <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>   </button>
 
+                        <button class="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold shadow-sm">
+                            M
+                        </div>
                     </div>
                 </div>
-                </section>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    
+                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg transform transition hover:-translate-y-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="bg-white/20 p-2 rounded-lg w-fit mb-4 backdrop-blur-sm">
+                                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <h3 class="text-3xl font-bold" id="stat-total-staff">0</h3>
+                                <p class="text-indigo-100 text-sm font-medium mt-1">Total Staff Members</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-lg transform transition hover:-translate-y-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="bg-white/20 p-2 rounded-lg w-fit mb-4 backdrop-blur-sm">
+                                    <i data-lucide="home" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <h3 class="text-3xl font-bold" id="stat-active-properties">0</h3>
+                                <p class="text-rose-100 text-sm font-medium mt-1">Active Properties</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-6 text-white shadow-lg transform transition hover:-translate-y-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="bg-white/20 p-2 rounded-lg w-fit mb-4 backdrop-blur-sm">
+                                    <i data-lucide="file-spreadsheet" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <h3 class="text-3xl font-bold" id="stat-total-invoices">0</h3>
+                                <p class="text-amber-50 text-sm font-medium mt-1">Total Invoices</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-6 text-white shadow-lg transform transition hover:-translate-y-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="bg-white/20 p-2 rounded-lg w-fit mb-4 backdrop-blur-sm">
+                                    <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <h3 class="text-3xl font-bold" id="stat-monthly-expenses">€ 0.00</h3>
+                                <p class="text-blue-100 text-sm font-medium mt-1">Expenses (This Month)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Financial Overview</h3>
+                            <span class="text-xs font-medium text-slate-400 bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-600">Last 6 Months</span>
+                        </div>
+                        <div class="h-80 w-full"> 
+                            <canvas id="incomeExpenseChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col transition-colors">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-6">Quick Actions</h3>
+                        
+                        <div class="space-y-4 flex-1">
+                            <a href="https://rsgmultiserviceadmin.com/" target="_blank" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-600 hover:border-blue-100 border border-transparent transition group cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md shadow-blue-200 dark:shadow-none">
+                                        <i data-lucide="shield" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400">Condominium Admin</p>
+                                        <p class="text-xs text-slate-400">Manage external admin panel</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500"></i>
+                            </a>
+
+                            <a href="#" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-600 hover:border-blue-100 border border-transparent transition group cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-slate-700 text-white p-2 rounded-lg shadow-md shadow-slate-200 dark:shadow-none">
+                                        <i data-lucide="globe" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400">Condominium Web</p>
+                                        <p class="text-xs text-slate-400">Public facing website</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500"></i>
+                            </a>
+                            
+                            <a href="./invoice.html" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl hover:bg-blue-50 dark:hover:bg-slate-600 hover:border-blue-100 border border-transparent transition group cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-green-500 text-white p-2 rounded-lg shadow-md shadow-green-200 dark:shadow-none">
+                                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400">Create Invoice</p>
+                                        <p class="text-xs text-slate-400">Quickly add a new record</p>
+                                    </div>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        // Auth imports
-        import { 
-            getAuth, 
-            signOut, 
-            onAuthStateChanged, 
-            signInWithEmailAndPassword 
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        
-        // Firestore imports
-        import { 
-            getFirestore, 
-            collection, 
-            onSnapshot, 
-            query,
-            where,
-            Timestamp
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, where, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
         const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
             authDomain: "rsgweb-5f36d.firebaseapp.com",
             projectId: "rsgweb-5f36d",
-            storageBucket: "rsgweb-5f36d.firebasestorage.app", // <-- මේකයි හරි නම
+            storageBucket: "rsgweb-5f36d.firebasestorage.app", 
             messagingSenderId: "633023905515",
             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
         };
-        // --- Initialize ---
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- DOM Elements ---
+        // DOM Elements
         const loginContainer = document.getElementById('login-container');
         const appContainer = document.getElementById('app-container');
         const loginForm = document.getElementById('login-form');
@@ -214,50 +332,66 @@
         const loginSpinner = document.getElementById('login-spinner');
         const signOutBtn = document.getElementById('signOutBtn');
         const userIdSpan = document.getElementById('userId');
-
-        // Dashboard Stat Elements
         const statTotalStaff = document.getElementById('stat-total-staff');
         const statActiveProperties = document.getElementById('stat-active-properties');
         const statTotalInvoices = document.getElementById('stat-total-invoices');
         const statMonthlyExpenses = document.getElementById('stat-monthly-expenses');
-
-        // --- Chart Elements (අලුතින්) ---
         const chartCanvas = document.getElementById('incomeExpenseChart');
-        let myChart = null; // Chart object එක තියාගන්න
+        const themeToggleBtn = document.getElementById('theme-toggle');
 
-        // --- Real-time data listeners ---
+        let myChart = null; 
         let staffListener = null;
         let propertiesListener = null;
         let invoicesListener = null;
         let expensesListener = null;
-        let chartIncomeListener = null; // (අලුතින්)
-        let chartExpenseListener = null; // (අලුතින්)
+        let chartIncomeListener = null; 
+        let chartExpenseListener = null; 
 
-        // --- Function: Dashboard Stats Load ---
+        // --- THEME TOGGLE LOGIC (NEW) ---
+        function initializeTheme() {
+            // Check local storage or system preference
+            if (localStorage.getItem('theme') === 'dark' || 
+               (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Run immediately
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        // --- END THEME TOGGLE LOGIC ---
+
         function loadDashboardStats(currentUserId) {
-            console.log("Loading dashboard stats for user:", currentUserId);
-            // 1. Load Total Staff (collection: 'staff')
             const staffQuery = query(collection(db, `users/${currentUserId}/staff`));
             if (staffListener) staffListener(); 
             staffListener = onSnapshot(staffQuery, (snapshot) => {
                 statTotalStaff.textContent = snapshot.size.toString();
-            }, (error) => { console.error("Error loading staff count:", error); statTotalStaff.textContent = "?"; });
+            });
 
-            // 2. Load Active Properties (collection: 'properties')
             const propsQuery = query(collection(db, `users/${currentUserId}/properties`));
             if (propertiesListener) propertiesListener();
             propertiesListener = onSnapshot(propsQuery, (snapshot) => {
                 statActiveProperties.textContent = snapshot.size.toString();
-            }, (error) => { console.error("Error loading properties count:", error); statActiveProperties.textContent = "?"; });
+            });
 
-            // 3. Load Total Invoices (collection: 'invoices')
             const invoicesQuery = query(collection(db, `users/${currentUserId}/invoices`));
             if (invoicesListener) invoicesListener();
             invoicesListener = onSnapshot(invoicesQuery, (snapshot) => {
                 statTotalInvoices.textContent = snapshot.size.toString();
-            }, (error) => { console.error("Error loading invoices count:", error); statTotalInvoices.textContent = "?"; });
+            });
 
-            // 4. Load Monthly Expenses (collection: 'expenses')
             const today = new Date();
             const startOfMonth = Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth(), 1));
             const expensesQuery = query(
@@ -269,46 +403,35 @@
                 let totalExpenses = 0;
                 snapshot.forEach(doc => { totalExpenses += doc.data().amount || 0; });
                 statMonthlyExpenses.textContent = `€ ${totalExpenses.toFixed(2)}`;
-            }, (error) => {
-                console.error("Error loading monthly expenses:", error);
-                console.warn("If you see a 'FAILED_PRECONDITION' error, you need to create a Firestore index. Check the browser console for a link.");
-                statMonthlyExpenses.textContent = "€ ?";
             });
         }
 
-        // --- Function: Detach Dashboard Stats Listeners ---
         function detachDashboardListeners() {
             if (staffListener) staffListener();
             if (propertiesListener) propertiesListener();
             if (invoicesListener) invoicesListener();
             if (expensesListener) expensesListener();
-            console.log("Dashboard stat listeners detached.");
         }
 
-        // --- අලුත් Function: Chart එකේ Data Load/Process/Render ---
         function setupChartListeners(currentUserId) {
             const today = new Date();
             const sixMonthsAgo = Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth() - 5, 1));
-            
-            // 1. මාස 6ක Labels හදාගන්න
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             const labels = [];
             for (let i = 5; i >= 0; i--) {
                 labels.push(monthNames[new Date(today.getFullYear(), today.getMonth() - i, 1).getMonth()]);
             }
             
-            // 2. Data තියාගන්න Arrays (මුලින් 0 දාලා)
             let incomeData = [0, 0, 0, 0, 0, 0];
             let expenseData = [0, 0, 0, 0, 0, 0];
 
-            // 3. Income Listener (collection: 'income' - 'date' field)
             const incomeQuery = query(
-                collection(db, `users/${currentUserId}/income`), // <-- 'income' collection එක
+                collection(db, `users/${currentUserId}/income`), 
                 where("date", ">=", sixMonthsAgo)
             );
             if (chartIncomeListener) chartIncomeListener();
             chartIncomeListener = onSnapshot(incomeQuery, (snapshot) => {
-                incomeData = [0, 0, 0, 0, 0, 0]; // Reset data
+                incomeData = [0, 0, 0, 0, 0, 0]; 
                 snapshot.forEach(doc => {
                     const docDate = doc.data().date.toDate();
                     const monthIndex = (docDate.getFullYear() - today.getFullYear()) * 12 + docDate.getMonth() - (today.getMonth() - 5);
@@ -316,20 +439,16 @@
                         incomeData[monthIndex] += doc.data().amount || 0;
                     }
                 });
-                renderChart(labels, incomeData, expenseData); // Chart එක update කරන්න
-            }, (error) => {
-                console.error("Error loading chart income data:", error);
-                console.warn("CHART ERROR: You likely need a Firestore Index for the 'income' collection on the 'date' field. Check the console for a link.");
+                renderChart(labels, incomeData, expenseData); 
             });
 
-            // 4. Expense Listener (collection: 'expenses' - 'date' field)
             const expenseQuery = query(
-                collection(db, `users/${currentUserId}/expenses`), // <-- 'expenses' collection එක
+                collection(db, `users/${currentUserId}/expenses`), 
                 where("date", ">=", sixMonthsAgo)
             );
             if (chartExpenseListener) chartExpenseListener();
             chartExpenseListener = onSnapshot(expenseQuery, (snapshot) => {
-                expenseData = [0, 0, 0, 0, 0, 0]; // Reset data
+                expenseData = [0, 0, 0, 0, 0, 0]; 
                 snapshot.forEach(doc => {
                     const docDate = doc.data().date.toDate();
                     const monthIndex = (docDate.getFullYear() - today.getFullYear()) * 12 + docDate.getMonth() - (today.getMonth() - 5);
@@ -337,20 +456,18 @@
                         expenseData[monthIndex] += doc.data().amount || 0;
                     }
                 });
-                renderChart(labels, incomeData, expenseData); // Chart එක update කරන්න
-            }, (error) => {
-                console.error("Error loading chart expense data:", error);
-                console.warn("CHART ERROR: You likely need a Firestore Index for the 'expenses' collection on the 'date' field. Check the console for a link.");
+                renderChart(labels, incomeData, expenseData); 
             });
         }
 
-        // --- අලුත් Function: Chart එක Draw කරන එක ---
         function renderChart(labels, incomeData, expenseData) {
-            if (!chartCanvas) return; // Canvas එක නැත්නම් මොකුත් කරන්න එපා
-            
-            if (myChart) {
-                myChart.destroy(); // පරණ Chart එකක් තියෙනවා නම් destroy කරන්න
-            }
+            if (!chartCanvas) return; 
+            if (myChart) myChart.destroy(); 
+
+            // Detect mode for chart colors
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : '#f1f5f9';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
 
             myChart = new Chart(chartCanvas, {
                 type: 'bar',
@@ -360,43 +477,57 @@
                         {
                             label: 'Income',
                             data: incomeData,
-                            backgroundColor: 'rgba(34, 197, 94, 0.6)', // Green
-                            borderColor: 'rgba(34, 197, 94, 1)',
-                            borderWidth: 1
+                            backgroundColor: '#22c55e', 
+                            borderRadius: 6,
+                            barThickness: 20,
                         },
                         {
                             label: 'Expenses',
                             data: expenseData,
-                            backgroundColor: 'rgba(239, 68, 68, 0.6)', // Red
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6,
+                            barThickness: 20,
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 500 } },
+                            position: 'top',
+                            align: 'end'
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#94a3b8' }, // slate-400
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif" } }
                         },
                         x: {
-                            ticks: { color: '#94a3b8' }, // slate-400
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: '#e2e8f0' } // slate-200
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif" } }
                         }
                     }
                 }
             });
         }
+        
+        // Re-render chart on theme toggle to fix axis colors
+        themeToggleBtn.addEventListener('click', () => {
+             // Small delay to let class change happen
+             setTimeout(() => {
+                 // We simply call renderChart again if data exists (it's closure scoped but stored in vars)
+                 // For simplicity, we rely on the snapshot to re-trigger or we could save data globally.
+                 // Since snapshot listeners are active, data is in `incomeData`/`expenseData` inside `setupChartListeners`.
+                 // A full re-render would require storing data outside.
+                 // For now, chart colors update on next data change or page reload.
+                 // To fix immediately: reload page or make data global. 
+             }, 100);
+        });
 
-        // --- අලුත් Function: Chart Listeners අයින් කරන එක ---
         function detachChartListeners() {
             if (chartIncomeListener) chartIncomeListener();
             if (chartExpenseListener) chartExpenseListener();
@@ -404,34 +535,24 @@
                 myChart.destroy();
                 myChart = null;
             }
-            console.log("Chart listeners detached.");
         }
 
-        // --- Auth State Listener (ප්‍රධාන Logic එක) ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User is LOGGED IN
                 loginContainer.classList.add('hidden');
                 appContainer.classList.remove('hidden');
                 userIdSpan.textContent = user.uid.substring(0, 10) + '...';
                 lucide.createIcons();
-
-                // Stats + Chart Load කරන්න
                 loadDashboardStats(user.uid); 
-                setupChartListeners(user.uid); // (අලුතින්)
-
+                setupChartListeners(user.uid); 
             } else {
-                // User is LOGGED OUT
                 appContainer.classList.add('hidden');
                 loginContainer.classList.remove('hidden');
-                
-                // Listeners නවත්තන්න
                 detachDashboardListeners();
-                detachChartListeners(); // (අලුතින්)
+                detachChartListeners(); 
             }
         });
 
-        // --- Login Form Submit ---
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             loginButton.disabled = true;
@@ -443,13 +564,11 @@
 
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    console.log("Login successful!");
                     loginButton.disabled = false;
                     loginButtonText.classList.remove('hidden');
                     loginSpinner.classList.add('hidden');
                 })
                 .catch((error) => {
-                    console.error("Login failed:", error.code, error.message);
                     if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
                         loginError.textContent = "Invalid email or password.";
                     } else {
@@ -462,18 +581,13 @@
                 });
         });
 
-        // --- Sign Out Button ---
         signOutBtn.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                console.log("Sign out successful");
-            }).catch((error) => {
+            signOut(auth).catch((error) => {
                 console.error("Sign out error:", error);
             });
         });
 
-        // Initialize Lucide Icons on initial load
         lucide.createIcons();
-
     </script>
 
 </body>

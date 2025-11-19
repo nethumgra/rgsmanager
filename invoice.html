@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,211 +11,275 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
     <style>
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        /* Loader */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         .file-input-label {
-            display: inline-block;
-            padding: 10px 16px;
-            font-size: 14px;
-            background-color: #3b82f6; /* Blue */
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; font-weight: 500;
+            background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;
         }
-        .file-input-label:hover {
-            background-color: #2563eb; /* Darker Blue */
+        .file-input-label:hover { background-color: #2563eb; transform: translateY(-1px); }
+        .file-input { display: none; }
+
+        tr.hover-row:hover td { background-color: #f1f5f9; } /* Light mode hover darker */
+        .dark tr.hover-row:hover td { background-color: #1e293b; }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; width: 100px; height: 4px;
+            background: #cbd5e1; border-radius: 5px; outline: none;
         }
-        .file-input {
-            display: none;
+        .dark input[type=range] { background: #475569; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            border-radius: 50%; background: #3b82f6; cursor: pointer; transition: background .15s ease-in-out;
         }
-         /* Modal specific scrollbar (optional but good for consistency) */
-        #invoiceModal .modal-scroll-content::-webkit-scrollbar { width: 6px; }
-        #invoiceModal .modal-scroll-content::-webkit-scrollbar-track { background: #374151; } /* gray-700 */
-        #invoiceModal .modal-scroll-content::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; } /* gray-500 */
-        #invoiceModal .modal-scroll-content::-webkit-scrollbar-thumb:hover { background: #9ca3af; } /* gray-400 */
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
+
+        /* Modal specific scrollbar */
+        .modal-scroll-content::-webkit-scrollbar { width: 6px; }
+        .modal-scroll-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-scroll-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .modal-scroll-content::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
 
-    <div id="app-container" class="flex h-screen hidden"> <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
+
+    <div id="app-container" class="flex h-screen hidden">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
             <div>
-               <div class="flex items-center gap-3 mb-10">
-                    <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
                         <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
                     </div>
-                    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
+                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
                 </div>
-            <nav class="flex flex-col gap-2">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
                    
-                   <a href="./scheduled_finance.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
-                   
-                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                   <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                     <i data-lucide="log-out"></i><span>Sign Out</span>
-                 </button>
-                 <div class="text-xs text-slate-500">
-                     <p>&copy; 2025 Property MS. All rights reserved.</p>
-                     <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
-                 </div>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500 text-center">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
+                </div>
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <section id="page-invoices" class="page">
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+            <section id="page-invoices" class="page max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
                 
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-white">Invoices</h2>
-                    <div class="flex gap-4">
-                        <button id="downloadAllPdfsBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
-                            <i data-lucide="download-cloud"></i> 
-                            <span id="downloadAllPdfsBtnText">Download All PDFs</span>
-                            <div id="downloadAllPdfsSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Invoice Management</h2>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1 font-medium">Create, track, and download invoices.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                             <input type="range" id="brightness-slider" min="0" max="70" value="0" title="Adjust Brightness">
+                         </div>
+                         <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                         </button>
-                        <button id="addInvoiceBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
-                            <i data-lucide="plus"></i> Add New Invoice
+                        
+                        <button id="downloadAllPdfsBtn" class="bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-500 transition flex items-center gap-2 shadow-lg shadow-green-900/20 text-sm">
+                             <i data-lucide="download-cloud" class="w-4 h-4"></i> 
+                             <span id="downloadAllPdfsBtnText">Download All PDFs</span>
+                             <div id="downloadAllPdfsSpinner" class="loader ml-2 hidden" style="width:16px; height:16px;"></div>
+                        </button>
+
+                        <button id="addInvoiceBtn" class="bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-slate-900/20 dark:shadow-blue-900/20">
+                             <i data-lucide="plus" class="w-4 h-4"></i> Add Invoice
                         </button>
                     </div>
                 </div>
-                <div class="bg-slate-800 rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                     <div class="md:col-span-2">
-                         <label for="searchInvoice" class="block mb-2 text-sm font-medium">Search by Invoice No or Client</label>
-                         <input type="text" id="searchInvoice" placeholder="Enter invoice number or client name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                     </div>
-                     <div>
-                         <button id="clearFiltersBtn" class="w-full bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear Search</button>
-                     </div>
-                 </div>
 
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6 shadow-sm">
+                     <div class="flex flex-col md:flex-row items-end gap-4">
+                         <div class="flex-1 w-full">
+                             <label for="searchInvoice" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Search Invoices</label>
+                             <div class="relative">
+                                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                 <input type="text" id="searchInvoice" placeholder="Search by Invoice No or Client..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
+                             </div>
+                         </div>
+                         <button id="clearFiltersBtn" class="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-sm font-bold transition">
+                             Clear
+                         </button>
+                     </div>
+                </div>
 
-                <div class="bg-slate-800 rounded-lg overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-700">
-                            <tr>
-                                <th class="p-4 font-semibold text-white">Date</th>
-                                <th class="p-4 font-semibold text-white">Invoice No</th>
-                                <th class="p-4 font-semibold text-white">Client Name</th>
-                                <th class="p-4 font-semibold text-white text-right">Amount (€)</th> <th class="p-4 font-semibold text-white">PDF</th>
-                                <th class="p-4 font-semibold text-white">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceTableBody">
-                            <tr><td colspan="6" class="text-center p-8 text-slate-400">Loading invoices...</td></tr>
-                        </tbody>
-                    </table>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Invoice No</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Client Name</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right">Amount (€)</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center">PDF</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
+                                <tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium">Loading invoices...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <div id="invoiceModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10 px-4">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[95vh]" id="invoice-modal-content"> <div class="flex justify-between items-center mb-6 flex-shrink-0">
-                <h3 id="invoiceModalTitle" class="text-2xl font-bold text-white">Add New Invoice</h3>
-                <button id="closeInvoiceModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+    <div id="invoiceModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10 px-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 flex flex-col max-h-[95vh] shadow-2xl border border-slate-100 dark:border-slate-700" id="invoice-modal-content">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4 flex-shrink-0">
+                <h3 id="invoiceModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Add New Invoice</h3>
+                <button id="closeInvoiceModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
 
-            <div class="flex-grow overflow-y-auto modal-scroll-content pr-4 -mr-4">
+            <div class="flex-grow overflow-y-auto modal-scroll-content pr-2">
                 <form id="invoiceForm">
                     <input type="hidden" id="invoiceDocId">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
                         <div>
-                            <label for="modalInvoiceDate" class="block mb-2 text-sm font-medium text-slate-300">Date</label>
-                            <input type="date" id="modalInvoiceDate" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
+                            <label for="modalInvoiceDate" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
+                            <input type="date" id="modalInvoiceDate" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium transition" required>
                         </div>
                         <div>
-                            <label for="modalInvoiceNo" class="block mb-2 text-sm font-medium text-slate-300">Invoice No</label>
-                            <input type="text" id="modalInvoiceNo" placeholder="e.g., INV-001" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
+                            <label for="modalInvoiceNo" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Invoice No</label>
+                            <input type="text" id="modalInvoiceNo" placeholder="e.g., INV-001" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium transition" required>
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <label for="modalClientName" class="block mb-2 text-sm font-medium text-slate-300">Client Name</label>
-                        <input type="text" id="modalClientName" placeholder="Enter client's name" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
+                    <div class="mb-5">
+                        <label for="modalClientName" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Client Name</label>
+                        <input type="text" id="modalClientName" placeholder="Enter client's name" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium transition" required>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 border-t border-slate-700 pt-6 mt-6">
-                         <div>
-                             <label for="modalAmountWithoutTax" class="block mb-2 text-sm font-medium text-slate-300">Amount (Without Tax)</label>
-                             <input type="number" step="0.01" min="0" id="modalAmountWithoutTax" placeholder="e.g., 1000.00" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" required>
-                         </div>
-                         <div>
-                             <label for="modalTaxAmountInput" class="block mb-2 text-sm font-medium text-slate-300">Tax Amount (€)</label>
-                             <input type="number" step="0.01" min="0" id="modalTaxAmountInput" placeholder="e.g., 100.00" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500">
-                         </div>
-                         <div>
-                             <label class="block mb-2 text-sm font-medium text-slate-300">Amount (With Tax)</label>
-                             <p id="modalAmountWithTaxDisplay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2.5 min-h-[42px] font-semibold">€ 0.00</p>
-                         </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-xl border border-slate-100 dark:border-slate-700 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div>
+                                 <label for="modalAmountWithoutTax" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Amount (No Tax)</label>
+                                 <input type="number" step="0.01" min="0" id="modalAmountWithoutTax" placeholder="0.00" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 font-medium text-right" required>
+                             </div>
+                             <div>
+                                 <label for="modalTaxAmountInput" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Tax (€)</label>
+                                 <input type="number" step="0.01" min="0" id="modalTaxAmountInput" placeholder="0.00" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 font-medium text-right">
+                             </div>
+                             <div>
+                                 <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Total</label>
+                                 <p id="modalAmountWithTaxDisplay" class="w-full bg-blue-50 dark:bg-slate-700 border border-blue-100 dark:border-slate-600 text-blue-700 dark:text-white rounded-lg p-2.5 text-right font-bold">€ 0.00</p>
+                             </div>
+                        </div>
                     </div>
-                    <div class="mb-6 border-t border-slate-700 pt-6 mt-6">
-                         <label for="modalPdfFile" class="block mb-2 text-sm font-medium text-slate-300">Upload Related PDF</label>
-                         <label for="modalPdfFile" class="file-input-label">Choose PDF File</label>
-                         <input type="file" id="modalPdfFile" class="file-input" accept=".pdf">
-                         <span id="modalPdfFileName" class="ml-4 text-slate-400 text-sm">No file chosen</span>
-                         <a href="#" id="modalExistingPdfLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing PDF</a>
+
+                    <div class="mb-2">
+                         <label for="modalPdfFile" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Upload PDF</label>
+                         <div class="flex items-center gap-3">
+                            <label for="modalPdfFile" class="file-input-label text-xs py-2 px-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer rounded-lg border border-slate-200 dark:border-slate-600 transition">Choose PDF</label>
+                            <input type="file" id="modalPdfFile" class="file-input" accept=".pdf">
+                            <span id="modalPdfFileName" class="text-slate-500 dark:text-slate-400 text-xs truncate max-w-[200px] font-medium">No file chosen</span>
+                         </div>
+                         <a href="#" id="modalExistingPdfLink" target="_blank" class="text-blue-600 dark:text-blue-400 text-xs mt-2 block hidden hover:underline font-bold flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i> View Existing PDF</a>
                     </div>
                 </form>
-             </div> <div class="flex justify-end gap-4 mt-8 flex-shrink-0 border-t border-slate-700 pt-6">
-                <button type="button" id="cancelInvoiceModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
-                <button type="button" id="submitInvoiceBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 flex-shrink-0 border-t border-slate-100 dark:border-slate-700 pt-4">
+                <button type="button" id="cancelInvoiceModalBtn" class="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                <button type="button" id="submitInvoiceBtn" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg flex items-center">
                     <span id="submitInvoiceBtnText">Save Invoice</span>
-                    <div id="submitInvoiceSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                    <div id="submitInvoiceSpinner" class="loader ml-2 hidden" style="width: 18px; height: 18px;"></div>
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
-
+    <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium flex items-center gap-2 z-[70]">
+         <i data-lucide="check-circle" class="w-5 h-5"></i> <p>Toast message!</p>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; // Removed 'where' as it's not used in this version
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, Timestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"; 
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
-
         const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
-            authDomain: "rsgweb-5f36d.firebaseapp.com",
-            projectId: "rsgweb-5f36d",
-            storageBucket: "rsgweb-5f36d.firebasestorage.app", // <-- මේකයි හරි නම
-            messagingSenderId: "633023905515",
-            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+             authDomain: "rsgweb-5f36d.firebaseapp.com",
+             projectId: "rsgweb-5f36d",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app", 
+             messagingSenderId: "633023905515",
+             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
         };
 
         const app = initializeApp(firebaseConfig);
@@ -224,6 +288,40 @@
         const storage = getStorage(app);
         let currentUserId = null;
         let allInvoices = [];
+
+        // Theme & Brightness Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessOverlay = document.getElementById('brightness-overlay');
+
+        function initializeTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            const savedBrightness = localStorage.getItem('brightness') || 0;
+            brightnessSlider.value = savedBrightness;
+            brightnessOverlay.style.opacity = savedBrightness / 100;
+        }
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        brightnessSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            brightnessOverlay.style.opacity = val / 100;
+            localStorage.setItem('brightness', val);
+        });
 
         // --- DOM Elements ---
         const appContainer = document.getElementById('app-container');
@@ -235,12 +333,9 @@
         const searchInput = document.getElementById('searchInvoice');
         const clearFiltersBtn = document.getElementById('clearFiltersBtn');
         
-        // අලුතින් එකතු කළා (DOM Elements)
         const downloadAllPdfsBtn = document.getElementById('downloadAllPdfsBtn');
         const downloadAllPdfsBtnText = document.getElementById('downloadAllPdfsBtnText');
         const downloadAllPdfsSpinner = document.getElementById('downloadAllPdfsSpinner');
-        // /අලුතින් එකතු කළා
-
 
         // Modal Elements
         const invoiceModal = document.getElementById('invoiceModal');
@@ -252,16 +347,14 @@
         const submitInvoiceBtnText = document.getElementById('submitInvoiceBtnText');
         const submitInvoiceSpinner = document.getElementById('submitInvoiceSpinner');
         const invoiceForm = document.getElementById('invoiceForm');
+        
         // Simplified Modal Form Elements
         const modalAmountWithoutTaxInput = document.getElementById('modalAmountWithoutTax');
-        const modalTaxAmountInput = document.getElementById('modalTaxAmountInput'); // <-- MODIFIED
+        const modalTaxAmountInput = document.getElementById('modalTaxAmountInput'); 
         const modalAmountWithTaxDisplay = document.getElementById('modalAmountWithTaxDisplay');
         const modalPdfFileInput = document.getElementById('modalPdfFile');
         const modalPdfFileNameDisplay = document.getElementById('modalPdfFileName');
         const modalExistingPdfLink = document.getElementById('modalExistingPdfLink');
-
-
-        // const TAX_RATE = 0.10; // 10% Tax Rate  <-- REMOVED
 
         // --- Auth ---
         onAuthStateChanged(auth, (user) => {
@@ -279,15 +372,13 @@
              window.location.href = './index.html';
         }));
 
-
-        // අලුතින් එකතු කළා (Download All PDFs Function)
+        // Download All PDFs Function
         const handleDownloadAllPdfs = async () => {
             downloadAllPdfsBtn.disabled = true;
             downloadAllPdfsBtnText.classList.add('hidden');
             downloadAllPdfsSpinner.classList.remove('hidden');
             showToast('Starting PDF download... This may take a while.', true);
 
-            // Search එකෙන් filter වෙලා තිබ්බත්, 'allInvoices' වලින්ම අරගන්නවා
             const invoicesWithPdfs = allInvoices.filter(inv => inv.pdfUrl);
 
             if (invoicesWithPdfs.length === 0) {
@@ -298,29 +389,25 @@
                 return;
             }
 
-            const zip = new JSZip(); // JSZip library එකෙන් අලුත් zip object එකක් හදනවා
+            const zip = new JSZip(); 
             let failedDownloads = [];
             console.log(`Attempting to download ${invoicesWithPdfs.length} PDFs...`);
 
             const fetchPromises = invoicesWithPdfs.map(async (inv) => {
                 try {
-                    // *** වැදගත්: ***
-                    // මෙම fetch() ක්‍රියාව බොහෝවිට CORS දෝෂයක් ලබා දෙනු ඇත.
-                    // විසඳුම සඳහා Firebase Storage > Permissions > CORS settings වෙනස් කරන්න.
                     const response = await fetch(inv.pdfUrl);
                     
                     if (!response.ok) {
                         throw new Error(`Failed to fetch PDF for ${inv.invoiceNo} (status: ${response.status})`);
                     }
-                    const blob = await response.blob(); // PDF එක blob එකක් විදියට ගන්නවා
+                    const blob = await response.blob(); 
 
-                    // ගොනු නාමය පිරිසිදු කිරීම (invalid characters අයින් කිරීම)
                     const safeInvoiceNo = inv.invoiceNo?.replace(/[^a-z0-9-]/gi, '_') || 'NoNum';
                     const safeClientName = inv.clientName?.replace(/[^a-z0-9-]/gi, '_') || 'NoClient';
                     const datePrefix = inv.date?.toDate()?.toISOString()?.split('T')[0] || 'UnknownDate';
                     
                     const fileName = `${datePrefix}_${safeInvoiceNo}_${safeClientName}.pdf`;
-                    zip.file(fileName, blob, { binary: true }); // Zip එකට file එක එකතු කරනවා
+                    zip.file(fileName, blob, { binary: true }); 
                     
                 } catch (error) {
                     console.error(`Failed to download file for invoice ${inv.invoiceNo} (URL: ${inv.pdfUrl}):`, error);
@@ -332,7 +419,6 @@
                 }
             });
 
-            // සියලුම download requests අවසන් වන තෙක් රැඳී සිටීම
             await Promise.all(fetchPromises);
 
             if (Object.keys(zip.files).length === 0) {
@@ -340,9 +426,7 @@
                  console.error("No PDFs were added to the zip. This is likely a CORS issue. Please check your Firebase Storage CORS settings.");
             } else {
                 try {
-                    // ZIP ගොනුව ජනනය කිරීම
                     const content = await zip.generateAsync({ type: 'blob' });
-                    // ZIP ගොනුව Save කිරීම (FileSaver.js library එකෙන්)
                     saveAs(content, 'RSG_Manager_All_Invoices.zip');
                     
                     if (failedDownloads.length > 0) {
@@ -356,20 +440,17 @@
                 }
             }
 
-            // බොත්තම නැවත සක්‍රීය කිරීම
             downloadAllPdfsBtn.disabled = false;
             downloadAllPdfsBtnText.classList.remove('hidden');
             downloadAllPdfsSpinner.classList.add('hidden');
         };
-        // /අලුතින් එකතු කළා
-
 
          // --- Toast ---
         const showToast = (message, isSuccess = true) => {
-            toast.textContent = message;
-            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            toast.querySelector('p').textContent = message;
+            toast.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium flex items-center gap-2 z-[70] ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
         };
 
         // --- File Upload/Delete (Firebase Storage) ---
@@ -407,25 +488,20 @@
              }
         };
 
-
         // --- Invoice Modal Calculation Logic ---
         function calculateModalTax() {
             const amountWithoutTax = parseFloat(modalAmountWithoutTaxInput.value) || 0;
-            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; // <-- MODIFIED: Read from new input
+            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; 
 
             if (amountWithoutTax >= 0 && taxAmount >= 0) {
                 const amountWithTax = amountWithoutTax + taxAmount;
-                // modalTaxAmountDisplay.textContent = ... <-- REMOVED
                 modalAmountWithTaxDisplay.textContent = `€ ${amountWithTax.toFixed(2)}`;
             } else {
-                // modalTaxAmountDisplay.textContent = '€ 0.00'; <-- REMOVED
                 modalAmountWithTaxDisplay.textContent = '€ 0.00';
             }
         }
-        // Add event listener to BOTH input fields
         modalAmountWithoutTaxInput.addEventListener('input', calculateModalTax);
-        modalTaxAmountInput.addEventListener('input', calculateModalTax); // <-- ADDED
-
+        modalTaxAmountInput.addEventListener('input', calculateModalTax); 
 
         // --- Invoice Modal Open/Close ---
         const openInvoiceModal = async (docId = null) => {
@@ -437,7 +513,7 @@
 
             if (docId) {
                 invoiceModalTitle.textContent = 'Edit Invoice';
-                submitInvoiceBtnText.textContent = 'Update';
+                submitInvoiceBtnText.textContent = 'Update Invoice';
                  try {
                      const docRef = doc(db, `users/${currentUserId}/invoices`, docId);
                      const docSnap = await getDoc(docRef);
@@ -446,9 +522,8 @@
                          document.getElementById('modalInvoiceDate').value = data.date?.toDate()?.toISOString()?.split('T')[0] || '';
                          document.getElementById('modalInvoiceNo').value = data.invoiceNo || '';
                          document.getElementById('modalClientName').value = data.clientName || '';
-                         // Populate amount without tax
                          modalAmountWithoutTaxInput.value = data.amountWithoutTax?.toFixed(2) || '0.00';
-                         modalTaxAmountInput.value = data.taxAmount?.toFixed(2) || '0.00'; // <-- ADDED: Populate tax input
+                         modalTaxAmountInput.value = data.taxAmount?.toFixed(2) || '0.00'; 
 
                          if (data.pdfUrl) {
                              modalPdfFileNameDisplay.textContent = 'PDF previously uploaded.';
@@ -470,12 +545,12 @@
                 invoiceModalTitle.textContent = 'Add New Invoice';
                 submitInvoiceBtnText.textContent = 'Save Invoice';
                 document.getElementById('modalInvoiceDate').valueAsDate = new Date();
-                modalAmountWithoutTaxInput.value = ''; // Clear amount field for new invoice
-                modalTaxAmountInput.value = ''; // <-- ADDED: Clear tax field for new invoice
+                modalAmountWithoutTaxInput.value = ''; 
+                modalTaxAmountInput.value = ''; 
                 delete invoiceForm.dataset.existingPdfDeleteUrl;
             }
 
-            calculateModalTax(); // Calculate totals when opening
+            calculateModalTax(); 
             invoiceModal.classList.remove('hidden');
             setTimeout(() => invoiceModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
@@ -488,8 +563,6 @@
                 modalPdfFileNameDisplay.textContent = 'No file chosen';
                 modalExistingPdfLink.classList.add('hidden');
                  delete invoiceForm.dataset.existingPdfDeleteUrl;
-                 // Reset calculated fields
-                 // modalTaxAmountDisplay.textContent = '€ 0.00'; // <-- REMOVED
                  modalAmountWithTaxDisplay.textContent = '€ 0.00';
             }, 300);
         };
@@ -508,11 +581,10 @@
             const invoiceNo = document.getElementById('modalInvoiceNo').value.trim();
             const clientName = document.getElementById('modalClientName').value.trim();
             const amountWithoutTax = parseFloat(modalAmountWithoutTaxInput.value);
-            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; // <-- MODIFIED: Get tax from input (default to 0)
+            const taxAmount = parseFloat(modalTaxAmountInput.value) || 0; 
 
-            // <-- MODIFIED: Updated validation check
             if (!invoiceDate || !invoiceNo || !clientName || isNaN(amountWithoutTax) || amountWithoutTax < 0 || isNaN(taxAmount) || taxAmount < 0) {
-                showToast("Please fill in Date, Invoice No, Client Name, and valid Base & Tax Amounts.", false);
+                showToast("Please fill in Date, Invoice No, Client Name, and valid Amounts.", false);
                 return;
             }
 
@@ -521,7 +593,6 @@
             submitInvoiceSpinner.classList.remove('hidden');
 
             try {
-                // <-- MODIFIED: Recalculation no longer uses TAX_RATE
                 const totalAmount = amountWithoutTax + taxAmount;
 
                 const invoiceData = {
@@ -529,15 +600,14 @@
                     invoiceNo: invoiceNo,
                     clientName: clientName,
                     amountWithoutTax: amountWithoutTax, 
-                    taxAmount: taxAmount, // <-- MODIFIED: Save the manually entered tax amount
+                    taxAmount: taxAmount, 
                     totalAmount: totalAmount, 
                     userId: currentUserId
                 };
 
-                // --- PDF Handling ---
                 const pdfFile = modalPdfFileInput.files[0];
                 const existingPdfDeleteUrl = invoiceForm.dataset.existingPdfDeleteUrl;
-                let pdfNeedsUpdate = false; // Flag to check if PDF info changed
+                let pdfNeedsUpdate = false; 
 
                 if (pdfFile) {
                      pdfNeedsUpdate = true;
@@ -549,28 +619,22 @@
                               await deleteFileFromStorage(existingPdfDeleteUrl);
                          }
                      } else {
-                         throw new Error("PDF upload failed, invoice not saved.");
+                          throw new Error("PDF upload failed, invoice not saved.");
                      }
                  } else if (docId && existingPdfDeleteUrl && !modalExistingPdfLink.classList.contains('hidden') && modalPdfFileNameDisplay.textContent === 'No file chosen') {
-                      // Case: Editing, existing PDF link was shown, but now "No file chosen" is displayed (meaning user cleared selection or wants to remove)
-                      pdfNeedsUpdate = true; // Mark that PDF info needs update in Firestore
-                      await deleteFileFromStorage(existingPdfDeleteUrl); // Delete from storage
-                      invoiceData.pdfUrl = null; // Remove Firestore fields
+                      pdfNeedsUpdate = true; 
+                      await deleteFileFromStorage(existingPdfDeleteUrl); 
+                      invoiceData.pdfUrl = null; 
                       invoiceData.pdfDeleteUrl = null;
                   }
-                  // If editing and existing link is shown and file input wasn't touched, pdfUrl/pdfDeleteUrl are not included in invoiceData,
-                  // so Firestore keeps the existing values.
-
 
                 if (docId) {
-                     // If only PDF was changed, update only those fields
-                     if (pdfNeedsUpdate && Object.keys(invoiceData).length === 3) { // Only pdfUrl, pdfDeleteUrl, userId
+                     if (pdfNeedsUpdate && Object.keys(invoiceData).length === 3) { 
                          await updateDoc(doc(db, `users/${currentUserId}/invoices`, docId), {
                              pdfUrl: invoiceData.pdfUrl,
                              pdfDeleteUrl: invoiceData.pdfDeleteUrl
                          });
                      } else {
-                         // Update all fields
                          await updateDoc(doc(db, `users/${currentUserId}/invoices`, docId), invoiceData);
                      }
                     showToast('Invoice updated!');
@@ -613,41 +677,42 @@
             invoiceTableBody.innerHTML = '';
 
             if (!invoicesToRender || invoicesToRender.length === 0) {
-                invoiceTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No invoices found.</td></tr>`;
+                invoiceTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium">No invoices found.</td></tr>`;
                 return;
             }
 
             invoicesToRender.forEach(inv => {
                 const row = invoiceTableBody.insertRow();
-                row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                row.className = "hover-row border-b border-slate-100 dark:border-slate-700/50 align-middle transition-colors duration-150 group";
 
                 const dateStr = inv.date?.toDate()?.toLocaleDateString() || 'N/A';
-                // Display Amount WITH Tax in the table
                 const displayAmountStr = inv.totalAmount?.toFixed(2) || '0.00';
                 
-                // --- PDF Link Hena thana ---
-                let pdfLinkHtml = '<span class="text-slate-500 text-xs">N/A</span>';
+                let pdfLinkHtml = '<span class="text-slate-400 text-xs font-medium">None</span>';
                 if(inv.pdfUrl){
-                    // View (eye) icon එකකුයි, Download icon එකකුයි දෙකක් දානවා
                     pdfLinkHtml = `
-                        <a href="${inv.pdfUrl}" target="_blank" class="text-blue-400 hover:text-blue-300 hover:underline inline-block mr-3" title="View PDF">
-                            <i data-lucide="eye" class="w-5 h-5 pointer-events-none"></i>
-                        </a>
-                        <a href="${inv.pdfUrl}" target="_blank" download class="text-green-400 hover:text-green-300 hover:underline inline-block" title="Download PDF">
-                            <i data-lucide="download" class="w-5 h-5 pointer-events-none"></i>
-                        </a>
+                        <div class="flex items-center justify-center gap-3">
+                            <a href="${inv.pdfUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline" title="View PDF">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </a>
+                            <a href="${inv.pdfUrl}" target="_blank" download class="text-green-600 dark:text-green-400 hover:underline" title="Download PDF">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </a>
+                        </div>
                     `;
                 }
-                // --- /PDF Link Hena thana ---
 
                 row.innerHTML = `
-                    <td class="p-4">${dateStr}</td>
-                    <td class="p-4 font-mono">${inv.invoiceNo || 'N/A'}</td>
-                    <td class="p-4">${inv.clientName || 'N/A'}</td>
-                    <td class="p-4 text-right font-semibold">€ ${displayAmountStr}</td> <td class="p-4 text-center">${pdfLinkHtml}</td>
-                    <td class="p-4 flex items-center gap-2">
-                       <button data-id="${inv.id}" class="edit-invoice-btn text-blue-400 hover:text-blue-300" title="Edit Invoice"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${inv.id}" data-pdf-delete-url="${inv.pdfDeleteUrl || ''}" class="delete-invoice-btn text-red-400 hover:text-red-300" title="Delete Invoice"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                    <td class="p-4 font-medium text-slate-700 dark:text-slate-300 text-sm">${dateStr}</td>
+                    <td class="p-4 font-mono font-bold text-slate-800 dark:text-white text-sm">${inv.invoiceNo || 'N/A'}</td>
+                    <td class="p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">${inv.clientName || 'N/A'}</td>
+                    <td class="p-4 text-right font-extrabold text-slate-800 dark:text-white text-sm">€ ${displayAmountStr}</td> 
+                    <td class="p-4 text-center">${pdfLinkHtml}</td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                           <button data-id="${inv.id}" class="edit-invoice-btn p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:bg-blue-900/20 transition" title="Edit"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                           <button data-id="${inv.id}" data-pdf-delete-url="${inv.pdfDeleteUrl || ''}" class="delete-invoice-btn p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-900/20 transition" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
                     </td>
                 `;
             });
@@ -675,10 +740,7 @@
         });
 
 
-        // අලුතින් එකතු කළා (Event Listener for Download Button)
         downloadAllPdfsBtn.addEventListener('click', handleDownloadAllPdfs);
-        // /අලුතින් එකතු කළා
-
 
         // --- Edit/Delete Event Listeners for Table ---
         invoiceTableBody.addEventListener('click', async (e) => {
@@ -693,7 +755,7 @@
                 const docId = deleteBtn.dataset.id;
                 const pdfDeleteUrl = deleteBtn.dataset.pdfDeleteUrl;
 
-                if (confirm(`Are you sure you want to delete invoice ${docId}? This action cannot be undone.`)) {
+                if (confirm(`Are you sure you want to delete this invoice? This action cannot be undone.`)) {
                      try {
                         if (pdfDeleteUrl) {
                             await deleteFileFromStorage(pdfDeleteUrl);
@@ -701,8 +763,8 @@
                         await deleteDoc(doc(db, `users/${currentUserId}/invoices`, docId));
                         showToast('Invoice deleted successfully!');
                      } catch (error) {
-                         console.error("Error deleting invoice:", error);
-                         showToast(`Error deleting invoice: ${error.message}`, false);
+                          console.error("Error deleting invoice:", error);
+                          showToast(`Error deleting invoice: ${error.message}`, false);
                      }
                 }
             }
@@ -724,7 +786,6 @@
                  modalExistingPdfLink.classList.add('hidden');
              }
         });
-
 
         // Initialize Lucide Icons on initial load
         lucide.createIcons();

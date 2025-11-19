@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,115 +8,178 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
     <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .file-input-label {
-            display: inline-block;
-            padding: 10px 16px;
-            font-size: 14px;
-            background-color: #3b82f6;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .file-input-label:hover { background-color: #2563eb; }
-        .file-input { display: none; }
-        .modal-content { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* */
-        /* Future payment highlight kiranna */
-        .future-payment-row {
-            background-color: rgba(202, 138, 4, 0.1); /* bg-yellow-900/50 */
-            border-left: 4px solid #ca8a04; /* border-yellow-500 */
+        .file-input-label {
+            display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; font-weight: 500;
+            background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;
         }
-        .future-payment-row:hover {
-             background-color: rgba(202, 138, 4, 0.2) !important;
-        }
+        .file-input-label:hover { background-color: #2563eb; transform: translateY(-1px); }
+        .file-input { display: none; }
 
+        tr.hover-row:hover td { background-color: #f1f5f9; } /* Light mode hover darker */
+        .dark tr.hover-row:hover td { background-color: #1e293b; }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 5px;
+            outline: none;
+        }
+        .dark input[type=range] { background: #475569; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
+
+        /* Future payment highlight */
+        .future-payment-row {
+            background-color: rgba(234, 179, 8, 0.1); /* amber-500/10 */
+            border-left: 4px solid #eab308; /* amber-500 */
+        }
+        .dark .future-payment-row {
+            background-color: rgba(202, 138, 4, 0.15);
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
+
+    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
 
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
             <div>
                 <div class="flex items-center gap-3 mb-10">
-    
-    <div>
-        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
-    </div>
-    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
-</div>      <nav class="flex flex-col gap-2">
-                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
-                    
-                    <a href="./scheduled_finance.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
-                    
-                    <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                    <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                    <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                    <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                    <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                    <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                    <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
+                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                    </div>
+                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
+                </div>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
+                   
+                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                     <i data-lucide="log-out"></i><span>Sign Out</span>
-                 </button>
-                 <div class="text-xs text-slate-500">
-                     <p>&copy; 2025 RSG MANAGER ADMIN. All rights reserved.Developed By Mathizz</p>
-                     <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
-                 </div>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500 text-center">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
+                </div>
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <section id="page-vehicles" class="page">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-white">Vehicle Management</h2>
-                    <div class="flex items-center gap-4">
-                         <div class="bg-slate-800 p-3 rounded-lg text-center">
-                             <h3 class="text-sm text-slate-400">Total Vehicle Expenses</h3>
-                             <p id="totalVehicleExpensesDisplay" class="text-xl font-bold text-red-400 mt-1">€ 0</p>
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+            <section id="page-vehicles" class="page max-w-7xl mx-auto w-full">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                             <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Vehicle Management</h2>
+                        </div>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1 font-medium">Manage fleet, expenses, and scheduled maintenance.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                         <div class="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-end">
+                             <span class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">Total Expenses</span>
+                             <span id="totalVehicleExpensesDisplay" class="text-lg font-extrabold text-red-600 dark:text-red-400">€ 0</span>
                          </div>
-                        <button id="addVehicleBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 h-full">
-                            <i data-lucide="plus"></i> Add New Vehicle
+
+                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                             <input type="range" id="brightness-slider" min="0" max="70" value="0" title="Adjust Brightness (Dimmer)">
+                         </div>
+
+                         <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                        </button>
+
+                        <button id="addVehicleBtn" class="bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-slate-900/20 dark:shadow-blue-900/20">
+                             <i data-lucide="plus" class="w-4 h-4"></i> Add Vehicle
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4">
-                     <div class="flex-1">
-                         <label for="searchByNumber" class="block mb-2 text-sm font-medium">Search by Vehicle Number</label>
-                         <input type="text" id="searchByNumber" placeholder="Enter vehicle number..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                     </div>
-                     <div class="flex-1">
-                         <label for="filterType" class="block mb-2 text-sm font-medium">Filter by Type</label>
-                         <select id="filterType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 mb-6 flex items-center justify-between shadow-sm">
+                     <div class="flex items-center flex-1 gap-2 p-1">
+                         <div class="relative flex-1 max-w-md">
+                              <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                              <input type="text" id="searchByNumber" placeholder="Search by vehicle number..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
+                         </div>
+                         <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+                         
+                         <select id="filterType" class="bg-transparent border-none text-slate-700 dark:text-slate-300 text-sm font-medium focus:ring-0 cursor-pointer hover:text-slate-900 dark:hover:text-white transition">
                              <option value="">All Types</option>
                              <option value="Van">Van</option>
                              <option value="Car">Car</option>
@@ -125,61 +188,65 @@
                              <option value="Other">Other</option>
                          </select>
                      </div>
-                     <div>
-                         <button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button>
-                     </div>
+                     <button id="clearFiltersBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 text-xs font-bold px-4 transition">
+                         Clear
+                     </button>
                 </div>
 
-                <div class="bg-slate-800 rounded-lg overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-700">
-                            <tr>
-                                <th class="p-4 font-semibold text-white">Photo</th>
-                                <th class="p-4 font-semibold text-white">Vehicle Number</th>
-                                <th class="p-4 font-semibold text-white">Model</th>
-                                <th class="p-4 font-semibold text-white">Type</th>
-                                <th class="p-4 font-semibold text-white">Total Expenses</th>
-                                <th class="p-4 font-semibold text-white">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vehicleTableBody">
-                            <tr><td colspan="6" class="text-center p-8 text-slate-400">Loading vehicle data...</td></tr>
-                        </tbody>
-                    </table>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Photo</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Vehicle Number</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Model</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Expenses</th>
+                                    <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehicleTableBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium">Loading vehicle data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <div id="vehicleModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-2xl transform transition-all modal-content scale-95 opacity-0" id="vehicle-modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="vehicleModalTitle" class="text-2xl font-bold text-white">Add New Vehicle</h3>
-                <button id="closeVehicleModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+    <div id="vehicleModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-2xl transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="vehicle-modal-content">
+            <div class="flex justify-between items-center mb-8">
+                <h3 id="vehicleModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Add New Vehicle</h3>
+                <button id="closeVehicleModalBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-white transition bg-slate-100 dark:bg-slate-700 p-2 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="vehicleForm">
                 <input type="hidden" id="vehicleDocId">
-                <div class="flex items-center gap-6 mb-6">
-                    <div>
-                        <label class="block mb-2 text-sm font-medium">Vehicle Photo</label>
-                        <img id="vehiclePhotoPreview" src="https://placehold.co/100x100/334155/94a3b8?text=Photo" class="w-24 h-24 rounded-lg object-cover mb-2" alt="Preview">
-                        <label for="vehiclePhotoFile" class="file-input-label">Choose Photo</label>
-                        <input type="file" id="vehiclePhotoFile" class="file-input" accept="image/*">
+                
+                <div class="flex flex-col md:flex-row gap-8 mb-8">
+                    <div class="flex flex-col items-center space-y-3">
+                         <img id="vehiclePhotoPreview" src="https://placehold.co/100x100/f1f5f9/64748b?text=Photo" class="w-32 h-32 rounded-xl object-cover border-4 border-white dark:border-slate-700 shadow-md" alt="Preview">
+                         <label for="vehiclePhotoFile" class="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer font-bold">Change Photo</label>
+                         <input type="file" id="vehiclePhotoFile" class="file-input" accept="image/*">
                     </div>
-                    <div class="flex-1">
-                         <div class="mb-4">
-                             <label for="vehicleNumber" class="block mb-2 text-sm font-medium">Vehicle Number</label>
-                             <input type="text" id="vehicleNumber" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                    
+                    <div class="flex-1 space-y-5">
+                         <div>
+                             <label for="vehicleNumber" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Vehicle Number</label>
+                             <input type="text" id="vehicleNumber" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
                          </div>
-                        <div class="mb-4">
-                            <label for="vehicleModel" class="block mb-2 text-sm font-medium">Model</label>
-                            <input type="text" id="vehicleModel" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                         <div>
+                            <label for="vehicleModel" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Model</label>
+                            <input type="text" id="vehicleModel" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
                         </div>
                     </div>
                 </div>
-                <div class="mb-4">
-                    <label for="vehicleType" class="block mb-2 text-sm font-medium">Vehicle Type</label>
-                    <select id="vehicleType" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+
+                <div class="mb-8">
+                    <label for="vehicleType" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Vehicle Type</label>
+                    <select id="vehicleType" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
                         <option value="" disabled selected>Select a type</option>
                         <option value="Van">Van</option>
                         <option value="Car">Car</option>
@@ -188,112 +255,129 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancelVehicleModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
-                    <button type="submit" id="submitVehicleBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+
+                <div class="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" id="cancelVehicleModalBtn" class="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                    <button type="submit" id="submitVehicleBtn" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg flex items-center">
                         <span id="submitVehicleBtnText">Save Vehicle</span>
-                        <div id="submitVehicleSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                        <div id="submitVehicleSpinner" class="loader ml-2 hidden" style="width: 18px; height: 18px; border-width: 2px;"></div>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all modal-content scale-95 opacity-0" id="expense-modal-content">
+    <div id="expenseModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-lg transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="expense-modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="expenseModalTitle" class="text-2xl font-bold text-white">Add Expense</h3>
-                <button id="closeExpenseModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+                <h3 id="expenseModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Add Expense</h3>
+                <button id="closeExpenseModalBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-white transition bg-slate-100 dark:bg-slate-700 p-2 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="expenseForm">
                 <input type="hidden" id="expenseVehicleId">
                 <input type="hidden" id="expenseDocId">
-                <div class="mb-4">
-                    <label for="expenseType" class="block mb-2 text-sm font-medium">Expense Type</label>
-                    <select id="expenseType" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
-                        <option value="Repair">Repair</option>
-                        <option value="Insurance">Insurance</option>
-                        <option value="Service">Service</option>
-                        <option value="Fuel">Fuel</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="expenseDate" class="block mb-2 text-sm font-medium">Date</label>
-                    <input type="date" id="expenseDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
-                </div>
-                 <div class="mb-4">
-                    <label for="expenseDescription" class="block mb-2 text-sm font-medium">Description</label>
-                    <input type="text" id="expenseDescription" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
-                </div>
-                <div class="mb-4">
-                    <label for="expenseAmount" class="block mb-2 text-sm font-medium">Amount (€)</label>
-                    <input type="number" step="0.01" min="0" id="expenseAmount" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
-                </div>
-                <div class="mb-4">
-                    <label for="expenseBillFile" class="block mb-2 text-sm font-medium">Upload Bill/Receipt</label>
-                    <label for="expenseBillFile" class="file-input-label">Choose File</label>
-                    <input type="file" id="expenseBillFile" class="file-input" accept="image/*">
-                    <span id="expenseBillFileName" class="ml-4 text-slate-400 text-sm">No file chosen</span>
-                    <a href="#" id="expenseExistingBillLink" target="_blank" class="text-blue-400 text-sm ml-4 hidden hover:underline">View Existing Bill</a>
-                </div>
                 
-                <div class="mb-4 flex items-center gap-3 bg-slate-700/50 p-3 rounded-lg">
-                    <input type="checkbox" id="isFuturePayment" class="w-5 h-5 bg-slate-700 border-slate-600 rounded text-blue-500 focus:ring-blue-500">
-                    <label for="isFuturePayment" class="text-sm font-medium select-none cursor-pointer">This is a future/scheduled payment
-                         <span id="futurePaymentText" class="block text-xs text-slate-400">(Won't be added to main expenses until its date)</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label for="expenseType" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Expense Type</label>
+                        <select id="expenseType" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
+                            <option value="Repair">Repair</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Service">Service</option>
+                            <option value="Fuel">Fuel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="expenseDate" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Date</label>
+                        <input type="date" id="expenseDate" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="expenseDescription" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Description</label>
+                    <input type="text" id="expenseDescription" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
+                </div>
+
+                <div class="mb-5">
+                    <label for="expenseAmount" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Amount (€)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">€</span>
+                        <input type="number" step="0.01" min="0" id="expenseAmount" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl pl-8 pr-3 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium" required>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="expenseBillFile" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Upload Bill/Receipt</label>
+                    <div class="flex items-center gap-3">
+                        <label for="expenseBillFile" class="file-input-label text-xs py-2 px-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer rounded-lg border border-slate-200 dark:border-slate-600 transition">Choose File</label>
+                        <input type="file" id="expenseBillFile" class="file-input" accept="image/*">
+                        <span id="expenseBillFileName" class="text-slate-500 dark:text-slate-400 text-xs truncate max-w-[200px] font-medium">No file chosen</span>
+                    </div>
+                    <a href="#" id="expenseExistingBillLink" target="_blank" class="text-blue-500 dark:text-blue-400 text-xs mt-2 block hidden hover:underline flex items-center gap-1 font-bold"><i data-lucide="link" class="w-3 h-3"></i> View Existing Bill</a>
+                </div>
+
+                <div class="mb-8">
+                    <label class="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition">
+                        <input type="checkbox" id="isFuturePayment" class="w-5 h-5 text-blue-600 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 mt-0.5">
+                        <div>
+                             <span class="block text-sm font-bold text-slate-800 dark:text-white">This is a future/scheduled payment</span>
+                             <span id="futurePaymentText" class="block text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">(Won't be added to main expenses until its date)</span>
+                        </div>
                     </label>
                 </div>
-                
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancelExpenseModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
-                    <button type="submit" id="submitExpenseBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+
+                <div class="flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-6">
+                    <button type="button" id="cancelExpenseModalBtn" class="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                    <button type="submit" id="submitExpenseBtn" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg flex items-center">
                         <span id="submitExpenseBtnText">Save Expense</span>
-                        <div id="submitExpenseSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                        <div id="submitExpenseSpinner" class="loader ml-2 hidden" style="width: 18px; height: 18px; border-width: 2px;"></div>
                     </button>
                 </div>
             </form>
         </div>
     </div>
     
-    <div id="logModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-4xl transform transition-all modal-content scale-95 opacity-0" id="log-modal-content">
+    <div id="logModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-4xl transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="log-modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="logModalTitle" class="text-2xl font-bold text-white">Expense Log</h3>
-                <button id="closeLogModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+                <h3 id="logModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Expense Log</h3>
+                <button id="closeLogModalBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-white transition bg-slate-100 dark:bg-slate-700 p-2 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <div class="max-h-[60vh] overflow-y-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-700 sticky top-0">
+            <div class="max-h-[60vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 dark:bg-slate-900/50 sticky top-0">
                         <tr>
-                            <th class="p-4 font-semibold text-white">Date</th>
-                            <th class="p-4 font-semibold text-white">Type</th>
-                            <th class="p-4 font-semibold text-white">Description</th>
-                            <th class="p-4 font-semibold text-white">Bill</th>
-                            <th class="p-4 font-semibold text-white">Amount (€)</th>
-                            <th class="p-4 font-semibold text-white">Actions</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Description</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Bill</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Amount (€)</th>
+                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="logTableBody">
-                    </tbody>
+                    <tbody id="logTableBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="billViewModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-[60]">
-         <div class="bg-slate-800 rounded-lg p-4 w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0" id="bill-view-modal-content">
-             <div class="flex justify-between items-center mb-4">
-                 <h3 class="text-xl font-bold text-white">Bill Viewer</h3>
-                 <button id="closeBillViewModalBtn" class="text-slate-400 hover:text-white text-3xl">&times;</button>
+    <div id="billViewModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center hidden z-[60] p-4">
+         <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-200 dark:border-slate-700" id="bill-view-modal-content">
+             <div class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl">
+                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-blue-500"></i> Bill Viewer</h3>
+                 <button id="closeBillViewModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition bg-slate-100 dark:bg-slate-700 p-1 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
              </div>
-             <div class="flex-1 overflow-auto">
-                 <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto" alt="Bill Preview">
+             <div class="flex-1 overflow-auto flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-b-2xl p-4">
+                 <img id="billImagePreview" src="" class="max-w-full h-auto rounded-lg shadow-lg" alt="Bill Preview">
              </div>
          </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
+    <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium flex items-center gap-2 z-[70]">
+         <i data-lucide="check-circle" class="w-5 h-5"></i> <p>Toast message!</p>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -302,11 +386,11 @@
 
         const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
-             authDomain: "rsgweb-5f36d.firebaseapp.com",
-             projectId: "rsgweb-5f36d",
-             storageBucket: "rsgweb-5f36d.firebasestorage.app",
-             messagingSenderId: "633023905515",
-             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+            authDomain: "rsgweb-5f36d.firebaseapp.com",
+            projectId: "rsgweb-5f36d",
+            storageBucket: "rsgweb-5f36d.firebasestorage.app",
+            messagingSenderId: "633023905515",
+            appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
         };
         
         const IMGBB_API_KEY = "9960ed5927a4c5187a7b6dd2db60ecff";
@@ -317,6 +401,41 @@
         let currentUserId = null;
         let allVehicles = [];
         let allExpenses = []; // Holds vehicle_expenses
+
+        // Theme & Brightness Logic (From other files)
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessOverlay = document.getElementById('brightness-overlay');
+
+        function initializeTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            const savedBrightness = localStorage.getItem('brightness') || 0;
+            brightnessSlider.value = savedBrightness;
+            brightnessOverlay.style.opacity = savedBrightness / 100;
+        }
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        brightnessSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            brightnessOverlay.style.opacity = val / 100;
+            localStorage.setItem('brightness', val);
+        });
+
 
         // --- DOM Elements ---
         const appContainer = document.getElementById('app-container');
@@ -350,8 +469,8 @@
         const closeExpenseModalBtn = document.getElementById('closeExpenseModalBtn');
         const cancelExpenseModalBtn = document.getElementById('cancelExpenseModalBtn');
         const expenseForm = document.getElementById('expenseForm');
-        const expenseTypeSelect = document.getElementById('expenseType'); // === ALUTH ===
-        const futurePaymentText = document.getElementById('futurePaymentText'); // === ALUTH ===
+        const expenseTypeSelect = document.getElementById('expenseType'); 
+        const futurePaymentText = document.getElementById('futurePaymentText'); 
         const submitExpenseBtn = document.getElementById('submitExpenseBtn');
         const submitExpenseBtnText = document.getElementById('submitExpenseBtnText');
         const submitExpenseSpinner = document.getElementById('submitExpenseSpinner');
@@ -391,10 +510,10 @@
 
         // --- Toast & File Upload ---
         const showToast = (message, isSuccess = true) => {
-            toast.textContent = message;
-            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            toast.querySelector('p').textContent = message;
+            toast.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium flex items-center gap-2 z-[70] ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
         };
         
         const uploadFile = async (file) => {
@@ -531,7 +650,7 @@
         function renderVehicleTable(vehicleList) {
             vehicleTableBody.innerHTML = '';
             if (!vehicleList || vehicleList.length === 0) { 
-                vehicleTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No vehicles found matching criteria.</td></tr>`;
+                vehicleTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium italic">No vehicles found matching criteria.</td></tr>`;
                 return;
             }
             
@@ -542,18 +661,20 @@
                 const totalSpent = vehicleExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
                 
                 const row = vehicleTableBody.insertRow();
-                row.className = "border-b border-slate-700 hover:bg-slate-700/50 align-middle";
+                row.className = "hover-row border-b border-slate-100 dark:border-slate-700/50 align-middle transition-colors duration-150 group";
                 row.innerHTML = `
-                    <td class="p-2"><img src="${vehicle.photoUrl || 'https://placehold.co/40x40/334155/94a3b8?text=?'}" class="w-10 h-10 rounded-md object-cover"></td>
-                    <td class="p-4 font-mono">${vehicle.number || 'N/A'}</td>
-                    <td class="p-4">${vehicle.model || 'N/A'}</td>
-                    <td class="p-4">${vehicle.type || 'N/A'}</td>
-                    <td class="p-4 font-semibold text-red-400">€ ${totalSpent.toLocaleString()}</td>
-                    <td class="p-4 flex items-center gap-2">
-                       <button data-id="${vehicle.id}" class="edit-vehicle-btn text-blue-400 hover:text-blue-300" title="Edit Vehicle"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${vehicle.id}" class="delete-vehicle-btn text-red-400 hover:text-red-300" title="Delete Vehicle"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${vehicle.id}" data-name="${vehicle.number || 'N/A'}" class="view-log-btn text-green-400 hover:text-green-300" title="View Expense Log"><i data-lucide="list" class="w-5 h-5 pointer-events-none"></i></button>
-                       <button data-id="${vehicle.id}" data-name="${vehicle.number || 'N/A'}" class="add-expense-btn bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-md" title="Add Expense">Add Expense</button>
+                    <td class="p-4"><img src="${vehicle.photoUrl || 'https://placehold.co/40x40/f1f5f9/64748b?text=?'}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-sm"></td>
+                    <td class="p-4 font-bold text-slate-800 dark:text-white font-mono text-sm">${vehicle.number || 'N/A'}</td>
+                    <td class="p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">${vehicle.model || 'N/A'}</td>
+                    <td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${vehicle.type || 'N/A'}</span></td>
+                    <td class="p-4 font-extrabold text-red-600 dark:text-red-400 text-sm">€ ${totalSpent.toLocaleString()}</td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                           <button data-id="${vehicle.id}" class="edit-vehicle-btn p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:bg-blue-900/20 transition" title="Edit"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                           <button data-id="${vehicle.id}" class="delete-vehicle-btn p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-900/20 transition" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                           <button data-id="${vehicle.id}" data-name="${vehicle.number || 'N/A'}" class="view-log-btn p-2 rounded-lg text-slate-500 hover:text-green-600 hover:bg-green-50 dark:text-slate-400 dark:hover:bg-green-900/20 transition" title="Log"><i data-lucide="list" class="w-4 h-4"></i></button>
+                           <button data-id="${vehicle.id}" data-name="${vehicle.number || 'N/A'}" class="add-expense-btn bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1 shadow-sm" title="Add Expense">Add Expense</button>
+                        </div>
                     </td>
                 `;
             });
@@ -578,12 +699,12 @@
 
         const openVehicleModal = async (docId = null) => {
             vehicleForm.reset();
-            vehiclePhotoPreview.src = 'https://placehold.co/100x100/334155/94a3b8?text=Photo';
+            vehiclePhotoPreview.src = 'https://placehold.co/100x100/f1f5f9/64748b?text=Photo';
             document.getElementById('vehicleDocId').value = docId || '';
 
             if (docId) {
                 vehicleModalTitle.textContent = 'Edit Vehicle';
-                submitVehicleBtnText.textContent = 'Update';
+                submitVehicleBtnText.textContent = 'Update Vehicle';
                  try {
                      const docRef = doc(db, `users/${currentUserId}/vehicles`, docId);
                      const docSnap = await getDoc(docRef);
@@ -712,7 +833,7 @@
             
             if (expenseDocId) {
                 expenseModalTitle.textContent = `Edit Expense for ${vehicleName}`;
-                submitExpenseBtnText.textContent = 'Update';
+                submitExpenseBtnText.textContent = 'Update Expense';
                  try {
                      const docRef = doc(db, `users/${currentUserId}/vehicle_expenses`, expenseDocId);
                      const docSnap = await getDoc(docRef);
@@ -990,33 +1111,33 @@
                 .sort((a,b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0)); 
             
             if (vehicleExpenses.length === 0) {
-                logTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No expenses found for this vehicle.</td></tr>`;
+                logTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-12 text-slate-500 dark:text-slate-400 italic">No expenses found for this vehicle.</td></tr>`;
             } else {
                 vehicleExpenses.forEach(ex => {
                     const row = logTableBody.insertRow();
                     
-                    const billHTML = ex.billUrl ? `<button data-url="${ex.billUrl}" class="view-bill-btn bg-slate-600 hover:bg-slate-500 text-white text-xs px-2 py-1 rounded-md">View Bill</button>` : '<span class="text-slate-500">N/A</span>';
+                    const billHTML = ex.billUrl ? `<button data-url="${ex.billUrl}" class="view-bill-btn bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-blue-600 dark:text-blue-400 text-xs font-bold px-2.5 py-1 rounded-md transition">View Bill</button>` : '<span class="text-slate-400 text-xs italic">None</span>';
                     
-                    const typeClass = ex.type === 'Insurance' ? 'font-bold' : '';
+                    const typeClass = ex.type === 'Insurance' ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300';
                     // === VENAS KALA (Recurring tag) ===
-                    const insuranceTag = ex.recurringId ? '<span class="ml-2 bg-yellow-600 text-yellow-100 text-xs font-medium px-2 py-0.5 rounded-full">RECURRING</span>' : (ex.type === 'Insurance' ? '<span class="ml-2 bg-yellow-600 text-yellow-100 text-xs font-medium px-2 py-0.5 rounded-full">INS</span>' : '');
+                    const insuranceTag = ex.recurringId ? '<span class="ml-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 border border-yellow-200 dark:border-yellow-800 text-[10px] font-bold px-1.5 py-0.5 rounded">RECURRING</span>' : (ex.type === 'Insurance' ? '<span class="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded">INS</span>' : '');
                     const dateString = ex.date && ex.date.toDate ? ex.date.toDate().toLocaleDateString() : 'Invalid Date';
 
                     const isStillFuture = ex.isFuturePayment && ex.date?.toDate() > new Date(); // Added optional chaining
                     const futureRowClass = isStillFuture ? 'future-payment-row' : '';
-                    const futureTag = isStillFuture ? '<span class="ml-2 bg-blue-600 text-blue-100 text-xs font-medium px-2 py-0.5 rounded-full">SCHEDULED</span>' : '';
+                    const futureTag = isStillFuture ? '<span class="ml-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded">SCHEDULED</span>' : '';
                     
-                    row.className = `border-b border-slate-700 hover:bg-slate-700/50 ${futureRowClass}`;
+                    row.className = `border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${futureRowClass}`;
 
                     row.innerHTML = `
-                        <td class="p-4">${dateString} ${futureTag}</td>
-                        <td class="p-4 ${typeClass}">${ex.type || 'N/A'} ${insuranceTag}</td>
-                        <td class="p-4">${ex.description || 'N/A'}</td>
+                        <td class="p-4 text-slate-700 dark:text-slate-300 text-sm font-medium">${dateString} ${futureTag}</td>
+                        <td class="p-4 text-sm ${typeClass}">${ex.type || 'N/A'} ${insuranceTag}</td>
+                        <td class="p-4 text-slate-600 dark:text-slate-400 text-sm">${ex.description || 'N/A'}</td>
                         <td class="p-4">${billHTML}</td>
-                        <td class="p-4">${(ex.amount || 0).toLocaleString()}</td>
+                        <td class="p-4 font-bold text-slate-800 dark:text-white text-sm">€ ${(ex.amount || 0).toLocaleString()}</td>
                         <td class="p-4 flex gap-2">
-                            <button data-id="${ex.id}" data-vid="${vehicleId}" data-vname="${vehicleName}" class="edit-expense-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                            <button data-id="${ex.id}" class="delete-expense-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                            <button data-id="${ex.id}" data-vid="${vehicleId}" data-vname="${vehicleName}" class="edit-expense-btn text-slate-400 hover:text-blue-500 transition p-1"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                            <button data-id="${ex.id}" class="delete-expense-btn text-slate-400 hover:text-red-500 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </td>
                     `;
                 });
@@ -1231,8 +1352,6 @@
                  console.error("Error deleting expense:", error);
              }
         }
-        
-        // lucide.createIcons(); // Auth eka athulata damma
     </script>
 </body>
 </html>

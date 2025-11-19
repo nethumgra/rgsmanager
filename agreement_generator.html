@@ -1,29 +1,59 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Home | RSG MANAGER</title>
+    <title>Proposal Generator - RSG MANAGER</title>
+
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
     <style>
         /* --- Standard Styles --- */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Proposal Preview Styling --- */
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; width: 100px; height: 4px;
+            background: #cbd5e1; border-radius: 5px; outline: none;
+        }
+        .dark input[type=range] { background: #475569; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            border-radius: 50%; background: #3b82f6; cursor: pointer; transition: background .15s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
+
+        /* --- Proposal Preview Styling (A4) --- */
+        /* Note: This is forced to look like paper (White/Black) even in dark mode */
         #proposal-preview {
             position: relative; 
             background-color: white; 
+            color: black;
             width: 210mm; /* A4 width */
             min-height: 297mm; /* A4 height */
             margin: 0 auto; 
@@ -32,278 +62,298 @@
             padding-bottom: 18mm;
             padding-left: 15mm;
             padding-right: 15mm;
-
             background-image: url('letterhead.png');
             background-repeat: no-repeat;
             background-size: 100% 100%; 
             background-position: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
-        #proposal-preview > div,
-        #proposal-preview h2,
-        #proposal-preview p,
-        #proposal-preview table {
-            position: relative;
-            z-index: 1;
-            page-break-inside: avoid !important; 
+        /* Ensure text visibility in preview regardless of theme */
+        #proposal-preview h2, #proposal-preview p, #proposal-preview td, #proposal-preview th, #proposal-preview div {
+            color: black !important;
         }
+        #proposal-preview .text-blue-700 { color: #1d4ed8 !important; }
+        #proposal-preview .text-gray-600 { color: #4b5563 !important; }
 
-        #proposal-preview table, 
-        #proposal-preview tr,
-        #proposal-preview td,
-        #proposal-preview th {
-            page-break-inside: avoid !important;
+        #proposal-preview table { width: 100%; border-collapse: collapse; border: 1px solid #d1d5db; }
+        #proposal-preview th, #proposal-preview td {
+            border: 1px solid #d1d5db;
+            padding: 4px 8px;
+            font-size: 11px;
         }
-
-
-        #proposal-preview-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 1rem;
-            background-color: #e2e8f0;
-            flex-grow: 1;
-            overflow: auto;
-        }
-
+        #proposal-preview th { background-color: #f3f4f6; font-weight: 600; }
 
         /* --- Print Styles --- */
         @media print {
             body {
                 background-color: white !important; color: black !important;
-                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-                 margin: 0 !important; padding: 0 !important; width: 210mm !important;
-                 height: 297mm !important; overflow: hidden !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+                margin: 0 !important; padding: 0 !important; width: 210mm !important; height: 297mm !important;
             }
             .no-print { display: none !important; }
+            aside { display: none !important; }
+            #app-container { display: block !important; height: auto !important; overflow: visible !important; }
+            main { padding: 0 !important; margin: 0 !important; display: block !important; }
+            #generator-form { display: none !important; }
+            
             #proposal-preview-container {
                  padding: 0 !important; background: none !important; border: none !important;
                  box-shadow: none !important; margin: 0 !important; width: 100% !important;
-                 display: block !important; height: 297mm !important; overflow: hidden !important;
+                 display: block !important; overflow: visible !important;
             }
             #proposal-preview {
-                display: block !important; width: 210mm !important; height: 297mm !important;
-                box-sizing: border-box !important; margin: 0 !important; 
-                border: none !important; box-shadow: none !important; color: black !important;
-                background-color: white !important; border-radius: 0 !important;
-                position: relative !important; overflow: hidden !important;
-                padding-top: 35mm !important; 
-                padding-bottom: 18mm !important;
-                padding-left: 15mm !important;
-                padding-right: 15mm !important;
-                
-                background-image: url('letterhead.png') !important;
-                background-repeat: no-repeat !important;
-                background-size: 100% 100% !important; 
-                background-position: center !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
+                width: 210mm !important; height: 297mm !important;
+                margin: 0 !important; border: none !important; box-shadow: none !important;
+                page-break-after: avoid !important; page-break-before: avoid !important;
             }
-
-             /* Content Styling for Print */
-            #proposal-preview .grid,
-            #proposal-preview h2,
-            #proposal-preview p,
-            #proposal-preview table,
-            #proposal-preview .text-right,
-            #proposal-preview .text-center,
-            #proposal-preview > div {
-                position: relative !important; 
-                z-index: 1 !important;
-                page-break-inside: avoid !important;
-            }
-            
-            #proposal-preview table, 
-            #proposal-preview tr {
-                page-break-inside: avoid !important;
-            }
-
-            #proposal-preview .text-gray-800 { color: black !important; }
-            #proposal-preview .text-gray-600 { color: #333 !important; }
-            
-            /* === Border එක අයින් කරපු නිසා මේක ඕන නෑ, ඒත් තිබ්බට අවුලක් නෑ === */
-            #proposal-preview .border { border-width: 0.5pt !important; border-color: #ccc !important; }
-            
-            #proposal-preview th, #proposal-preview td {
-                 border: 0.5pt solid #ccc !important; color: black !important;
-                 padding: 0.1mm 2mm !important; 
-                 font-size: 8pt !important; 
-                 word-break: break-word;
-            }
-            
-            #proposal-preview th { background-color: #eee !important; font-weight: bold; }
-            
-            #proposal-preview h2 { 
-                font-size: 10pt !important; 
-                margin-top: 1mm !important; 
-                margin-bottom: 1mm !important; 
-            }
-            #proposal-preview p, #proposal-preview div, #proposal-preview span { 
-                font-size: 8pt !important; 
-                line-height: 1.1 !important; 
-            }
-            
-            #proposal-preview .text-xs { font-size: 7pt !important; }
-            #proposal-preview .text-blue-700 { color: #0056b3 !important; }
-            #proposal-preview strong { font-weight: bold !important;}
-            #proposal-preview .bg-opacity-85, #proposal-preview .bg-opacity-90 { background-color: transparent !important; }
-            
-            #proposal-preview > div { 
-                margin-bottom: 1mm !important; 
-            }
-            #proposal-preview table { 
-                margin-bottom: 1mm !important; 
-            }
-            #proposal-preview .grid { 
-                gap: 1mm !important; 
-            }
-            #proposal-preview .text-center.text-xs {
-                padding-top: 1mm !important; 
-            }
-        }
-        
-        .form-select-xs {
-            width: 85px; 
-            font-size: 0.75rem; 
-            padding: 0.25rem 0.5rem; 
-            border-radius: 0.25rem; 
-            background-color: #334155; 
-            border: 1px solid #475569; 
-            color: #f1f5f9; 
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
+
+    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
 
     <div id="app-container" class="flex h-screen hidden">
-
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300 no-print">
             <div>
-               <div class="flex items-center gap-3 mb-10">
-    
-    <div>
-        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
-    </div>
-    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
-</div>      <nav class="flex flex-col gap-2">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
+                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                    </div>
+                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
+                </div>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
                    
-                   <a href="./scheduled_finance.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
-                   
-                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                   <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white"><i data-lucide="log-out"></i><span>Sign Out</span></button>
-                <div class="text-xs text-slate-500">
-                    <p>&copy; 2025 Property MS. All rights reserved.</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group no-print">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500 text-center no-print">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
                 </div>
             </div>
         </aside>
 
         <main class="flex-1 p-8 overflow-y-auto flex flex-col lg:flex-row gap-8">
 
-            <section id="generator-form" class="lg:w-1/3 flex-shrink-0 no-print">
-                 <h2 class="text-2xl font-bold text-white mb-6">Proposal Details</h2>
-                 <div class="space-y-4 bg-slate-800 p-6 rounded-lg">
-                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4">Client Information</h3>
-                     <div><label for="clientName" class="block text-sm font-medium mb-1">Cliente</label><input type="text" id="clientName" value="SCRIGNO" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
-                     <div><label for="proposalDate" class="block text-sm font-medium mb-1">Data</label><input type="date" id="proposalDate" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
-                     <div><label for="clientAddress" class="block text-sm font-medium mb-1">Via</label><input type="text" id="clientAddress" value="Via Montresor 15 Bussolengo VR" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
-                     <div><label for="clientTaxCode" class="block text-sm font-medium mb-1">Codice Fiscale</label><input type="text" id="clientTaxCode" value="93157600235" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
-                     <div><label for="clientTel" class="block text-sm font-medium mb-1">Tel</label><input type="text" id="clientTel" value="3476101399" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+            <section id="generator-form" class="lg:w-1/3 flex-shrink-0 flex flex-col h-full no-print">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Proposal Generator</h2>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1 font-medium">Create standardized cleaning proposals.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                             <input type="range" id="brightness-slider" min="0" max="70" value="0">
+                         </div>
+                         <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                        </button>
+                    </div>
+                </div>
 
-                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4 pt-4">Services</h3>
-                     <div class="space-y-2 text-sm max-h-60 overflow-y-auto pr-2">
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service1" class="text-slate-300">Scale e pianerottoli</label><select id="freq-service1" data-service="Pulizia e lavaggio delle scale e pianerottoli" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service2" class="text-slate-300">Ascensore</label><select id="freq-service2" data-service="Pulizia e sanificazione dell'ascensore" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service3" class="text-slate-300">Androni e ingresso</label><select id="freq-service3" data-service="Pulizia degli androni e dell'ingresso" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service4" class="text-slate-300">Superfici comuni</label><select id="freq-service4" data-service="Spolveratura e detersione delle superfici comuni" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service5" class="text-slate-300">Rimozione ragnatele</label><select id="freq-service5" data-service="Rimozione ragnatele nelle aree comuni" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service6" class="text-slate-300">Vetrate e portoni</label><select id="freq-service6" data-service="Pulizia delle vetrate e portoni d'ingresso" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service7" class="text-slate-300">Raccolta rifiuti</label><select id="freq-service7" data-service="Raccolta e smaltimento rifiuti secondo normativa" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service8" class="text-slate-300">Cortili e spazi esterni</label><select id="freq-service8" data-service="Pulizia dei cortili e degli spazi esterni (se richiesto)" class="form-select-xs service-frequency-select"><option value="0" selected>N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4">4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service9" class="text-slate-300">Cassette posta</label><select id="freq-service9" data-service="Pulizia delle cassette della posta" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service10" class="text-slate-300">Raccolta dépliant</label><select id="freq-service10" data-service="Raccolta dépliant non ritirati" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service11" class="text-slate-300">Corridoi cantine</label><select id="freq-service11" data-service="Controllo e scopatura corridoi cantine" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                         <div class="flex items-center justify-between gap-2"><label for="freq-service12" class="text-slate-300">Zona garage</label><select id="freq-service12" data-service="Controllo e scopatura zona garage esterno esterna" class="form-select-xs service-frequency-select"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select></div>
-                     </div>
+                <div class="flex-1 overflow-y-auto pr-2">
+                    <div class="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4 text-blue-500"></i> Client Details
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Client Name</label>
+                                    <input type="text" id="clientName" value="SCRIGNO" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Date</label>
+                                    <input type="date" id="proposalDate" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Address</label>
+                                    <input type="text" id="clientAddress" value="Via Montresor 15 Bussolengo VR" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-800 dark:text-white font-medium">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Tax Code (CF)</label>
+                                        <input type="text" id="clientTaxCode" value="93157600235" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-800 dark:text-white font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Tel</label>
+                                        <input type="text" id="clientTel" value="3476101399" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-800 dark:text-white font-medium">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                     <h3 class="text-lg font-semibold text-white border-b border-slate-700 pb-2 mb-4 pt-4">Pricing</h3>
-                     <div><label for="totalPrice" class="block text-sm font-medium mb-1">Totale Preventivo (€) (IVA esclusa)</label><input type="number" id="totalPrice" step="0.01" value="150" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-sm"></div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2 pt-2">
+                                <i data-lucide="list-checks" class="w-4 h-4 text-blue-500"></i> Services Frequency
+                            </h3>
+                            <div class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Scale e pianerottoli</label>
+                                    <select id="freq-service1" data-service="Pulizia e lavaggio delle scale e pianerottoli" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Ascensore</label>
+                                    <select id="freq-service2" data-service="Pulizia e sanificazione dell'ascensore" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Androni e ingresso</label>
+                                    <select id="freq-service3" data-service="Pulizia degli androni e dell'ingresso" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Superfici comuni</label>
+                                    <select id="freq-service4" data-service="Spolveratura e detersione delle superfici comuni" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Rimozione ragnatele</label>
+                                    <select id="freq-service5" data-service="Rimozione ragnatele nelle aree comuni" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Vetrate e portoni</label>
+                                    <select id="freq-service6" data-service="Pulizia delle vetrate e portoni d'ingresso" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Raccolta rifiuti</label>
+                                    <select id="freq-service7" data-service="Raccolta e smaltimento rifiuti secondo normativa" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Cortili e spazi esterni</label>
+                                    <select id="freq-service8" data-service="Pulizia dei cortili e degli spazi esterni (se richiesto)" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0" selected>N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4">4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Cassette posta</label>
+                                    <select id="freq-service9" data-service="Pulizia delle cassette della posta" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Raccolta dépliant</label>
+                                    <select id="freq-service10" data-service="Raccolta dépliant non ritirati" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-50 dark:border-slate-700/50">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Corridoi cantine</label>
+                                    <select id="freq-service11" data-service="Controllo e scopatura corridoi cantine" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 py-1">
+                                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Zona garage</label>
+                                    <select id="freq-service12" data-service="Controllo e scopatura zona garage esterno esterna" class="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs rounded-lg p-1.5 w-24 service-frequency-select font-bold"><option value="0">N/A</option><option value="1">1 Volta</option><option value="2">2 Volte</option><option value="3">3 Volte</option><option value="4" selected>4 Volte</option></select>
+                                </div>
+                            </div>
+                        </div>
 
-                     <div class="mt-6 flex flex-col sm:flex-row gap-2">
-                         <button type="button" id="printBtn" class="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"><i data-lucide="printer"></i> Print Proposal</button>
-                         <button type="button" id="downloadPdfBtn" class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"><i data-lucide="download"></i> Download PDF</button>
-                     </div>
-                 </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2 pt-2">
+                                <i data-lucide="dollar-sign" class="w-4 h-4 text-blue-500"></i> Pricing
+                            </h3>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Total (Excl. VAT) €</label>
+                                <input type="number" id="totalPrice" step="0.01" value="150" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl p-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-bold text-right">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-4">
+                            <button type="button" id="printBtn" class="bg-slate-700 dark:bg-slate-600 hover:bg-slate-600 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm shadow-sm">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Print
+                            </button>
+                            <button type="button" id="downloadPdfBtn" class="bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-900/20">
+                                <i data-lucide="download" class="w-4 h-4"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="proposal-preview-container" class="lg:w-2/3 flex-grow bg-gray-300 p-4 rounded-lg overflow-auto">
-                 <div id="proposal-preview" class="bg-white text-gray-800 rounded shadow-lg">
-                     <div class="grid grid-cols-2 gap-8 mb-8 relative z-10">
+            <section id="proposal-preview-container" class="lg:w-2/3 flex-grow bg-slate-200 dark:bg-slate-800/50 p-6 rounded-2xl overflow-auto flex justify-center items-start border border-slate-200 dark:border-slate-700/50 shadow-inner">
+                
+                <div id="proposal-preview" class="shadow-2xl text-black">
+                    <div class="grid grid-cols-2 gap-8 mb-8 relative z-10">
+                        <div class="p-4 text-xs leading-relaxed bg-white/85 rounded">
+                            <p><strong class="font-bold">Cliente:</strong> <span id="preview-clientName"></span></p>
+                            <p><strong class="font-bold">Data:</strong> <span id="preview-proposalDate"></span></p>
+                            <p><strong class="font-bold">Via:</strong> <span id="preview-clientAddress"></span></p>
+                            <p><strong class="font-bold">Codice Fiscale:</strong> <span id="preview-clientTaxCode"></span></p>
+                            <p><strong class="font-bold">Tel:</strong> <span id="preview-clientTel"></span></p>
+                        </div>
                         
-                        <div class="p-4 text-sm bg-white bg-opacity-85">
-                             <p><strong>Cliente:</strong> <span id="preview-clientName"></span></p>
-                             <p><strong>Data:</strong> <span id="preview-proposalDate"></span></p>
-                             <p><strong>Via:</strong> <span id="preview-clientAddress"></span></p>
-                             <p><strong>Codice Fiscale:</strong> <span id="preview-clientTaxCode"></span></p>
-                             <p><strong>Tel:</strong> <span id="preview-clientTel"></span></p>
-                         </div>
-                         
-                         <div class="p-4 flex flex-col justify-between bg-white bg-opacity-85">
-                              <p class="text-sm font-semibold text-center mb-2">Timbro e firma per accettazione</p>
-                              <div class="flex-grow"></div>
-                         </div>
-                     </div>
+                        <div class="p-4 flex flex-col justify-between bg-white/85 rounded text-right">
+                            <p class="text-xs font-bold mb-2">Timbro e firma per accettazione</p>
+                            <div class="flex-grow border-b border-slate-300 border-dashed mt-8 w-1/2 self-end"></div>
+                        </div>
+                    </div>
 
-                     <div class="relative z-10">
-                         <h2 class="text-center text-blue-700 font-bold text-lg mb-4 mt-4">PREVENTIVO SERVIZIO DI PULIZIA CONDOMINIALE</h2>
-                         <p class="text-xs text-gray-600 mb-6 text-center leading-relaxed">
-                             RSG Multiservice è un'azienda specializzata nella pulizia di condomini, uffici e strutture ricettive. Offriamo servizi professionali con prodotti di qualità e personale qualificato, garantendo ambienti puliti e sicuri. Affidabilità, puntualità e attenzione ai dettagli sono i nostri punti di forza.
-                         </p>
-                     </div>
+                    <div class="relative z-10 text-center mb-6 px-8">
+                        <h2 class="text-blue-700 font-extrabold text-lg mb-3 uppercase tracking-wide">PREVENTIVO SERVIZIO DI PULIZIA CONDOMINIALE</h2>
+                        <p class="text-[10px] text-gray-600 leading-relaxed text-justify">
+                            RSG Multiservice è un'azienda specializzata nella pulizia di condomini, uffici e strutture ricettive. Offriamo servizi professionali con prodotti di qualità e personale qualificato, garantendo ambienti puliti e sicuri. Affidabilità, puntualità e attenzione ai dettagli sono i nostri punti di forza.
+                        </p>
+                    </div>
 
-                    <div class="relative z-10">
-                        <table class="w-full border-collapse border border-gray-300 text-sm mb-6 bg-white bg-opacity-90">
+                    <div class="relative z-10 px-4">
+                        <table class="w-full border-collapse border border-gray-300 text-[10px] mb-6 bg-white/95 shadow-sm">
                             <thead>
                                 <tr class="bg-gray-100">
-                                    <th class="border border-gray-300 p-2 text-left font-semibold">Servizi</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">1 Volta</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">2 Volte</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">3 Volte</th>
-                                    <th class="border border-gray-300 p-2 text-center font-semibold w-16">4 Volte</th>
+                                    <th class="border border-gray-300 p-2 text-left font-bold text-gray-800">Servizi</th>
+                                    <th class="border border-gray-300 p-2 text-center font-bold w-12 text-gray-800">1</th>
+                                    <th class="border border-gray-300 p-2 text-center font-bold w-12 text-gray-800">2</th>
+                                    <th class="border border-gray-300 p-2 text-center font-bold w-12 text-gray-800">3</th>
+                                    <th class="border border-gray-300 p-2 text-center font-bold w-12 text-gray-800">4</th>
                                 </tr>
-                            <thead>
+                            </thead>
                             <tbody id="preview-services-table">
                                 </tbody>
                         </table>
                     </div>
 
-                    <div class="text-right font-semibold mb-4 relative z-10">
-                        Totale Preventivo: (<span id="preview-totalPrice">€ 0.00</span>) (IVA esclusa)
+                    <div class="text-right font-bold mb-6 relative z-10 px-4 text-sm">
+                        Totale Preventivo: <span id="preview-totalPrice" class="text-lg text-blue-700">€ 0.00</span> <span class="text-[10px] font-normal text-gray-500">(IVA esclusa)</span>
                     </div>
 
-
-                     <div class="text-center text-xs text-gray-600 mb-8 border-t border-gray-300 pt-4 relative z-10">
-                         <p class="font-semibold mb-1">Normativa sui Prodotti Utilizzati</p>
-                         <p>I prodotti impiegati per i nostri interventi di pulizia sono conformi alle normative vigenti in materia di sicurezza, salute e ambiente, inclusi il Regolamento (CE) n. 1272/2008 (CLP) e il D.Lgs. 81/2008, per garantire massima efficacia e rispetto delle normative italiane ed europee.</p>
-                     </div>
-                     
+                    <div class="text-center text-[9px] text-gray-500 mb-4 border-t border-gray-300 pt-4 relative z-10 px-8">
+                        <p class="font-bold mb-1 text-gray-700">Normativa sui Prodotti Utilizzati</p>
+                        <p>I prodotti impiegati per i nostri interventi di pulizia sono conformi alle normative vigenti in materia di sicurezza, salute e ambiente, inclusi il Regolamento (CE) n. 1272/2008 (CLP) e il D.Lgs. 81/2008, per garantire massima efficacia e rispetto delle normative italiane ed europee.</p>
+                    </div>
                 </div>
             </section>
         </main>
@@ -315,7 +365,7 @@
 
         // Firebase Config
         const firebaseConfig = {
-             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc", // (Keep your actual key)
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc", 
              authDomain: "rsgweb-5f36d.firebaseapp.com",
              projectId: "rsgweb-5f36d",
              storageBucket: "rsgweb-5f36d.firebasestorage.app",
@@ -326,6 +376,40 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         let currentUserId = null;
+
+        // Theme & Brightness Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessOverlay = document.getElementById('brightness-overlay');
+
+        function initializeTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            const savedBrightness = localStorage.getItem('brightness') || 0;
+            brightnessSlider.value = savedBrightness;
+            brightnessOverlay.style.opacity = savedBrightness / 100;
+        }
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        brightnessSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            brightnessOverlay.style.opacity = val / 100;
+            localStorage.setItem('brightness', val);
+        });
 
         // Get Elements
         const appContainer = document.getElementById('app-container');
@@ -358,8 +442,9 @@
                 appContainer.classList.remove('hidden');
                 setDefaultDate();
                 updatePreview();
+                lucide.createIcons();
             } else {
-                window.location.href = './index.html'; // Redirect to login
+                window.location.href = './index.html'; 
             }
         });
 
@@ -404,7 +489,7 @@
 
             if (!servicesSelected) {
                 const row = previewServicesTable.insertRow();
-                row.innerHTML = `<td colspan="5" class="border border-gray-300 p-2 text-center italic">Nessun servizio selezionato.</td>`;
+                row.innerHTML = `<td colspan="5" class="border border-gray-300 p-2 text-center italic text-gray-500">Nessun servizio selezionato.</td>`;
             }
         }
 
@@ -427,10 +512,7 @@
             previewTotalPrice.textContent = `€ ${price.toFixed(2)}`;
         }
         
-        
-        // ======================================================
-        // === PDF Function (වෙනසක් නෑ) ===
-        // ======================================================
+        // PDF Generation Function
         function downloadPDF() {
             console.log('Generating PDF...');
             
@@ -451,19 +533,23 @@
 
             console.log('Waiting 750ms for letterhead.png to render...');
             
+            // Temporary visual feedback
+            const originalBtnText = downloadPdfBtn.innerHTML;
+            downloadPdfBtn.innerHTML = `<span class="loader w-4 h-4 border-2"></span> Generating...`;
+            
             setTimeout(() => {
-                console.log('PDF generation process starting...');
                 html2pdf().from(elementToExport).set(opt).save().then(() => {
                     console.log('PDF saved.');
+                    downloadPdfBtn.innerHTML = originalBtnText;
+                    lucide.createIcons();
                 }).catch((err) => {
                     console.error('PDF generation failed:', err);
+                    downloadPdfBtn.innerHTML = originalBtnText;
+                    lucide.createIcons();
+                    alert("Failed to generate PDF. Check console.");
                 });
             }, 750); 
         }
-        // ======================================================
-        // === Function එක ඉවරයි ===
-        // ======================================================
-
 
         // Event Listeners
         clientNameInput.addEventListener('input', updatePreview);
@@ -476,13 +562,8 @@
         serviceSelects.forEach(select => select.addEventListener('change', updatePreview));
         
         printBtn.addEventListener('click', () => window.print());
-        
         downloadPdfBtn.addEventListener('click', downloadPDF);
 
-        // Initial Load
-        lucide.createIcons();
-        setDefaultDate();
-        updatePreview();
     </script>
 
 </body>

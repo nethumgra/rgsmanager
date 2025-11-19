@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,24 +8,33 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
     <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Grid Styles */
         .week-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -34,8 +43,6 @@
         .day-column {
             min-height: 120px;
         }
-
-        
         .team-grid-header {
             display: grid;
             grid-template-columns: 200px repeat(7, minmax(140px, 1fr)); 
@@ -49,168 +56,212 @@
             min-height: 100px; 
         }
         
-        
         .day-column .team-add-btn {
             opacity: 0; 
             transition: opacity 0.2s;
         }
-        .day-column:hover .team-add-btn {
-            opacity: 0.7; 
-        }
-        .day-column .team-add-btn:hover {
-            opacity: 1; 
-        }
+        .day-column:hover .team-add-btn { opacity: 0.7; }
+        .day-column .team-add-btn:hover { opacity: 1; }
 
-        /* === ME TIKA ALUTHIN EKATHU KARANNA === */
-        /* PDF eka Black & White ganna style eka */
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; width: 100px; height: 4px;
+            background: #cbd5e1; border-radius: 5px; outline: none;
+        }
+        .dark input[type=range] { background: #475569; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            border-radius: 50%; background: #3b82f6; cursor: pointer; transition: background .15s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
+
+        /* === PDF CAPTURE MODE (Forces High Contrast for Print) === */
         .pdf-capture-mode {
             background-color: #ffffff !important;
             color: #000000 !important;
         }
-        .pdf-capture-mode .bg-slate-800,
-        .pdf-capture-mode .bg-slate-700,
-        .pdf-capture-mode .bg-slate-600,
-        .pdf-capture-mode .bg-slate-900 {
-            background-color: #f0f0f0 !important;
-            border: 1px solid #ccc !important;
+        .pdf-capture-mode * {
+            border-color: #e2e8f0 !important; /* Light gray borders */
             color: #000000 !important;
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        /* Specific overrides for readability in PDF */
+        .pdf-capture-mode .bg-slate-800,
+        .pdf-capture-mode .bg-slate-700, 
+        .pdf-capture-mode .dark\:bg-slate-800 {
+            background-color: #ffffff !important;
+            border: 1px solid #000000 !important;
         }
         .pdf-capture-mode .text-white,
-        .pdf-capture-mode .text-slate-300,
-        .pdf-capture-mode .text-slate-400,
-        .pdf-capture-mode .text-cyan-400,
-        .pdf-capture-mode .text-blue-400,
-        .pdf-capture-mode .font-semibold,
-        .pdf-capture-mode h3 {
+        .pdf-capture-mode .dark\:text-white {
             color: #000000 !important;
         }
-        .pdf-capture-mode .border-slate-700,
-        .pdf-capture-mode .border-slate-600,
-        .pdf-capture-mode .border-b {
-            border-color: #ccc !important;
+        /* Task cards in PDF */
+        .pdf-capture-mode .bg-slate-700 { 
+            background-color: #f8fafc !important; /* Very light gray */
+            border: 1px solid #94a3b8 !important;
         }
-        .pdf-capture-mode [data-lucide] {
+        .pdf-capture-mode .js-hide-on-pdf {
             display: none !important;
         }
-        /* === ALUTH STYLE IWARAI === */
-
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
+
+    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
 
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between overflow-y-auto">
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
             <div>
                 <div class="flex items-center gap-3 mb-10">
-
-    <div>
-        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
-    </div>
-    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
-</div>              <nav class="flex flex-col gap-2">
-                    <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                    <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                    
-                    <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition bg-slate-700 text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                    
-                    <a href="./work_comparison.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="compare"></i><span>Work Comparison</span></a>
-                    <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                    <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                    <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
-                    <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
-                    <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                    <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                    <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>General Schedule</span></a>
-                    <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                    <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                    <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                    <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                    <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                    <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
+                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                    </div>
+                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
+                </div>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
+                   
+                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white">
-                    <i data-lucide="log-out"></i><span>Sign Out</span>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
                 </button>
-                <div class="text-xs text-slate-500">
-                     <p>&copy; 2025 RSG MANAGER ADMIN. All rights reserved.Developed By Mathizz</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                <div class="text-xs text-slate-500 text-center">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
                 </div>
             </div>
         </aside>
 
         <main class="flex-1 p-8 overflow-y-auto flex flex-col">
-            <section id="page-staff-schedule" class="page flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-white">Staff Work Schedule</h2>
-                </div>
+            <section id="page-staff-schedule" class="page max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Staff Work Schedule</h2>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1 font-medium">Plan and manage weekly tasks for your team.</p>
+                    </div>
 
-                <div class="bg-slate-800 rounded-lg p-4 mb-4 flex items-end gap-4">
-                     <div id="individualFilters" class="flex-1">
-                         <label for="staffSearchInput" class="block mb-2 text-sm font-medium">Search Staff</label>
-                         <input type="text" id="staffSearchInput" placeholder="Type name to search..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5 mb-2">
-
-                         <label for="staffSelect" class="block mb-2 text-sm font-medium">Select Staff Member</label>
-                         <select id="staffSelect" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                             <option value="">Loading staff...</option>
-                         </select>
-                     </div>
-                    <div class="flex items-center gap-2">
-                        <button id="prevWeekBtn" title="Previous Week" class="p-2.5 rounded-md bg-slate-700 hover:bg-slate-600"><i data-lucide="chevron-left"></i></button>
-                        <button id="todayWeekBtn" title="Go to Current Week" class="px-4 py-2.5 rounded-md bg-slate-700 hover:bg-slate-600 text-sm">This Week</button>
-                        <button id="nextWeekBtn" title="Next Week" class="p-2.5 rounded-md bg-slate-700 hover:bg-slate-600"><i data-lucide="chevron-right"></i></button>
-                        <button id="downloadPdfBtn" title="Download Schedule as PDF" class="px-4 py-2.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm flex items-center gap-2">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            <span>Download PDF</span>
+                    <div class="flex items-center gap-3">
+                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                             <input type="range" id="brightness-slider" min="0" max="70" value="0">
+                         </div>
+                         <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                         </button>
                     </div>
                 </div>
 
-                <div id="viewTabs" class="flex items-center gap-2 mb-4">
-                    <button id="individualTabBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold">Individual View</button>
-                    <button id="teamTabBtn" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold">Team View</button>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6 shadow-sm">
+                     <div class="flex flex-col xl:flex-row items-end gap-4">
+                         <div id="individualFilters" class="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                 <label for="staffSearchInput" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Search Staff</label>
+                                 <div class="relative">
+                                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                     <input type="text" id="staffSearchInput" placeholder="Type to search..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
+                                 </div>
+                             </div>
+                             <div>
+                                 <label for="staffSelect" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Select Staff Member</label>
+                                 <select id="staffSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
+                                     <option value="">Loading staff...</option>
+                                 </select>
+                             </div>
+                         </div>
+
+                         <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-lg">
+                             <button id="prevWeekBtn" title="Previous Week" class="p-2 rounded-md bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:text-blue-600 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                             <button id="todayWeekBtn" title="Go to Current Week" class="px-4 py-2 rounded-md bg-white dark:bg-slate-800 text-slate-700 dark:text-white text-sm font-bold shadow-sm hover:text-blue-600 transition">This Week</button>
+                             <button id="nextWeekBtn" title="Next Week" class="p-2 rounded-md bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm hover:text-blue-600 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                         </div>
+                         
+                         <button id="downloadPdfBtn" class="px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-900/20 transition">
+                             <i data-lucide="download" class="w-4 h-4"></i> PDF
+                         </button>
+                     </div>
                 </div>
 
-                <h3 id="weekRangeDisplay" class="text-xl font-semibold text-white mb-4 text-center"></h3>
+                <div id="viewTabs" class="flex items-center gap-2 mb-4">
+                    <button id="individualTabBtn" class="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-md transition">Individual View</button>
+                    <button id="teamTabBtn" class="px-5 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">Team View</button>
+                </div>
 
-                <div id="individualView" class="flex-1 flex flex-col bg-slate-800 rounded-lg overflow-hidden">
-                    <div id="weekGridHeader" class="week-grid border-b border-slate-700" style="min-height: auto;">
-                    </div>
-                    <div id="weekGridBody" class="week-grid flex-1 overflow-y-auto">
-                    </div>
+                <div class="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-2 mb-4 border border-slate-200 dark:border-slate-700 text-center">
+                     <h3 id="weekRangeDisplay" class="text-lg font-bold text-slate-800 dark:text-white"></h3>
+                </div>
+
+                <div id="individualView" class="flex-1 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                    <div id="weekGridHeader" class="week-grid border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50" style="min-height: auto;"></div>
+                    <div id="weekGridBody" class="week-grid flex-1 overflow-y-auto bg-white dark:bg-slate-800"></div>
                 </div>
                 
-                <div id="teamView" class="flex-1 flex-col bg-slate-800 rounded-lg overflow-auto hidden">
-                    <div id="teamGridHeader" class="team-grid-header bg-slate-700 border-b-2 border-slate-600">
-                        </div>
-                    <div id="teamGridBody" class="min-h-[400px]">
-                        </div>
+                <div id="teamView" class="flex-1 flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-auto hidden shadow-sm">
+                    <div id="teamGridHeader" class="team-grid-header bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700"></div>
+                    <div id="teamGridBody" class="min-h-[400px] bg-white dark:bg-slate-800"></div>
                 </div>
 
             </section>
         </main>
     </div>
 
-    <div id="workModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-lg transform transition-all scale-95 opacity-0" id="work-modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="workModalTitle" class="text-2xl font-bold text-white">Add Work</h3>
-                <button id="closeWorkModalBtn" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+    <div id="workModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-lg transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="work-modal-content">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
+                <h3 id="workModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Add Work</h3>
+                <button id="closeWorkModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
             <form id="workForm">
                 <input type="hidden" id="workDocId">
 
-                <div class="mb-4">
-                    <label for="taskTitle" class="block mb-2 text-sm font-medium">Work / Task Title</label>
-                    <input type="text" id="taskTitle" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" placeholder="e.g., Clean Block A, Mow Lawn" required>
+                <div class="mb-5">
+                    <label for="taskTitle" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Work / Task Title</label>
+                    <input type="text" id="taskTitle" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium transition" placeholder="e.g., Clean Block A" required>
                 </div>
 
-                <div class="mb-4">
-                    <label for="workCategory" class="block mb-2 text-sm font-medium">Work Category</label>
-                    <select id="workCategory" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5">
+                <div class="mb-5">
+                    <label for="workCategory" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Work Category</label>
+                    <select id="workCategory" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium transition">
                         <option value="">Select Category</option>
                         <option value="Condominium">Condominium</option>
                         <option value="Hotel B&B">Hotel B&B</option>
@@ -225,51 +276,51 @@
                     </select>
                 </div>
 
-                <div id="customerDropdownWrapper" class="mb-4 hidden">
-                    <label for="customerSelect" class="block mb-2 text-sm font-medium">Select Customer</label>
-                    <select id="customerSelect" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5">
+                <div id="customerDropdownWrapper" class="mb-5 hidden">
+                    <label for="customerSelect" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Select Customer</label>
+                    <select id="customerSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 font-medium transition">
                         <option value="">Loading...</option>
                     </select>
                 </div>
 
-                <div id="customerItemDropdownWrapper" class="mb-4 hidden">
-                    <label for="customerItemSelect" class="block mb-2 text-sm font-medium">Select Item/Location</label>
-                    <select id="customerItemSelect" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5">
+                <div id="customerItemDropdownWrapper" class="mb-5 hidden">
+                    <label for="customerItemSelect" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Select Item/Location</label>
+                    <select id="customerItemSelect" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 font-medium transition">
                         <option value="">Loading...</option>
                     </select>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                     <div>
-                        <label for="taskDate" class="block mb-2 text-sm font-medium">Date</label>
-                        <input type="date" id="taskDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                        <label for="taskDate" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
+                        <input type="date" id="taskDate" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 font-medium transition" required>
                     </div>
-                     <div>
-                        <label for="taskTime" class="block mb-2 text-sm font-medium">Time</label>
-                        <input type="time" id="taskTime" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" required>
+                    <div>
+                        <label for="taskTime" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Time</label>
+                        <input type="time" id="taskTime" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 font-medium transition" required>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                        <input type="checkbox" id="taskFixed" class="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500">
+                <div class="mb-5">
+                    <label class="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-600">
+                        <input type="checkbox" id="taskFixed" class="w-5 h-5 text-blue-600 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-500 rounded focus:ring-blue-500">
                         <span>Fixed Weekly Task (Repeat every week)</span>
                     </label>
                 </div>
-                <div class="mb-4">
-                    <label for="taskDescription" class="block mb-2 text-sm font-medium">Description / Notes</label>
-                    <textarea id="taskDescription" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2.5" rows="3" placeholder="Add any extra details..."></textarea>
+                <div class="mb-6">
+                    <label for="taskDescription" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Description / Notes</label>
+                    <textarea id="taskDescription" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 font-medium transition" rows="3" placeholder="Add details..."></textarea>
                 </div>
 
-                <div class="flex justify-between items-center mt-8">
-                     <div>
-                        <button type="button" id="deleteWorkBtn" class="px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold hidden">Delete</button>
+                <div class="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-700">
+                      <div>
+                        <button type="button" id="deleteWorkBtn" class="px-5 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 font-bold transition hidden border border-red-100 dark:border-red-800">Delete</button>
                     </div>
-                    <div class="flex gap-4">
-                        <button type="button" id="cancelWorkModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
-                        <button type="submit" id="submitWorkBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center">
+                    <div class="flex gap-3">
+                        <button type="button" id="cancelWorkModalBtn" class="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                        <button type="submit" id="submitWorkBtn" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg flex items-center">
                             <span id="submitWorkBtnText">Save</span>
-                            <div id="submitWorkSpinner" class="loader w-5 h-5 ml-2 hidden"></div>
+                            <div id="submitWorkSpinner" class="loader ml-2 hidden" style="width:18px; height:18px;"></div>
                         </button>
                     </div>
                 </div>
@@ -277,14 +328,13 @@
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300"></div>
+    <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium z-[70]"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, getDoc, updateDoc, where, query, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-        
         const firebaseConfig = {
              apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
              authDomain: "rsgweb-5f36d.firebaseapp.com",
@@ -294,12 +344,10 @@
              appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
         };
 
-        
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        
         let currentUserId = null;
         let allStaff = [];
         let allStaffWork = [];
@@ -310,13 +358,45 @@
         let isStaffLoading = true;
         let isWorkLoading = true;
 
-        
+        // Theme & Brightness Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessOverlay = document.getElementById('brightness-overlay');
+
+        function initializeTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            const savedBrightness = localStorage.getItem('brightness') || 0;
+            brightnessSlider.value = savedBrightness;
+            brightnessOverlay.style.opacity = savedBrightness / 100;
+        }
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        brightnessSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            brightnessOverlay.style.opacity = val / 100;
+            localStorage.setItem('brightness', val);
+        });
+
         const appContainer = document.getElementById('app-container');
         const signOutBtn = document.getElementById('signOutBtn');
         const userIdSpan = document.getElementById('userId');
         const toast = document.getElementById('toast');
 
-        
         const individualFilters = document.getElementById('individualFilters');
         const individualTabBtn = document.getElementById('individualTabBtn');
         const teamTabBtn = document.getElementById('teamTabBtn');
@@ -325,18 +405,15 @@
         const teamGridHeader = document.getElementById('teamGridHeader');
         const teamGridBody = document.getElementById('teamGridBody');
 
-        
         const staffSelect = document.getElementById('staffSelect');
         const staffSearchInput = document.getElementById('staffSearchInput');
         const weekGridHeader = document.getElementById('weekGridHeader');
         const weekGridBody = document.getElementById('weekGridBody');
         
-        
         const weekRangeDisplay = document.getElementById('weekRangeDisplay');
         const prevWeekBtn = document.getElementById('prevWeekBtn');
         const nextWeekBtn = document.getElementById('nextWeekBtn');
         const todayWeekBtn = document.getElementById('todayWeekBtn');
-        
         
         const workModal = document.getElementById('workModal');
         const workModalContent = document.getElementById('work-modal-content');
@@ -354,7 +431,6 @@
         const customerItemDropdownWrapper = document.getElementById('customerItemDropdownWrapper');
         const customerItemSelect = document.getElementById('customerItemSelect');
 
-        
         function getStartOfWeek(date) {
             const d = new Date(date);
             const day = d.getDay();
@@ -377,18 +453,12 @@
             return `${hours}:${minutes}`;
         }
         
-
-        
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
                 userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
                 appContainer.classList.remove('hidden');
-
-                
-                lucide.createIcons(); 
-                
-
+                lucide.createIcons();
                 currentWeekStart = getStartOfWeek(new Date());
                 listenForStaff();
                 listenForWorkSchedule();
@@ -398,19 +468,12 @@
             }
         });
 
-        signOutBtn.addEventListener('click', () => {
-            signOut(auth);
-        });
-        
+        signOutBtn.addEventListener('click', () => { signOut(auth); });
         
         function checkInitialLoad() {
              if (!isStaffLoading && !isWorkLoading) {
-                 
-                 if (currentView === 'individual') {
-                     filterStaffDropdown(); 
-                 } else {
-                     renderTeamGrid();
-                 }
+                 if (currentView === 'individual') filterStaffDropdown(); 
+                 else renderTeamGrid();
              }
         }
 
@@ -420,17 +483,10 @@
                 isStaffLoading = false;
                 allStaff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allStaff.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
-                
                 filterStaffDropdown(); 
-                
-                if (currentView === 'team') {
-                    renderTeamGrid(); 
-                }
+                if (currentView === 'team') renderTeamGrid(); 
                 checkInitialLoad();
-            }, error => {
-                console.error("Error listening for staff:", error);
-                showToast("Error loading staff list.", false);
-            });
+            }, error => { console.error(error); showToast("Error loading staff.", false); });
         }
 
         function listenForWorkSchedule() {
@@ -438,31 +494,19 @@
             onSnapshot(collection(db, `users/${currentUserId}/staff_work`), snapshot => {
                 isWorkLoading = false;
                 allStaffWork = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                
-                if (currentView === 'individual') {
-                    renderWeekGrid();
-                } else {
-                    renderTeamGrid();
-                }
+                if (currentView === 'individual') renderWeekGrid();
+                else renderTeamGrid();
                 checkInitialLoad();
-            }, error => {
-                console.error("Error listening for work schedule:", error);
-                showToast("Error loading work schedule.", false);
-            });
+            }, error => { console.error(error); showToast("Error loading schedule.", false); });
         }
 
         function listenForCustomers() {
             if (!currentUserId) return;
             onSnapshot(collection(db, `users/${currentUserId}/customers`), snapshot => {
                 allCustomers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }, error => {
-                console.error("Error listening for customers:", error);
-                showToast("Error loading customer data.", false);
             });
         }
 
-        
         function loadCustomersForCategory(category) {
             customerSelect.innerHTML = `<option value="">Loading Customers...</option>`;
             customerDropdownWrapper.classList.remove('hidden');
@@ -478,41 +522,34 @@
         }
         function populateCustomerDropdown(category, customers) {
             const currentVal = customerSelect.value;
-            customerSelect.innerHTML = `<option value="">-- Select Customer for ${category} --</option>`;
+            customerSelect.innerHTML = `<option value="">-- Select Customer --</option>`;
             customers.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
             if (customers.length === 0) {
-                customerSelect.innerHTML = `<option value="">No customers found for ${category}</option>`;
-                return;
+                customerSelect.innerHTML = `<option value="">No customers found</option>`; return;
             }
             customers.forEach(customer => {
                 const option = document.createElement('option');
                 option.value = customer.id;
-                option.textContent = customer.name || 'Unnamed Customer';
+                option.textContent = customer.name || 'Unnamed';
                 customerSelect.appendChild(option);
             });
-            const previouslySelectedCustomerExists = customers.some(c => c.id === currentVal);
-            if (previouslySelectedCustomerExists) {
-                customerSelect.value = currentVal;
-                loadCustomerItems(currentVal);
+            if (customers.some(c => c.id === currentVal)) {
+                customerSelect.value = currentVal; loadCustomerItems(currentVal);
             } else {
-                 customerSelect.value = "";
-                 customerItemDropdownWrapper.classList.add('hidden');
+                 customerSelect.value = ""; customerItemDropdownWrapper.classList.add('hidden');
             }
         }
         function loadCustomerItems(customerId) {
-            customerItemSelect.innerHTML = `<option value="">Loading Items...</option>`;
+            customerItemSelect.innerHTML = `<option value="">Loading...</option>`;
             customerItemDropdownWrapper.classList.remove('hidden');
             loadedCustomerItems = [];
             if (!customerId) {
                 customerItemSelect.innerHTML = `<option value="">Select Customer First</option>`;
-                customerItemDropdownWrapper.classList.add('hidden');
-                return;
+                customerItemDropdownWrapper.classList.add('hidden'); return;
             }
             const selectedCustomer = allCustomers.find(c => c.id === customerId);
-            if (selectedCustomer && selectedCustomer.items && Array.isArray(selectedCustomer.items)) {
-                loadedCustomerItems = selectedCustomer.items.map(item => ({
-                    name: item.name || 'Unnamed Item'
-                }));
+            if (selectedCustomer && selectedCustomer.items) {
+                loadedCustomerItems = selectedCustomer.items.map(item => ({ name: item.name || 'Unnamed' }));
             }
             populateCustomerItemsDropdown(loadedCustomerItems);
         }
@@ -521,112 +558,75 @@
             customerItemSelect.innerHTML = `<option value="">-- Select Item/Location --</option>`;
             items.sort((a, b) => (a.name || 'Z').localeCompare(b.name || 'Z'));
             if (items.length === 0) {
-                customerItemSelect.innerHTML = `<option value="">No items found for this customer</option>`;
-                return;
+                customerItemSelect.innerHTML = `<option value="">No items found</option>`; return;
             }
             items.forEach(item => {
                 const option = document.createElement('option');
-                option.value = item.name;
-                option.textContent = item.name;
+                option.value = item.name; option.textContent = item.name;
                 customerItemSelect.appendChild(option);
             });
-            const previouslySelectedItemExists = items.some(item => item.name === currentVal);
-             if (previouslySelectedItemExists) {
-                 customerItemSelect.value = currentVal;
-             } else {
-                 customerItemSelect.value = "";
-             }
+            if (items.some(item => item.name === currentVal)) customerItemSelect.value = currentVal; else customerItemSelect.value = "";
         }
 
-        
         function renderWeekGrid() {
             const selectedStaffId = staffSelect.value;
-            weekGridHeader.innerHTML = '';
-            weekGridBody.innerHTML = '';
-
+            weekGridHeader.innerHTML = ''; weekGridBody.innerHTML = '';
             const startDate = new Date(currentWeekStart);
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + 6);
+            const endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6);
             weekRangeDisplay.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 
-            
-            const normalTasksForWeek = allStaffWork.filter(w => {
+            const normalTasks = allStaffWork.filter(w => {
                 if (w.staffId !== selectedStaffId || w.isFixed) return false;
                 if (!w.date || !w.date.toDate) return false;
-                const workDate = w.date.toDate(); workDate.setHours(0, 0, 0, 0);
-                return workDate >= startDate && workDate <= endDate;
+                const d = w.date.toDate(); d.setHours(0, 0, 0, 0);
+                return d >= startDate && d <= endDate;
             });
+            const fixedTasks = allStaffWork.filter(w => w.staffId === selectedStaffId && w.isFixed === true);
 
-            
-            const allFixedTasksForStaff = allStaffWork.filter(w => w.staffId === selectedStaffId && w.isFixed === true);
-            
             for (let i = 0; i < 7; i++) {
-                const day = new Date(startDate);
-                day.setDate(startDate.getDate() + i);
+                const day = new Date(startDate); day.setDate(startDate.getDate() + i);
                 const dayString = getLocalDateString(day);
                 const dayOfWeek = day.getDay(); 
 
-                
                 const headerEl = document.createElement('div');
-                headerEl.className = 'p-4 text-center';
+                headerEl.className = 'p-4 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0';
                 headerEl.innerHTML = `
-                    <div class="font-bold text-white">${day.toLocaleString('en-US', { weekday: 'short' })}</div>
-                    <div class="text-sm text-slate-400">${day.getDate()}</div>
+                    <div class="font-bold text-slate-900 dark:text-white">${day.toLocaleString('en-US', { weekday: 'short' })}</div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">${day.getDate()}</div>
                 `;
                 weekGridHeader.appendChild(headerEl);
 
                 const bodyEl = document.createElement('div');
-                bodyEl.className = 'day-column border-t border-l border-slate-700 p-2 overflow-y-auto relative';
+                bodyEl.className = 'day-column border-r border-b border-slate-200 dark:border-slate-700 last:border-r-0 p-2 overflow-y-auto relative flex flex-col gap-2';
 
-                
-                const tasksForDay_Normal = normalTasksForWeek
-                    .filter(work => getLocalDateString(work.date.toDate()) === dayString);
-
-                
-                const tasksForDay_Fixed = allFixedTasksForStaff.filter(task => {
-                    const originalDate = task.date.toDate();
-                    originalDate.setHours(0,0,0,0);
-                    
-                    return originalDate.getDay() === dayOfWeek && originalDate <= day;
-                }).map(fixedTask => {
-                    
-                    const originalDateTime = fixedTask.date.toDate();
-                    const syntheticDate = new Date(day); 
-                    syntheticDate.setHours(originalDateTime.getHours(), originalDateTime.getMinutes()); 
-
-                    return {
-                        ...fixedTask, 
-                        id: fixedTask.id, 
-                        date: Timestamp.fromDate(syntheticDate), 
-                    };
+                const dayTasksNormal = normalTasks.filter(w => getLocalDateString(w.date.toDate()) === dayString);
+                const dayTasksFixed = fixedTasks.filter(t => {
+                    const d = t.date.toDate(); d.setHours(0,0,0,0);
+                    return d.getDay() === dayOfWeek && d <= day;
+                }).map(t => {
+                    const od = t.date.toDate();
+                    const sd = new Date(day); sd.setHours(od.getHours(), od.getMinutes());
+                    return { ...t, id: t.id, date: Timestamp.fromDate(sd) };
                 });
 
-                
-                const allTasksForThisDay = [...tasksForDay_Normal, ...tasksForDay_Fixed];
-                allTasksForThisDay.sort((a,b) => a.date.toDate() - b.date.toDate());
+                const allDayTasks = [...dayTasksNormal, ...dayTasksFixed].sort((a,b) => a.date.toDate() - b.date.toDate());
 
-
-                allTasksForThisDay.forEach(task => {
+                allDayTasks.forEach(task => {
                     const taskTime = getLocalTimeString(task.date.toDate());
                     const taskEl = document.createElement('div');
-                    taskEl.className = 'bg-slate-700 p-2 rounded-md mb-2 cursor-pointer hover:bg-slate-600 transition-colors duration-150';
-                    taskEl.dataset.id = task.id;
+                    taskEl.className = 'bg-white dark:bg-slate-700 p-2.5 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600 cursor-pointer hover:border-blue-400 dark:hover:bg-slate-600 transition group';
                     taskEl.addEventListener('click', () => openWorkModal(task.id));
                     
-                    const locationName = task.customerItemName;
-                    const customerNameForDisplay = task.customerName ? `(${task.customerName})` : '';
-                    
-                    
-                    const isFixedIcon = task.isFixed ? `<i data-lucide="repeat" class="w-3 h-3 text-green-400" title="Fixed Weekly Task"></i>` : '';
+                    const location = task.customerItemName;
+                    const fixedIcon = task.isFixed ? `<i data-lucide="repeat" class="w-3 h-3 text-green-500" title="Fixed"></i>` : '';
 
                     taskEl.innerHTML = `
-                        <div class="font-semibold text-sm text-white">${task.taskTitle || 'No Title'}</div>
-                        <div class="text-xs text-slate-300">${task.workCategory || 'Uncategorized'}</div>
-                        ${locationName ? `<div class="text-xs text-cyan-400 mt-1 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0"></i><span>${locationName} ${customerNameForDisplay}</span></div>` : ''}
-                        
-                        <div class="text-xs text-blue-400 mt-1 flex items-center justify-between">
-                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 flex-shrink-0"></i><span>${taskTime}</span></span>
-                            ${isFixedIcon}
+                        <div class="font-bold text-xs text-slate-800 dark:text-white truncate mb-1">${task.taskTitle || 'No Title'}</div>
+                        <div class="text-[10px] font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wide mb-1">${task.workCategory || 'General'}</div>
+                        ${location ? `<div class="text-[11px] text-blue-600 dark:text-cyan-400 mb-1 flex items-center gap-1 truncate"><i data-lucide="map-pin" class="w-3 h-3"></i> ${location}</div>` : ''}
+                        <div class="text-[11px] text-slate-400 dark:text-slate-400 flex items-center justify-between border-t border-slate-100 dark:border-slate-600 pt-1 mt-1">
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${taskTime}</span>
+                            ${fixedIcon}
                         </div>
                     `;
                     bodyEl.appendChild(taskEl);
@@ -634,162 +634,113 @@
 
                 if (selectedStaffId) {
                     const addTaskBtn = document.createElement('button');
-                    addTaskBtn.className = 'sticky bottom-1 left-1 right-1 w-auto mx-auto mt-2 text-center px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-600/80 text-blue-100 transition text-sm flex items-center justify-center gap-1 font-medium js-hide-on-pdf';
-                    addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Add Work`;
+                    addTaskBtn.className = 'team-add-btn w-full mt-auto text-center py-1.5 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-400 hover:text-blue-500 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition text-xs flex items-center justify-center gap-1 font-bold js-hide-on-pdf opacity-0 group-hover:opacity-100';
+                    addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-3 h-3"></i> Add`;
                     addTaskBtn.dataset.date = dayString;
-                    addTaskBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openWorkModal(null, e.currentTarget.dataset.date);
-                    });
+                    addTaskBtn.addEventListener('click', (e) => { e.stopPropagation(); openWorkModal(null, e.currentTarget.dataset.date); });
                     bodyEl.appendChild(addTaskBtn);
+                    
+                    // Show button on hover of column
+                    bodyEl.addEventListener('mouseenter', () => addTaskBtn.style.opacity = '1');
+                    bodyEl.addEventListener('mouseleave', () => addTaskBtn.style.opacity = '0');
                 }
                 weekGridBody.appendChild(bodyEl);
             }
             lucide.createIcons();
         }
 
-        
         function renderTeamGrid() {
-            teamGridHeader.innerHTML = '';
-            teamGridBody.innerHTML = '';
-
-            if (isStaffLoading || isWorkLoading) {
-                teamGridBody.innerHTML = '<div class="flex justify-center items-center h-64"><div class="loader"></div></div>';
-                return;
-            }
-            if (allStaff.length === 0) {
-                teamGridBody.innerHTML = '<p class="text-center p-10">No staff members found.</p>';
-                return;
-            }
+            teamGridHeader.innerHTML = ''; teamGridBody.innerHTML = '';
+            if (isStaffLoading || isWorkLoading) { teamGridBody.innerHTML = '<div class="flex justify-center items-center h-64"><div class="loader"></div></div>'; return; }
+            if (allStaff.length === 0) { teamGridBody.innerHTML = '<p class="text-center p-10 text-slate-500">No staff members found.</p>'; return; }
 
             const startDate = new Date(currentWeekStart);
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + 6);
+            const endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6);
             weekRangeDisplay.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 
-            
-            const normalTasksForWeek = allStaffWork.filter(w => {
-                if (w.isFixed) return false;
-                if (!w.date || !w.date.toDate) return false;
-                const workDate = w.date.toDate(); workDate.setHours(0, 0, 0, 0);
-                return workDate >= startDate && workDate <= endDate;
+            const normalTasks = allStaffWork.filter(w => {
+                if (w.isFixed || !w.date) return false;
+                const d = w.date.toDate(); d.setHours(0, 0, 0, 0);
+                return d >= startDate && d <= endDate;
             });
+            const fixedTasks = allStaffWork.filter(w => w.isFixed === true);
 
-            
-            const allFixedTasks = allStaffWork.filter(w => w.isFixed === true);
-
-
-            
             const staffHeaderCell = document.createElement('div');
-            staffHeaderCell.className = 'p-4 font-bold text-white text-left sticky left-0 z-10 bg-slate-700 border-r border-slate-600';
+            staffHeaderCell.className = 'p-4 font-bold text-slate-700 dark:text-white text-left sticky left-0 z-20 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700';
             staffHeaderCell.textContent = 'Staff Member';
             teamGridHeader.appendChild(staffHeaderCell);
 
             for (let i = 0; i < 7; i++) {
-                const day = new Date(startDate);
-                day.setDate(startDate.getDate() + i);
+                const day = new Date(startDate); day.setDate(startDate.getDate() + i);
                 const headerEl = document.createElement('div');
-                headerEl.className = 'p-4 text-center border-r border-slate-600';
+                headerEl.className = 'p-4 text-center border-r border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50';
                 headerEl.innerHTML = `
-                    <div class="font-bold text-white">${day.toLocaleString('en-US', { weekday: 'short' })}</div>
-                    <div class="text-sm text-slate-400">${day.getDate()}</div>
+                    <div class="font-bold text-slate-900 dark:text-white">${day.toLocaleString('en-US', { weekday: 'short' })}</div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">${day.getDate()}</div>
                 `;
                 teamGridHeader.appendChild(headerEl);
             }
 
-            
             allStaff.forEach(staff => {
                 const staffRowEl = document.createElement('div');
-                staffRowEl.className = 'team-grid-row border-t border-slate-700';
+                staffRowEl.className = 'team-grid-row border-b border-slate-200 dark:border-slate-700';
 
                 const nameCell = document.createElement('div');
-                nameCell.className = 'p-3 font-semibold text-white sticky left-0 bg-slate-800 border-r border-slate-600';
-                nameCell.textContent = staff.name || 'Unnamed Staff';
+                nameCell.className = 'p-3 font-bold text-slate-800 dark:text-white sticky left-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex items-center z-10 shadow-sm';
+                nameCell.textContent = staff.name || 'Unnamed';
                 staffRowEl.appendChild(nameCell);
 
                 for (let i = 0; i < 7; i++) {
-                    const day = new Date(startDate);
-                    day.setDate(startDate.getDate() + i);
+                    const day = new Date(startDate); day.setDate(startDate.getDate() + i);
                     const dayString = getLocalDateString(day);
                     const dayOfWeek = day.getDay();
                     
                     const dayCell = document.createElement('div');
-                    dayCell.className = 'day-column border-r border-slate-700 p-2 overflow-y-auto flex flex-col gap-2 relative'; 
+                    dayCell.className = 'day-column border-r border-slate-200 dark:border-slate-700 p-2 overflow-y-auto flex flex-col gap-2 relative bg-white dark:bg-slate-800'; 
 
-                    
-                    const tasksForDay_Normal = normalTasksForWeek
-                        .filter(work => work.staffId === staff.id && getLocalDateString(work.date.toDate()) === dayString);
-
-                    
-                    const tasksForDay_Fixed = allFixedTasks.filter(task => {
-                        if (task.staffId !== staff.id) return false;
-                        const originalDate = task.date.toDate();
-                        originalDate.setHours(0,0,0,0);
-                        return originalDate.getDay() === dayOfWeek && originalDate <= day;
-                    }).map(fixedTask => {
-                        const originalDateTime = fixedTask.date.toDate();
-                        const syntheticDate = new Date(day);
-                        syntheticDate.setHours(originalDateTime.getHours(), originalDateTime.getMinutes());
-                        return {
-                            ...fixedTask,
-                            id: fixedTask.id,
-                            date: Timestamp.fromDate(syntheticDate),
-                        };
+                    const dayTasksNormal = normalTasks.filter(w => w.staffId === staff.id && getLocalDateString(w.date.toDate()) === dayString);
+                    const dayTasksFixed = fixedTasks.filter(t => {
+                        if (t.staffId !== staff.id) return false;
+                        const d = t.date.toDate(); d.setHours(0,0,0,0);
+                        return d.getDay() === dayOfWeek && d <= day;
+                    }).map(t => {
+                        const od = t.date.toDate();
+                        const sd = new Date(day); sd.setHours(od.getHours(), od.getMinutes());
+                        return { ...t, id: t.id, date: Timestamp.fromDate(sd) };
                     });
-                    
-                    
-                    const allTasksForThisDay = [...tasksForDay_Normal, ...tasksForDay_Fixed];
-                    allTasksForThisDay.sort((a,b) => a.date.toDate() - b.date.toDate());
 
-                    
-                    allTasksForThisDay.forEach(task => {
+                    const allDayTasks = [...dayTasksNormal, ...dayTasksFixed].sort((a,b) => a.date.toDate() - b.date.toDate());
+
+                    allDayTasks.forEach(task => {
                         const taskTime = getLocalTimeString(task.date.toDate());
                         const taskEl = document.createElement('div');
-                        taskEl.className = 'bg-slate-700 p-2 rounded-md cursor-pointer hover:bg-slate-600';
-                        taskEl.title = task.description || 'No description';
-                        
+                        taskEl.className = 'bg-blue-50 dark:bg-slate-700 p-1.5 rounded border-l-2 border-blue-500 cursor-pointer hover:bg-blue-100 dark:hover:bg-slate-600 transition';
+                        taskEl.title = task.description || '';
                         taskEl.addEventListener('click', () => {
-                            staffSelect.value = task.staffId; 
-                            individualTabBtn.click(); 
-                            setTimeout(() => { 
-                                openWorkModal(task.id);
-                            }, 50);
+                            staffSelect.value = task.staffId; individualTabBtn.click(); 
+                            setTimeout(() => openWorkModal(task.id), 50);
                         });
-
-                        const locationName = task.customerItemName;
-                        
-                        const isFixedIcon = task.isFixed ? `<i data-lucide="repeat" class="w-3 h-3 text-green-400" title="Fixed Weekly Task"></i>` : '';
-
                         taskEl.innerHTML = `
-                            <div class="font-semibold text-sm text-white truncate">${task.taskTitle || 'No Title'}</div>
-                            ${locationName ? `<div class="text-xs text-cyan-400 mt-1 flex items-center gap-1 truncate"><i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0"></i><span>${locationName}</span></div>` : ''}
-                            
-                            <div class="text-xs text-blue-400 mt-1 flex items-center justify-between">
-                                <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 flex-shrink-0"></i><span>${taskTime}</span></span>
-                                ${isFixedIcon}
+                            <div class="font-bold text-[11px] text-slate-800 dark:text-white truncate">${task.taskTitle}</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 flex justify-between">
+                                <span>${taskTime}</span> ${task.isFixed ? '<i data-lucide="repeat" class="w-2 h-2 text-green-500"></i>' : ''}
                             </div>
                         `;
                         dayCell.appendChild(taskEl);
                     });
                     
-                    
                     const addTaskBtn = document.createElement('button');
-                    addTaskBtn.className = 'team-add-btn sticky bottom-1 w-full mt-auto text-center px-2 py-1 rounded-md bg-blue-600/70 hover:bg-blue-600 text-white transition text-xs flex items-center justify-center gap-1 js-hide-on-pdf';
+                    addTaskBtn.className = 'team-add-btn w-full mt-auto text-center px-2 py-1 rounded border border-dashed border-slate-300 dark:border-slate-600 text-slate-400 hover:text-blue-500 hover:border-blue-500 text-[10px] flex items-center justify-center gap-1 js-hide-on-pdf opacity-0 hover:opacity-100 transition';
                     addTaskBtn.innerHTML = `<i data-lucide="plus" class="w-3 h-3"></i> Add`;
-                    addTaskBtn.dataset.date = dayString;
-                    addTaskBtn.dataset.staffId = staff.id;
-                    
                     addTaskBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const staffId = e.currentTarget.dataset.staffId;
-                        const date = e.currentTarget.dataset.date;
-                        individualTabBtn.click(); 
-                        staffSelect.value = staffId;
-                        setTimeout(() => {
-                            openWorkModal(null, date);
-                        }, 50);
+                        individualTabBtn.click(); staffSelect.value = staff.id;
+                        setTimeout(() => openWorkModal(null, dayString), 50);
                     });
+                    
                     dayCell.appendChild(addTaskBtn);
+                    dayCell.addEventListener('mouseenter', () => addTaskBtn.style.opacity = '1');
+                    dayCell.addEventListener('mouseleave', () => addTaskBtn.style.opacity = '0');
 
                     staffRowEl.appendChild(dayCell);
                 }
@@ -798,376 +749,185 @@
             lucide.createIcons();
         }
 
-        
+        // Navigation & View Toggle Logic
         individualTabBtn.addEventListener('click', () => {
             currentView = 'individual';
-            
-            
-            individualTabBtn.classList.add('bg-blue-600', 'text-white');
-            individualTabBtn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-            teamTabBtn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-            teamTabBtn.classList.remove('bg-blue-600', 'text-white');
-
-            
-            individualFilters.classList.remove('hidden');
-            individualView.classList.remove('hidden');
-            individualView.classList.add('flex');
-            teamView.classList.add('hidden');
-            teamView.classList.remove('flex');
-
-            renderWeekGrid(); 
+            individualTabBtn.className = "px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-md transition";
+            teamTabBtn.className = "px-5 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition";
+            individualFilters.classList.remove('hidden'); individualView.classList.remove('hidden'); individualView.classList.add('flex');
+            teamView.classList.add('hidden'); teamView.classList.remove('flex');
+            renderWeekGrid();
         });
 
         teamTabBtn.addEventListener('click', () => {
             currentView = 'team';
-            
-            
-            teamTabBtn.classList.add('bg-blue-600', 'text-white');
-            teamTabBtn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-            individualTabBtn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-slate-300');
-            individualTabBtn.classList.remove('bg-blue-600', 'text-white');
-            
-            
-            individualFilters.classList.add('hidden'); 
-            individualView.classList.add('hidden');
-            individualView.classList.remove('flex');
-            teamView.classList.remove('hidden');
-            teamView.classList.add('flex'); 
-
-            renderTeamGrid(); 
+            teamTabBtn.className = "px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-md transition";
+            individualTabBtn.className = "px-5 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition";
+            individualFilters.classList.add('hidden'); individualView.classList.add('hidden'); individualView.classList.remove('flex');
+            teamView.classList.remove('hidden'); teamView.classList.add('flex');
+            renderTeamGrid();
         });
 
+        prevWeekBtn.addEventListener('click', () => { currentWeekStart.setDate(currentWeekStart.getDate() - 7); updateView(); });
+        nextWeekBtn.addEventListener('click', () => { currentWeekStart.setDate(currentWeekStart.getDate() + 7); updateView(); });
+        todayWeekBtn.addEventListener('click', () => { currentWeekStart = getStartOfWeek(new Date()); updateView(); });
+        function updateView() { if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid(); }
 
-        
-        prevWeekBtn.addEventListener('click', () => {
-            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
-        });
-        nextWeekBtn.addEventListener('click', () => {
-            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
-        });
-        todayWeekBtn.addEventListener('click', () => {
-            currentWeekStart = getStartOfWeek(new Date());
-            if (currentView === 'individual') renderWeekGrid(); else renderTeamGrid();
-        });
-
-        
         staffSelect.addEventListener('change', renderWeekGrid);
+        staffSearchInput.addEventListener('input', filterStaffDropdown);
+
         function filterStaffDropdown() {
              const searchTerm = staffSearchInput.value.toLowerCase();
              const currentSelectedId = staffSelect.value;
              staffSelect.innerHTML = '';
              const defaultOption = document.createElement('option');
-             defaultOption.value = "";
-             defaultOption.textContent = "-- Select a Staff Member --";
+             defaultOption.value = ""; defaultOption.textContent = "-- Select Staff --";
              staffSelect.appendChild(defaultOption);
              const matchingStaff = [];
              allStaff.forEach(staff => {
                  if ((staff.name || '').toLowerCase().includes(searchTerm)) {
                      const option = document.createElement('option');
-                     option.value = staff.id;
-                     option.textContent = staff.name || 'Unnamed Staff';
+                     option.value = staff.id; option.textContent = staff.name || 'Unnamed';
                      staffSelect.appendChild(option);
                      matchingStaff.push(staff.id);
                  }
              });
-             let newSelectedId = "";
-             if (matchingStaff.includes(currentSelectedId)) {
-                 newSelectedId = currentSelectedId;
-             }
-             else if (matchingStaff.length === 1) {
-                 newSelectedId = matchingStaff[0];
-             }
-             staffSelect.value = newSelectedId;
-             renderWeekGrid(); 
+             if (matchingStaff.includes(currentSelectedId)) staffSelect.value = currentSelectedId;
+             else if (matchingStaff.length === 1) staffSelect.value = matchingStaff[0];
+             renderWeekGrid();
         }
-        staffSearchInput.addEventListener('input', filterStaffDropdown);
 
-        
-        document.getElementById('downloadPdfBtn').addEventListener('click', () => {
-            downloadViewAsPDF();
-        });
-
-        async function downloadViewAsPDF() {
-            if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
-                showToast("PDF generation libraries are not loaded.", false);
-                console.error("html2canvas or jspdf is not loaded.");
-                return;
-            }
+        document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+            if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') { showToast("Libraries missing.", false); return; }
             
-            const staffNameSelect = document.getElementById('staffSelect');
-            let staffName = "Schedule";
-            if (staffNameSelect.selectedIndex > 0) {
-                 staffName = staffNameSelect.options[staffNameSelect.selectedIndex].text;
-            }
-            const weekText = document.getElementById('weekRangeDisplay').textContent.replace(/ /g, '').replace(/\//g, '-');
-            const fileName = `${staffName}_${weekText}.pdf`;
-
-            const activeViewElement = (currentView === 'individual') 
-                ? document.getElementById('individualView') 
-                : document.getElementById('teamView');
-                
-            const weekGridBody = document.getElementById('weekGridBody');
-            const teamGridBody = document.getElementById('teamGridBody');
-
-            if (!activeViewElement) {
-                showToast("Could not find the schedule to download.", false);
-                return;
-            }
+            const staffName = staffSelect.selectedIndex > 0 ? staffSelect.options[staffSelect.selectedIndex].text : "Schedule";
+            const weekText = weekRangeDisplay.textContent.replace(/ /g, '').replace(/\//g, '-');
+            const activeViewElement = currentView === 'individual' ? individualView : teamView;
             
-            showToast("Generating PDF... Please wait.", true);
+            showToast("Generating PDF...", true);
 
-            const originalActiveViewOverflow = activeViewElement.style.overflow;
-            const originalActiveViewHeight = activeViewElement.style.height;
-            const originalWeekGridOverflow = weekGridBody.style.overflowY;
-            const originalWeekGridHeight = weekGridBody.style.height;
-            const originalTeamGridHeight = teamGridBody.style.height;
-            const originalTeamGridMinHeight = teamGridBody.style.minHeight;
-
-            const addWorkButtons = activeViewElement.querySelectorAll('.js-hide-on-pdf');
-            const originalDisplays = [];
+            const originalOverflow = activeViewElement.style.overflow;
+            const originalHeight = activeViewElement.style.height;
+            const addButtons = activeViewElement.querySelectorAll('.js-hide-on-pdf');
 
             try {
                 activeViewElement.classList.add('pdf-capture-mode');
-                
-                addWorkButtons.forEach(btn => {
-                    originalDisplays.push(btn.style.display);
-                    btn.style.display = 'none';
-                });
-
+                addButtons.forEach(b => b.style.display = 'none');
                 activeViewElement.style.overflow = 'visible';
                 activeViewElement.style.height = 'auto';
-                
-                if (currentView === 'individual') {
-                    weekGridBody.style.overflowY = 'visible';
-                    weekGridBody.style.height = 'auto';
-                } else {
-                    teamGridBody.style.height = 'auto';
-                    teamGridBody.style.minHeight = 'auto'; 
-                }
+                weekGridBody.style.overflowY = 'visible'; weekGridBody.style.height = 'auto';
+                teamGridBody.style.height = 'auto'; teamGridBody.style.minHeight = 'auto';
 
-                const canvas = await html2canvas(activeViewElement, {
-                    scale: 1.5, 
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-                
+                const canvas = await html2canvas(activeViewElement, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = jspdf;
-                
-                const pdfWidth = canvas.width;
-                const pdfHeight = canvas.height;
-                const orientation = pdfWidth > pdfHeight ? 'l' : 'p'; 
+                const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'l' : 'p', unit: 'px', format: [canvas.width, canvas.height] });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`${staffName}_${weekText}.pdf`);
 
-                const pdf = new jsPDF({
-                    orientation: orientation,
-                    unit: 'px',
-                    format: [pdfWidth, pdfHeight] 
-                });
-
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(fileName);
-
-            } catch (err) {
-                console.error("Error generating PDF:", err);
-                showToast("Error generating PDF. Check console.", false);
-            } finally {
+            } catch (err) { console.error(err); showToast("Error generating PDF.", false); }
+            finally {
                 activeViewElement.classList.remove('pdf-capture-mode');
-                activeViewElement.style.overflow = originalActiveViewOverflow;
-                activeViewElement.style.height = originalActiveViewHeight;
-                weekGridBody.style.overflowY = originalWeekGridOverflow;
-                weekGridBody.style.height = originalWeekGridHeight;
-                teamGridBody.style.height = originalTeamGridHeight;
-                teamGridBody.style.minHeight = originalTeamGridMinHeight;
-
-                addWorkButtons.forEach((btn, index) => {
-                    btn.style.display = originalDisplays[index] || '';
-                });
+                activeViewElement.style.overflow = originalOverflow;
+                activeViewElement.style.height = originalHeight;
+                weekGridBody.style.overflowY = ''; weekGridBody.style.height = '';
+                teamGridBody.style.height = ''; teamGridBody.style.minHeight = '';
+                addButtons.forEach(b => b.style.display = '');
             }
-        }
+        });
 
-
-        
         const openWorkModal = async (docId = null, date = null) => {
-            workForm.reset();
-            document.getElementById('workDocId').value = docId || '';
-            deleteWorkBtn.classList.add('hidden');
-            customerDropdownWrapper.classList.add('hidden');
-            customerItemDropdownWrapper.classList.add('hidden');
-            const selectedStaffId = staffSelect.value;
-            if (!selectedStaffId && !docId) {
-                showToast("Please select a staff member first.", false); return;
-            }
+            workForm.reset(); document.getElementById('workDocId').value = docId || '';
+            deleteWorkBtn.classList.add('hidden'); customerDropdownWrapper.classList.add('hidden'); customerItemDropdownWrapper.classList.add('hidden');
+            
+            if (!staffSelect.value && !docId) { showToast("Select staff first.", false); return; }
+            
             if (docId) {
-                workModalTitle.textContent = 'Edit Work';
-                submitWorkBtnText.textContent = 'Update';
+                workModalTitle.textContent = 'Edit Work'; submitWorkBtnText.textContent = 'Update';
                 try {
-                    const docRef = doc(db, `users/${currentUserId}/staff_work`, docId);
-                    const docSnap = await getDoc(docRef);
+                    const docSnap = await getDoc(doc(db, `users/${currentUserId}/staff_work`, docId));
                     if (docSnap.exists()) {
                         const work = docSnap.data();
-                        const localWorkDate = work.date?.toDate();
                         document.getElementById('taskTitle').value = work.taskTitle || '';
                         document.getElementById('workCategory').value = work.workCategory || '';
-                        document.getElementById('taskDate').value = getLocalDateString(localWorkDate);
-                        document.getElementById('taskTime').value = getLocalTimeString(localWorkDate);
+                        document.getElementById('taskDate').value = getLocalDateString(work.date.toDate());
+                        document.getElementById('taskTime').value = getLocalTimeString(work.date.toDate());
                         document.getElementById('taskDescription').value = work.description || '';
-                        
-                        
-                        document.getElementById('taskFixed').checked = work.isFixed || false; 
-                        
-
+                        document.getElementById('taskFixed').checked = work.isFixed || false;
                         deleteWorkBtn.classList.remove('hidden');
-                        const category = work.workCategory;
-                        const savedCustomerId = work.customerId;
-                        const savedItemName = work.customerItemName;
-                        if (category) {
-                            loadCustomersForCategory(category);
+                        
+                        if (work.workCategory) {
+                            loadCustomersForCategory(work.workCategory);
                             setTimeout(() => {
-                                if (savedCustomerId) {
-                                    customerSelect.value = savedCustomerId;
-                                    loadCustomerItems(savedCustomerId);
-                                    setTimeout(() => {
-                                         if (savedItemName) {
-                                             customerItemSelect.value = savedItemName;
-                                         }
-                                    }, 150);
+                                if (work.customerId) {
+                                    customerSelect.value = work.customerId;
+                                    loadCustomerItems(work.customerId);
+                                    setTimeout(() => { if (work.customerItemName) customerItemSelect.value = work.customerItemName; }, 100);
                                 }
-                            }, 150);
+                            }, 100);
                         }
-                    } else {
-                         showToast("Work assignment not found.", false); return;
                     }
-                } catch (err) {
-                    showToast(`Error fetching work: ${err.message}`, false); console.error("Error fetching work:", err); return;
-                }
+                } catch (err) { console.error(err); }
             } else if (date) {
-                workModalTitle.textContent = 'Add Work';
-                submitWorkBtnText.textContent = 'Save';
+                workModalTitle.textContent = 'Add Work'; submitWorkBtnText.textContent = 'Save';
                 document.getElementById('taskDate').value = date;
-            } else {
-                 console.error("openWorkModal called incorrectly"); return;
             }
-            workModal.classList.remove('hidden');
-            setTimeout(() => workModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+            workModal.classList.remove('hidden'); setTimeout(() => workModalContent.classList.remove('scale-95', 'opacity-0'), 10);
         };
         const closeWorkModal = () => {
             workModalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                workModal.classList.add('hidden');
-                workForm.reset();
-                customerDropdownWrapper.classList.add('hidden');
-                customerItemDropdownWrapper.classList.add('hidden');
-            }, 200);
+            setTimeout(() => workModal.classList.add('hidden'), 200);
         };
-        closeWorkModalBtn.addEventListener('click', closeWorkModal);
-        cancelWorkModalBtn.addEventListener('click', closeWorkModal);
-        workModal.addEventListener('click', e => { if(e.target === workModal) closeWorkModal(); });
+        closeWorkModalBtn.addEventListener('click', closeWorkModal); cancelWorkModalBtn.addEventListener('click', closeWorkModal);
         workCategorySelect.addEventListener('change', e => {
-            const selectedCategory = e.target.value;
-            customerDropdownWrapper.classList.add('hidden');
-            customerItemDropdownWrapper.classList.add('hidden');
-            customerSelect.value = '';
-            customerItemSelect.value = '';
-            if (selectedCategory) {
-                loadCustomersForCategory(selectedCategory);
-            }
+            customerSelect.value = ''; customerItemSelect.value = '';
+            loadCustomersForCategory(e.target.value);
         });
-        customerSelect.addEventListener('change', e => {
-            const selectedCustomerId = e.target.value;
-            customerItemDropdownWrapper.classList.add('hidden');
-            customerItemSelect.value = '';
-            if(selectedCustomerId) {
-                loadCustomerItems(selectedCustomerId);
-            }
-        });
+        customerSelect.addEventListener('change', e => loadCustomerItems(e.target.value));
 
-        
         workForm.addEventListener('submit', async e => {
             e.preventDefault();
             const docId = document.getElementById('workDocId').value;
-            const selectedStaffId = staffSelect.value; 
-            const selectedStaffOption = staffSelect.options[staffSelect.selectedIndex];
-            const selectedStaffName = selectedStaffOption ? selectedStaffOption.text : 'Unknown Staff';
-            if (!selectedStaffId) { showToast("No staff member selected.", false); return; }
-            const taskTitle = document.getElementById('taskTitle').value.trim();
-            const dateStr = document.getElementById('taskDate').value;
-            const timeStr = document.getElementById('taskTime').value;
-            if (!taskTitle || !dateStr || !timeStr) { showToast("Please fill in Title, Date, and Time.", false); return; }
-            submitWorkBtn.disabled = true;
-            submitWorkBtnText.classList.add('hidden');
-            submitWorkSpinner.classList.remove('hidden');
-            try {
-                const fullDate = Timestamp.fromDate(new Date(`${dateStr}T${timeStr}`));
-                const selectedWorkCategory = document.getElementById('workCategory').value;
-                const selectedCustomerId = customerSelect.value;
-                const selectedCustomerOption = customerSelect.options[customerSelect.selectedIndex];
-                const selectedCustomerName = selectedCustomerId ? selectedCustomerOption.text : null;
-                const selectedCustomerItemName = customerItemSelect.value;
-                
-                
-                const isFixed = document.getElementById('taskFixed').checked;
-                
+            const selectedStaffId = staffSelect.value;
+            const staffName = staffSelect.options[staffSelect.selectedIndex].text;
+            if (!selectedStaffId) return showToast("No staff selected.", false);
 
+            submitWorkBtn.disabled = true; submitWorkBtnText.classList.add('hidden'); submitWorkSpinner.classList.remove('hidden');
+
+            try {
                 const data = {
-                    staffId: selectedStaffId,
-                    staffName: selectedStaffName,
-                    date: fullDate,
-                    taskTitle: taskTitle,
-                    workCategory: selectedWorkCategory,
+                    staffId: selectedStaffId, staffName: staffName,
+                    date: Timestamp.fromDate(new Date(`${document.getElementById('taskDate').value}T${document.getElementById('taskTime').value}`)),
+                    taskTitle: document.getElementById('taskTitle').value.trim(),
+                    workCategory: document.getElementById('workCategory').value,
                     description: document.getElementById('taskDescription').value.trim(),
-                    customerId: selectedCustomerId || null,
-                    customerName: selectedCustomerName,
-                    customerItemName: selectedCustomerItemName || null,
-                    
-                    
-                    isFixed: isFixed 
-                    
+                    customerId: customerSelect.value || null,
+                    customerName: customerSelect.value ? customerSelect.options[customerSelect.selectedIndex].text : null,
+                    customerItemName: customerItemSelect.value || null,
+                    isFixed: document.getElementById('taskFixed').checked
                 };
 
-                if (docId) {
-                    await updateDoc(doc(db, `users/${currentUserId}/staff_work`, docId), data);
-                    showToast('Work assignment updated!');
-                } else {
-                    await addDoc(collection(db, `users/${currentUserId}/staff_work`), data);
-                    showToast('Work assigned successfully!');
-                }
+                if (docId) { await updateDoc(doc(db, `users/${currentUserId}/staff_work`, docId), data); showToast('Updated!'); }
+                else { await addDoc(collection(db, `users/${currentUserId}/staff_work`), data); showToast('Saved!'); }
                 closeWorkModal();
-            } catch (err) {
-                showToast(`Error saving assignment: ${err.message}`, false);
-                console.error("Error saving work:", err);
-            } finally {
-                submitWorkBtn.disabled = false;
-                submitWorkBtnText.classList.remove('hidden');
-                submitWorkSpinner.classList.add('hidden');
-            }
+            } catch (err) { console.error(err); showToast(`Error: ${err.message}`, false); }
+            finally { submitWorkBtn.disabled = false; submitWorkBtnText.classList.remove('hidden'); submitWorkSpinner.classList.add('hidden'); }
         });
 
-        
         deleteWorkBtn.addEventListener('click', async () => {
             const docId = document.getElementById('workDocId').value;
-            if (docId && confirm('Are you sure you want to delete this work assignment?')) {
-                try {
-                    await deleteDoc(doc(db, `users/${currentUserId}/staff_work`, docId));
-                    showToast('Work assignment deleted.');
-                    closeWorkModal();
-                } catch (err) {
-                    showToast(`Error deleting assignment: ${err.message}`, false);
-                    console.error("Error deleting work:", err);
-                }
+            if (docId && confirm('Delete work?')) {
+                try { await deleteDoc(doc(db, `users/${currentUserId}/staff_work`, docId)); showToast('Deleted.'); closeWorkModal(); }
+                catch (err) { console.error(err); }
             }
         });
 
-        
         const showToast = (message, isSuccess = true) => {
             toast.textContent = message;
-            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            toast.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium z-[70] ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
         };
-
-        
     </script>
 </body>
 </html>

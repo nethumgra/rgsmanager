@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="si" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,305 +8,262 @@
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        /* Loader */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* File input */
-        .file-input-label { /* ... existing ... */ display: inline-block; padding: 10px 16px; font-size: 14px; background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
-        .file-input-label:hover { background-color: #2563eb; }
-        .file-input { display: none; }
-        /* Modal item list */
-        .item-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; width: 100px; height: 4px;
+            background: #cbd5e1; border-radius: 5px; outline: none;
+        }
+        .dark input[type=range] { background: #475569; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            border-radius: 50%; background: #3b82f6; cursor: pointer; transition: background .15s ease-in-out;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
+
+        /* Table Row Hover */
+        tr.hover-row:hover td { background-color: #f8fafc; }
+        .dark tr.hover-row:hover td { background-color: #1e293b; }
+        
+        /* Modal Item List */
+        .item-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .dark .item-list-item { border-bottom-color: #334155; }
         .item-list-item:last-child { border-bottom: none; }
-        /* Table row hover */
-        #customerTableBody tr { cursor: pointer; }
-        #customerTableBody tr:hover td:not(:last-child){ background-color: #334155; }
-        /* Detail modal list */
-         .detail-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #334155; }
-         .detail-item:last-child { border-bottom: none; }
-         /* Highlight Due Day */
-         .due-day-highlight {
-             font-weight: 600; /* semibold */
-             color: #facc15; /* yellow-400 */
-         }
 
-         /* --- Hide elements in print --- */
-         @media print {
-             .no-print { display: none; }
-         }
-         /* === Class to hide from PDF === */
-         .no-pdf {
-             /* This class will hide elements from html2canvas screenshot */
-         }
-
-         /* === UPDATED: Class for MODAL PDF Export (Lassanata) === */
-         .pdf-export-modal {
-             background-color: #ffffff !important;
-             color: #000000 !important;
-             padding: 32px !important; /* More padding */
-             border: none !important; /* No border on the container */
-             max-height: none !important;
-             overflow: visible !important;
-         }
-         .pdf-export-modal h3 { /* "Andrea Metti" */
-             color: #000000 !important;
-             font-size: 28px !important;
-             font-weight: bold;
-             margin-bottom: 24px !important;
-         }
-         .pdf-export-modal .grid { /* Main details grid */
-             font-size: 14px !important;
-             margin-bottom: 24px !important;
-         }
-         .pdf-export-modal .text-slate-400 { /* Labels like "Category:" */
-             color: #4B5563 !important; /* Darker gray */
-             font-weight: normal;
-         }
-         .pdf-export-modal .font-semibold { /* Values like "Condominium" */
-             color: #000000 !important;
-             font-weight: 600 !important;
-         }
-         .pdf-export-modal #detailItemsSection {
-             border-top: 1px solid #9CA3AF !important; /* A solid line */
-             margin-top: 24px !important;
-             padding-top: 24px !important;
-         }
-         .pdf-export-modal h4 { /* "Items / Services" */
-             color: #111827 !important;
-             font-size: 22px !important;
-             font-weight: bold;
-             margin-bottom: 16px !important;
-         }
-         .pdf-export-modal .bg-slate-700 { /* Item list container */
-             background-color: transparent !important; /* No background */
-             border: none !important;
-             padding: 0 !important;
-         }
-         .pdf-export-modal .detail-item {
-             border-bottom: none !important; /* Remove all item borders */
-             padding: 6px 0 !important;
-         }
-         .pdf-export-modal .detail-item.font-semibold { /* The header row */
-             border-bottom: 1px solid #374151 !important; /* Border ONLY on header */
-             color: #111827 !important;
-             padding-bottom: 8px !important;
-             margin-bottom: 8px !important;
-         }
-         .pdf-export-modal .due-day-highlight {
-             color: #D97706 !important; /* A dark yellow/orange */
-             font-weight: bold !important;
-         }
-         /* === UPDATED: Ensure Total Price has space above === */
-         .pdf-export-modal p.mt-2.text-sm {
-             font-size: 16px !important;
-             margin-top: 16px !important; /* Added margin top */
-             color: #4B5563 !important; /* Label color */
-         }
-         .pdf-export-modal #detailTotalItemPrice {
-             font-size: 16px !important;
-             font-weight: bold !important;
-             color: #000000 !important;
-         }
-
-         /* --- Style for the appended letterhead --- */
-         .pdf-letterhead-hr {
-              border: none;
-              border-top: 1px solid #9CA3AF !important;
-              margin-top: 24px !important; /* Space above HR */
-              padding-top: 24px !important; /* Space below HR */
-         }
-         .pdf-letterhead {
-             width: 100%;
-             margin-top: 0px; /* Space is now handled by HR padding-top */
-             display: block;
-         }
-
-         /* === Class for TABLE PDF Export (Kalin wage) === */
-         .pdf-export-table {
-              background-color: #ffffff !important;
-              color: #000000 !important;
-         }
-         .pdf-export-table th, .pdf-export-table td {
-              color: #000000 !important;
-              border: 1px solid #dddddd;
-              padding: 8px;
-              vertical-align: middle;
-         }
-         .pdf-export-table thead {
-              background-color: #f0f0f0 !important;
-         }
-         .pdf-export-table .text-slate-500 {
-              color: #555555 !important;
-         }
-         /* === End PDF Export Class === */
-
+        /* PDF Export Classes (For Clean Print) */
+        .pdf-export-modal {
+             background-color: #ffffff !important; color: #000000 !important; padding: 32px !important; border: none !important; max-height: none !important; overflow: visible !important;
+        }
+        .pdf-export-modal * { color: #000000 !important; border-color: #cbd5e1 !important; background-color: transparent !important; }
+        .pdf-export-modal h3 { font-size: 24px !important; font-weight: bold !important; margin-bottom: 20px !important; }
+        .pdf-export-modal h4 { font-size: 18px !important; font-weight: bold !important; margin-top: 20px !important; margin-bottom: 10px !important; }
+        .pdf-export-modal .detail-item { border-bottom: 1px solid #e2e8f0 !important; padding: 8px 0 !important; }
+        
+        .pdf-export-table { background-color: #ffffff !important; color: #000000 !important; }
+        .pdf-export-table th, .pdf-export-table td { color: #000000 !important; border: 1px solid #cbd5e1 !important; padding: 8px !important; }
+        .pdf-export-table thead { background-color: #f1f5f9 !important; }
+        
+        .pdf-letterhead-hr { border: none; border-top: 1px solid #9CA3AF !important; margin-top: 24px !important; padding-top: 24px !important; }
+        .pdf-letterhead { width: 100%; margin-top: 0px; display: block; }
+        
+        /* Hide elements in print/pdf */
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
+
+    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
 
     <div id="app-container" class="flex h-screen hidden">
-        <aside class="w-64 bg-slate-800 p-6 flex-shrink-0 flex flex-col justify-between no-print">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
             <div>
-              <div class="flex items-center gap-3 mb-10">
-    
-    <div>
-        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
-    </div>
-    <h1 class="text-xl font-bold text-white">RSG MANAGER</h1>
-</div>     <nav class="flex flex-col gap-2">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="users"></i><span>Staff Members</span></a>
-                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Staff Schedule</span></a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="contact"></i><span>Customers</span></a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="home"></i><span>Properties</span></a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="dollar-sign"></i><span>Income/Expenses</span></a>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
+                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                    </div>
+                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
+                </div>
+                
+                <nav class="flex flex-col gap-1.5">
+                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                   </a>
+                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                   </a>
+                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                   </a>
+                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm">
+                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                   </a>
+                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                   </a>
+                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                   </a>
                    
-                   <a href="./scheduled_finance.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="clock"></i><span>Scheduled Finance</span></a>
-                   
-                   <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="boxes"></i><span>Materials Stock</span></a>
-                   <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="car"></i><span>Vehicles</span></a>
-                   <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="calendar"></i><span>Schedule</span></a>
-                   <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-check-2"></i><span>Agreements</span></a>
-                   <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-spreadsheet"></i><span>Invoices</span></a>
-                   <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="key-round"></i><span>App Access</span></a>
-                   <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="receipt"></i><span>Payslips</span></a>
-                   <a href="./f24.html" class="nav-link bg-slate-700 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition"><i data-lucide="file-text"></i><span>F24 Tax</span></a>
-                   <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition hover:bg-slate-700 hover:text-white"><i data-lucide="file-text"></i><span>Proposal Gen</span></a>
+                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                        <div class="space-y-1">
+                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                        </div>
+                   </div>
                 </nav>
             </div>
             <div>
-                 <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2 mb-4 rounded-lg transition bg-slate-700 hover:bg-red-600 text-white no-print"><i data-lucide="log-out"></i><span>Sign Out</span></button>
-                <div class="text-xs text-slate-500 no-print">
-                    <p>&copy; 2025 Property MS. All rights reserved.</p>
-                    <p class="mt-1">User ID: <span id="userId" class="font-mono">Loading...</span></p>
+                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
+                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+                </button>
+                <div class="text-xs text-slate-500 text-center">
+                    <p>&copy; 2025 RSG Multiservice</p>
+                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <section id="page-customers" class="page">
-                <div class="flex justify-between items-center mb-6 no-print">
-                    <h2 class="text-3xl font-bold text-white">Customers</h2>
-                    <div class="flex items-center gap-4">
-                        <div id="currentListTotalDisplay" class="bg-slate-800 p-3 rounded-lg text-center hidden">
-                            <h3 class="text-sm text-slate-400">Current Customer Count</h3>
-                            <p id="currentCustomerCountValue" class="text-xl font-bold text-blue-400 mt-1">0</p>
+        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
+            <section id="page-customers" class="page max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 no-print">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Customers</h2>
+                            <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-2 py-1 rounded-full border border-blue-200 dark:border-blue-800 font-bold" id="currentCustomerCountValue">0</span>
                         </div>
-                        
-                        <div id="currentListTotalCashDisplay" class="bg-slate-800 p-3 rounded-lg text-center hidden">
-                            <h3 class="text-sm text-slate-400">Current List Total Cash</h3>
-                            <p id="currentTotalCashValue" class="text-xl font-bold text-green-400 mt-1">€ 0.00</p>
+                        <div class="flex items-center gap-2 mt-1">
+                             <p class="text-slate-600 dark:text-slate-400 text-sm font-medium">Manage your clients and their agreements.</p>
+                             <span class="text-slate-400 dark:text-slate-600">|</span>
+                             <p class="text-green-600 dark:text-green-400 text-sm font-bold" id="currentTotalCashValue">€ 0.00 Total</p>
                         </div>
-                        <button id="addCustomerBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 h-full">
-                            <i data-lucide="plus"></i> Add New Customer
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                             <input type="range" id="brightness-slider" min="0" max="70" value="0">
+                         </div>
+                        <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i><i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                        </button>
+
+                        <button id="addCustomerBtn" class="bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
+                             <i data-lucide="plus" class="w-4 h-4"></i> Add Customer
                         </button>
                     </div>
                 </div>
 
-                <div class="mb-6 border-b border-slate-700 no-print">
+                <div class="mb-6 border-b border-slate-200 dark:border-slate-700 no-print">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button id="tabAllCustomers" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-400 border-blue-400">
+                        <button id="tabAllCustomers" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 transition">
                             All Customers
                         </button>
-                        <button id="tabAlerts" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-400 border-transparent hover:text-slate-300 hover:border-slate-300">
+                        <button id="tabAlerts" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition">
                             Due Date Alerts
                         </button>
                     </nav>
                 </div>
 
                 <div id="allCustomersContent">
-                    <div class="bg-slate-800 rounded-lg p-4 mb-6 flex items-end gap-4 no-print">
-                        <div class="flex-1">
-                            <label for="searchByName" class="block mb-2 text-sm font-medium">Search by Name</label>
-                            <input type="text" id="searchByName" placeholder="Enter customer name..." class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                        </div>
-                        <div class="flex-1">
-                            <label for="filterCategory" class="block mb-2 text-sm font-medium">Filter by Category</label>
-                            <select id="filterCategory" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                                <option value="">All Categories</option>
-                                <option value="Condominium">Condominium</option>
-                                <option value="Hotel B&B">Hotel B&B</option>
-                                <option value="Gardners">Gardners</option>
-                                <option value="Staff">Staff</option>
-                                <option value="Agency">Agency</option>
-                                <option value="Gym">Gym</option>
-                                <option value="Laundry">Laundry</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
-                        <div><button id="clearFiltersBtn" class="bg-slate-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-slate-500 transition">Clear</button></div>
-                        <div>
-                            <button id="downloadListPdfBtn" class="bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
-                                <i data-lucide="file-down"></i> Download List
-                            </button>
-                        </div>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 mb-6 flex items-center justify-between shadow-sm no-print">
+                         <div class="flex items-center flex-1 gap-2 p-1">
+                             <div class="relative flex-1 max-w-md">
+                                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                  <input type="text" id="searchByName" placeholder="Search customers..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
+                             </div>
+                             <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+                             
+                             <select id="filterCategory" class="bg-transparent border-none text-slate-700 dark:text-slate-300 text-sm font-medium focus:ring-0 cursor-pointer hover:text-slate-900 dark:hover:text-white transition">
+                                 <option value="">All Categories</option>
+                                 <option value="Condominium">Condominium</option>
+                                 <option value="Hotel B&B">Hotel B&B</option>
+                                 <option value="Gardners">Gardners</option>
+                                 <option value="Staff">Staff</option>
+                                 <option value="Agency">Agency</option>
+                                 <option value="Gym">Gym</option>
+                                 <option value="Laundry">Laundry</option>
+                                 <option value="Others">Others</option>
+                             </select>
+                         </div>
+                         
+                         <div class="flex items-center gap-2 pr-2">
+                             <button id="clearFiltersBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 text-xs font-bold px-3 py-1.5 rounded transition">Reset</button>
+                             <button id="downloadListPdfBtn" class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                                 <i data-lucide="file-down" class="w-3 h-3"></i> PDF
+                             </button>
+                         </div>
                     </div>
 
-                    <div class="bg-slate-800 rounded-lg overflow-hidden">
-                        <table id="customerTable" class="w-full text-left">
-                            <thead class="bg-slate-700">
-                                <tr>
-                                    <th class="p-4 font-semibold text-white">Name</th>
-                                    <th class="p-4 font-semibold text-white">Category</th>
-                                    <th class="p-4 font-semibold text-white">Contact</th>
-                                    <th class="p-4 font-semibold text-white">Agreement %</th>
-                                    <th class="p-4 font-semibold text-white">Items / Total Price (€)</th>
-                                    <th class="p-4 font-semibold text-white">Date Added</th>
-                                    <th class="p-4 font-semibold text-white no-print no-pdf">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customerTableBody">
-                                <tr><td colspan="7" class="text-center p-8 text-slate-400">Loading customer data...</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table id="customerTable" class="w-full text-left border-collapse">
+                                <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Name & Contact</th>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Agreement</th>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Services / Total</th>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date Added</th>
+                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right no-print no-pdf"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerTableBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                    <tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium">Loading customer data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <div id="alertsContent" class="hidden">
-                    <h3 class="text-xl font-bold text-white mb-4">Upcoming Due Payments (Next 7 Days)</h3>
-                     <div id="alertsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                         <p id="noAlertsMsg" class="text-slate-400 col-span-full">No upcoming payments found in the next 7 days.</p>
-                     </div>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                         <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><i data-lucide="bell" class="w-5 h-5 text-orange-500"></i> Upcoming Due Payments (Next 7 Days)</h3>
+                         <div id="alertsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                             <p id="noAlertsMsg" class="text-slate-500 col-span-full text-center py-8 italic">No upcoming payments found in the next 7 days.</p>
+                         </div>
+                    </div>
                 </div>
 
             </section>
         </main>
     </div>
 
-    <div id="customerModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10 no-print">
-        <div class="bg-slate-800 rounded-lg p-8 w-full max-w-3xl transform transition-all scale-95 opacity-0" id="customer-modal-content">
+    <div id="customerModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10 no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-3xl transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="customer-modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="customerModalTitle" class="text-2xl font-bold text-white">Add New Customer</h3>
-                <button id="closeCustomerModalBtn" class="text-slate-400 hover:text-white">&times;</button>
+                <h3 id="customerModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white">Add New Customer</h3>
+                <button id="closeCustomerModalBtn" class="text-slate-500 hover:text-slate-700 dark:hover:text-white transition bg-slate-100 dark:bg-slate-700 p-2 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="customerForm">
                 <input type="hidden" id="customerDocId">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                     <div>
-                        <label for="customerName" class="block mb-2 text-sm font-medium">Full Name</label>
-                        <input type="text" id="customerName" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                        <label for="customerName" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Full Name</label>
+                        <input type="text" id="customerName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
                     </div>
                     <div>
-                        <label for="customerCategory" class="block mb-2 text-sm font-medium">Category</label>
-                        <select id="customerCategory" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
-                            <option value="" disabled selected>Select a category</option>
+                        <label for="customerCategory" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Category</label>
+                        <select id="customerCategory" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
+                            <option value="" disabled selected>Select category</option>
                             <option value="Condominium">Condominium</option>
                             <option value="Hotel B&B">Hotel B&B</option>
                             <option value="Gardners">Gardners</option>
@@ -318,93 +275,98 @@
                         </select>
                     </div>
                     <div>
-                        <label for="customerContact" class="block mb-2 text-sm font-medium">Contact Number</label>
-                        <input type="text" id="customerContact" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" required>
+                        <label for="customerContact" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Contact Number</label>
+                        <input type="text" id="customerContact" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
                     </div>
                     <div>
-                        <label for="customerEmail" class="block mb-2 text-sm font-medium">Email</label>
-                        <input type="email" id="customerEmail" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
-                    </div>
-                     <div>
-                        <label for="agreementPercentage" class="block mb-2 text-sm font-medium">Agreement Percentage (%)</label>
-                        <input type="number" step="0.01" min="0" id="agreementPercentage" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5" placeholder="e.g., 10">
+                        <label for="customerEmail" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Email</label>
+                        <input type="email" id="customerEmail" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium">
                     </div>
                     <div>
-                        <label for="customerDate" class="block mb-2 text-sm font-medium">Date Added</label>
-                        <input type="date" id="customerDate" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg p-2.5">
+                        <label for="agreementPercentage" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Agreement %</label>
+                        <input type="number" step="0.01" min="0" id="agreementPercentage" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" placeholder="e.g., 10">
+                    </div>
+                    <div>
+                        <label for="customerDate" class="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 uppercase">Date Added</label>
+                        <input type="date" id="customerDate" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium">
                     </div>
                 </div>
 
-                <div id="categorySpecificDetails" class="hidden border-t border-slate-700 pt-6 mt-6">
-                     <h4 id="itemManagementTitle" class="text-lg font-semibold text-white mb-4">Manage Items/Services</h4>
-                     <div class="bg-slate-700 p-4 rounded-lg mb-4 flex items-end gap-3">
-                         <div class="flex-1">
-                             <label for="newItemName" class="block mb-2 text-xs font-medium">Item/Service Name</label>
-                             <input type="text" id="newItemName" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., Condo A1, Room 101">
+                <div id="categorySpecificDetails" class="hidden bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-700">
+                     <h4 id="itemManagementTitle" class="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4 text-blue-500"></i> Manage Items/Services</h4>
+                     
+                     <div class="grid grid-cols-12 gap-3 mb-4">
+                         <div class="col-span-6">
+                             <input type="text" id="newItemName" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm" placeholder="Item Name (e.g. Room 101)">
                          </div>
-                         <div class="w-28">
-                             <label for="newItemPrice" class="block mb-2 text-xs font-medium">Fixed Price (€)</label>
-                             <input type="number" step="0.01" min="0" id="newItemPrice" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="e.g., 50">
+                         <div class="col-span-3">
+                             <input type="number" step="0.01" min="0" id="newItemPrice" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm" placeholder="Price (€)">
                          </div>
-                         <div class="w-20">
-                             <label for="newItemDueDay" class="block mb-2 text-xs font-medium">Due Day</label>
-                             <input type="number" min="1" max="31" id="newItemDueDay" class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg p-2 text-sm" placeholder="1-31">
+                         <div class="col-span-2">
+                             <input type="number" min="1" max="31" id="newItemDueDay" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm" placeholder="Due Day">
                          </div>
-                         <div>
-                             <button type="button" id="addItemToListBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm flex items-center gap-1 h-9"><i data-lucide="plus" class="w-4 h-4"></i> Add</button>
+                         <div class="col-span-1">
+                             <button type="button" id="addItemToListBtn" class="w-full h-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></button>
                          </div>
                      </div>
-                     <h5 class="text-md font-semibold text-slate-300 mb-2 mt-4">Added Items/Services:</h5>
-                     <div id="itemsList" class="space-y-2 max-h-40 overflow-y-auto border border-slate-700 rounded-lg p-3 bg-slate-800">
-                         <p id="noItemsMsg" class="text-sm text-slate-400 italic">No items/services added yet.</p>
+
+                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-3 max-h-40 overflow-y-auto">
+                         <div id="itemsList" class="space-y-2">
+                             <p id="noItemsMsg" class="text-xs text-slate-400 italic text-center py-2">No items added yet.</p>
+                         </div>
                      </div>
-                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="totalItemPrice" class="font-bold text-white">€ 0.00</span></p>
+                     <p class="mt-3 text-xs font-bold text-slate-600 dark:text-slate-400 text-right">Total Fixed Price: <span id="totalItemPrice" class="text-slate-900 dark:text-white text-sm">€ 0.00</span></p>
                 </div>
 
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancelCustomerModalBtn" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700">Cancel</button>
-                    <button type="submit" id="submitCustomerBtn" class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 font-semibold flex items-center"><span id="submitCustomerBtnText">Save Customer</span><div id="submitCustomerSpinner" class="loader w-5 h-5 ml-2 hidden"></div></button>
+                <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" id="cancelCustomerModalBtn" class="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                    <button type="submit" id="submitCustomerBtn" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg flex items-center">
+                        <span id="submitCustomerBtnText">Save Customer</span>
+                        <div id="submitCustomerSpinner" class="loader ml-2 hidden" style="width: 18px; height: 18px; border-width: 2px;"></div>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="customerDetailModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 overflow-y-auto py-10 no-print">
-        <div id="customer-detail-pdf-content" class="bg-slate-800 rounded-lg p-8 w-full max-w-xl transform transition-all scale-95 opacity-0">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="customerDetailName" class="text-2xl font-bold text-white">Customer Details</h3>
-                <button id="closeCustomerDetailModalBtn" class="text-slate-400 hover:text-white no-print no-pdf">&times;</button>
+    <div id="customerDetailModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10 no-print">
+        <div id="customer-detail-pdf-content" class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-xl transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
+                <h3 id="customerDetailName" class="text-xl font-bold text-slate-900 dark:text-white">Customer Details</h3>
+                <button id="closeCustomerDetailModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
             <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                <div class="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
-                    <span class="text-slate-400">Category:</span><span id="detailCategory" class="col-span-2 font-semibold"></span>
-                    <span class="text-slate-400">Contact:</span><span id="detailContact" class="col-span-2 font-semibold"></span>
-                    <span class="text-slate-400">Email:</span><span id="detailEmail" class="col-span-2 font-semibold"></span>
-                    <span class="text-slate-400">Agreement %:</span><span id="detailAgreement" class="col-span-2 font-semibold"></span>
-                    <span class="text-slate-400">Date Added:</span><span id="detailDateAdded" class="col-span-2 font-semibold"></span>
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Category:</span><span id="detailCategory" class="col-span-2 font-bold text-slate-800 dark:text-white"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Contact:</span><span id="detailContact" class="col-span-2 font-bold text-slate-800 dark:text-white"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Email:</span><span id="detailEmail" class="col-span-2 font-bold text-slate-800 dark:text-white"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Agreement:</span><span id="detailAgreement" class="col-span-2 font-bold text-slate-800 dark:text-white"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Date Added:</span><span id="detailDateAdded" class="col-span-2 font-bold text-slate-800 dark:text-white"></span>
                 </div>
-                <div id="detailItemsSection" class="hidden border-t border-slate-700 pt-4 mt-4">
-                    <h4 class="text-lg font-semibold text-white mb-2">Items / Services</h4>
-                    <div id="detailItemsList" class="space-y-1 text-sm bg-slate-700 p-3 rounded-md">
-                         <div class="detail-item font-semibold text-slate-300">
-                             <span>Name</span>
-                             <span>Due Day / Price (€)</span>
-                         </div>
+                <div id="detailItemsSection" class="hidden border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-3">Items / Services</h4>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-1">
+                        <div class="grid grid-cols-2 gap-2 px-3 py-2 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 dark:border-slate-700">
+                            <span>Item Name</span> <span class="text-right">Due / Price</span>
+                        </div>
+                        <div id="detailItemsList" class="space-y-1 p-2 text-sm text-slate-700 dark:text-slate-300"></div>
                     </div>
-                     <p class="mt-2 text-sm text-slate-400">Total Fixed Price: <span id="detailTotalItemPrice" class="font-bold text-white">€ 0.00</span></p>
+                     <p class="mt-3 text-right text-xs font-bold text-slate-500">Total Fixed Price: <span id="detailTotalItemPrice" class="text-slate-900 dark:text-white text-sm ml-2">€ 0.00</span></p>
                 </div>
             </div>
 
-             <div class="flex justify-between items-center mt-6">
-                 <button type="button" id="downloadDetailPdfBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2 no-print no-pdf">
-                     <i data-lucide="file-down"></i> Download PDF
+             <div class="flex justify-between items-center mt-8 pt-4 border-t border-slate-100 dark:border-slate-700">
+                 <button type="button" id="downloadDetailPdfBtn" class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-100 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 no-print no-pdf">
+                     <i data-lucide="file-down" class="w-4 h-4"></i> Download PDF
                  </button>
-                 <button type="button" id="closeCustomerDetailModalBtnBottom" class="px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700 no-print no-pdf">Close</button>
+                 <button type="button" id="closeCustomerDetailModalBtnBottom" class="px-5 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-white text-sm font-bold transition no-print no-pdf">Close</button>
              </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 no-print"><p>Toast message!</p></div>
+    <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium flex items-center gap-2 z-[70] no-print">
+        <i data-lucide="check-circle" class="w-5 h-5"></i> <p>Toast message!</p>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -425,15 +387,39 @@
         const auth = getAuth(app);
         let currentUserId = null;
 
-        // --- GLOBAL VARIABLES ---
+        // Globals
         let allCustomers = [];
-        let allTransactions = []; // Transaction data check karanna
-        let activeTab = 'allCustomers'; // Default tab
-        // --- ---
-
+        let allTransactions = []; 
+        let activeTab = 'allCustomers';
         let tempItems = [];
 
-        // --- DOM Elements ---
+        // Theme & Brightness
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const brightnessOverlay = document.getElementById('brightness-overlay');
+
+        function initializeTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            const savedBrightness = localStorage.getItem('brightness') || 0;
+            brightnessSlider.value = savedBrightness;
+            brightnessOverlay.style.opacity = savedBrightness / 100;
+        }
+        initializeTheme();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } 
+            else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+        });
+        brightnessSlider.addEventListener('input', (e) => {
+            const val = e.target.value; brightnessOverlay.style.opacity = val / 100; localStorage.setItem('brightness', val);
+        });
+
+        // Elements
         const appContainer = document.getElementById('app-container');
         const signOutBtn = document.getElementById('signOutBtn');
         const userIdSpan = document.getElementById('userId');
@@ -442,6 +428,12 @@
         const searchByNameInput = document.getElementById('searchByName');
         const filterCategorySelect = document.getElementById('filterCategory');
         const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        
+        // Stats
+        const currentCustomerCountValueSpan = document.getElementById('currentCustomerCountValue');
+        const currentTotalCashValueSpan = document.getElementById('currentTotalCashValue');
+
+        // Modal
         const customerModal = document.getElementById('customerModal');
         const customerModalContent = document.getElementById('customer-modal-content');
         const customerModalTitle = document.getElementById('customerModalTitle');
@@ -452,6 +444,8 @@
         const submitCustomerBtn = document.getElementById('submitCustomerBtn');
         const submitCustomerBtnText = document.getElementById('submitCustomerBtnText');
         const submitCustomerSpinner = document.getElementById('submitCustomerSpinner');
+        
+        // Items
         const customerCategorySelect = document.getElementById('customerCategory');
         const categorySpecificDetailsDiv = document.getElementById('categorySpecificDetails');
         const itemManagementTitle = document.getElementById('itemManagementTitle');
@@ -462,6 +456,8 @@
         const addItemToListBtn = document.getElementById('addItemToListBtn');
         const noItemsMsg = document.getElementById('noItemsMsg');
         const totalItemPriceSpan = document.getElementById('totalItemPrice');
+        
+        // Detail Modal
         const customerDetailModal = document.getElementById('customerDetailModal');
         const customerDetailModalContent = document.getElementById('customer-detail-pdf-content');
         const customerDetailName = document.getElementById('customerDetailName');
@@ -475,100 +471,82 @@
         const detailItemsSection = document.getElementById('detailItemsSection');
         const detailItemsList = document.getElementById('detailItemsList');
         const detailTotalItemPrice = document.getElementById('detailTotalItemPrice');
+        
+        // Tabs
         const tabAllCustomers = document.getElementById('tabAllCustomers');
         const tabAlerts = document.getElementById('tabAlerts');
         const allCustomersContent = document.getElementById('allCustomersContent');
         const alertsContent = document.getElementById('alertsContent');
         const alertsList = document.getElementById('alertsList');
         const noAlertsMsg = document.getElementById('noAlertsMsg');
-
-        // --- *** VENAS KALA *** --- Total pennana element eka gaththa -> Count pennana element eka gaththa
-        const currentListTotalDisplayDiv = document.getElementById('currentListTotalDisplay');
-        const currentCustomerCountValueSpan = document.getElementById('currentCustomerCountValue');
-
-        // --- *** ALUTHEN EKATHU KALE *** ---
-        const currentListTotalCashDisplayDiv = document.getElementById('currentListTotalCashDisplay');
-        const currentTotalCashValueSpan = document.getElementById('currentTotalCashValue');
-        // --- ---
-
-        // --- ADDED: PDF Download Buttons ---
+        
+        // PDFs
         const downloadDetailPdfBtn = document.getElementById('downloadDetailPdfBtn');
         const downloadListPdfBtn = document.getElementById('downloadListPdfBtn');
 
-
-        // --- Authentication (Kalin wage) ---
+        // Auth
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUserId = user.uid;
-                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
+                currentUserId = user.uid; userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
                 appContainer.classList.remove('hidden');
-                listenForCustomerUpdates();
-                listenForTransactionUpdates();
-            } else {
-                window.location.href = './index.html';
-            }
+                listenForCustomerUpdates(); listenForTransactionUpdates();
+            } else { window.location.href = './index.html'; }
         });
+        signOutBtn.addEventListener('click', () => signOut(auth));
 
-        signOutBtn.addEventListener('click', () => {
-            signOut(auth).catch(error => console.error("Sign out failed:", error));
-        });
-
-        // --- *** VENAS KALA *** --- Tab switch karaddi total eka hide/show karanna
+        // Tabs Logic
         function switchTab(tabId) {
              activeTab = tabId;
-             const tabs = [tabAllCustomers, tabAlerts];
-             const contents = [allCustomersContent, alertsContent];
-             tabs.forEach(tab => {
-                 tab.classList.remove('text-blue-400', 'border-blue-400');
-                 tab.classList.add('text-slate-400', 'border-transparent', 'hover:text-slate-300', 'hover:border-slate-300');
-             });
-             contents.forEach(content => content.classList.add('hidden'));
-
-             // Total/Count display eka handle karanna
              if (tabId === 'allCustomers') {
-                 tabAllCustomers.classList.add('text-blue-400', 'border-blue-400');
-                 tabAllCustomers.classList.remove('text-slate-400', 'border-transparent');
-                 allCustomersContent.classList.remove('hidden');
-                 currentListTotalDisplayDiv.classList.remove('hidden'); // Show count display
-                 currentListTotalCashDisplayDiv.classList.remove('hidden'); // *** ALUTHEN DAMME: Show cash display
+                 tabAllCustomers.classList.replace('text-slate-500', 'text-blue-600');
+                 tabAllCustomers.classList.replace('dark:text-slate-400', 'dark:text-blue-400');
+                 tabAllCustomers.classList.replace('border-transparent', 'border-blue-600');
+                 tabAllCustomers.classList.add('dark:border-blue-400', 'font-bold');
+                 
+                 tabAlerts.classList.replace('text-blue-600', 'text-slate-500');
+                 tabAlerts.classList.replace('dark:text-blue-400', 'dark:text-slate-400');
+                 tabAlerts.classList.replace('border-blue-600', 'border-transparent');
+                 tabAlerts.classList.remove('dark:border-blue-400', 'font-bold');
+                 
+                 allCustomersContent.classList.remove('hidden'); alertsContent.classList.add('hidden');
                  applyFilters();
-             } else if (tabId === 'alerts') {
-                 tabAlerts.classList.add('text-blue-400', 'border-blue-400');
-                 tabAlerts.classList.remove('text-slate-400', 'border-transparent');
-                 alertsContent.classList.remove('hidden');
-                 currentListTotalDisplayDiv.classList.add('hidden'); // Hide count display
-                 currentListTotalCashDisplayDiv.classList.add('hidden'); // *** ALUTHEN DAMME: Hide cash display
+             } else {
+                 tabAlerts.classList.replace('text-slate-500', 'text-blue-600');
+                 tabAlerts.classList.replace('dark:text-slate-400', 'dark:text-blue-400');
+                 tabAlerts.classList.replace('border-transparent', 'border-blue-600');
+                 tabAlerts.classList.add('dark:border-blue-400', 'font-bold');
+
+                 tabAllCustomers.classList.replace('text-blue-600', 'text-slate-500');
+                 tabAllCustomers.classList.replace('dark:text-blue-400', 'dark:text-slate-400');
+                 tabAllCustomers.classList.replace('border-blue-600', 'border-transparent');
+                 tabAllCustomers.classList.remove('dark:border-blue-400', 'font-bold');
+                 
+                 allCustomersContent.classList.add('hidden'); alertsContent.classList.remove('hidden');
                  renderAlerts();
              }
-         }
-         tabAllCustomers.addEventListener('click', () => switchTab('allCustomers'));
-         tabAlerts.addEventListener('click', () => switchTab('alerts'));
+        }
+        tabAllCustomers.addEventListener('click', () => switchTab('allCustomers'));
+        tabAlerts.addEventListener('click', () => switchTab('alerts'));
 
-        // --- Modal Logic Okkoma (Kalin wage) ---
+        // Modal Logic
         const openCustomerModal = () => {
-            customerModal.classList.remove('hidden');
-            setTimeout(() => customerModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+            customerModal.classList.remove('hidden'); setTimeout(() => customerModalContent.classList.remove('scale-95', 'opacity-0'), 10);
             document.getElementById('customerDate').valueAsDate = new Date();
         };
         const closeCustomerModal = () => {
             customerModalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
-                customerModal.classList.add('hidden');
-                customerForm.reset();
-                document.getElementById('customerDocId').value = '';
-                customerModalTitle.textContent = 'Add New Customer';
-                submitCustomerBtnText.textContent = 'Save Customer';
-                categorySpecificDetailsDiv.classList.add('hidden');
-                itemsListDiv.innerHTML = '';
-                noItemsMsg.style.display = 'block';
-                tempItems = [];
-                updateModalItemTotal();
+                customerModal.classList.add('hidden'); customerForm.reset();
+                document.getElementById('customerDocId').value = ''; customerModalTitle.textContent = 'Add New Customer';
+                submitCustomerBtnText.textContent = 'Save Customer'; categorySpecificDetailsDiv.classList.add('hidden');
+                itemsListDiv.innerHTML = ''; noItemsMsg.style.display = 'block'; tempItems = []; updateModalItemTotal();
             }, 200);
         };
         addCustomerBtn.addEventListener('click', openCustomerModal);
-        closeCustomerModalBtn.addEventListener('click', closeCustomerModal);
-        cancelCustomerModalBtn.addEventListener('click', closeCustomerModal);
+        closeCustomerModalBtn.addEventListener('click', closeCustomerModal); cancelCustomerModalBtn.addEventListener('click', closeCustomerModal);
         customerModal.addEventListener('click', (e) => { if(e.target === customerModal) closeCustomerModal(); });
+
+        // Detail Modal
         const openCustomerDetailModal = async (docId) => {
              if (!docId) return;
              try {
@@ -583,702 +561,368 @@
                      detailAgreement.textContent = `${customer.agreementPercentage || 0}%`;
                      detailDateAdded.textContent = customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString() : 'N/A';
                      detailItemsList.innerHTML = '';
-                      const headerDiv = document.createElement('div');
-                      headerDiv.className = 'detail-item font-semibold text-slate-300';
-                      headerDiv.innerHTML = `
-                          <span>Name</span>
-                          <span>Due Day / Price (€)</span>
-                      `;
-                      detailItemsList.appendChild(headerDiv);
-                     if (customer.items && Array.isArray(customer.items) && customer.items.length > 0) {
+                     
+                     if (customer.items && customer.items.length > 0) {
                          let total = 0;
                          customer.items.forEach(item => {
                              const div = document.createElement('div');
-                             div.className = 'detail-item';
-                             const dueDayHtml = item.dueDay ? `<span class="due-day-highlight">Day ${item.dueDay}</span>` : 'N/A';
-                             div.innerHTML = `
-                                 <span>${item.name || 'Unnamed Item'}</span>
-                                 <span class="font-semibold">
-                                     ${dueDayHtml} / € ${(item.price || 0).toFixed(2)}
-                                 </span>
-                             `;
+                             div.className = 'flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700 last:border-0';
+                             div.innerHTML = `<span>${item.name}</span> <span class="font-bold">${item.dueDay ? `Day ${item.dueDay} / ` : ''}€ ${item.price.toFixed(2)}</span>`;
                              detailItemsList.appendChild(div);
                              total += (item.price || 0);
                          });
                          detailTotalItemPrice.textContent = `€ ${total.toFixed(2)}`;
                          detailItemsSection.classList.remove('hidden');
                      } else {
-                         const noItemsDiv = document.createElement('div');
-                         noItemsDiv.className = 'detail-item text-slate-400 italic';
-                         noItemsDiv.textContent = 'No items/services added.';
-                         detailItemsList.appendChild(noItemsDiv);
+                         detailItemsList.innerHTML = '<p class="text-center italic text-slate-400 py-2">No items.</p>';
                          detailTotalItemPrice.textContent = `€ 0.00`;
                          detailItemsSection.classList.remove('hidden');
                      }
                      customerDetailModal.classList.remove('hidden');
                      setTimeout(() => customerDetailModalContent.classList.remove('scale-95', 'opacity-0'), 10);
-                 } else {
-                     showToast("Customer details not found.", false);
                  }
-             } catch(error) {
-                 console.error("Error fetching customer details:", error);
-                 showToast("Could not load customer details.", false);
-             }
+             } catch(error) { console.error(error); showToast("Error loading details.", false); }
         };
         const closeCustomerDetailModal = () => {
             customerDetailModalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                customerDetailModal.classList.add('hidden');
-            }, 200);
+            setTimeout(() => customerDetailModal.classList.add('hidden'), 200);
         };
         closeCustomerDetailModalBtn.addEventListener('click', closeCustomerDetailModal);
         closeCustomerDetailModalBtnBottom.addEventListener('click', closeCustomerDetailModal);
         customerDetailModal.addEventListener('click', (e) => { if(e.target === customerDetailModal) closeCustomerDetailModal(); });
+
+        // Category Change
         customerCategorySelect.addEventListener('change', (e) => {
             const selectedCategory = e.target.value;
             const categoriesWithItems = ["Condominium", "Hotel B&B", "Gardners", "Gym", "Laundry"];
             if (categoriesWithItems.includes(selectedCategory)) {
-                itemManagementTitle.textContent = `Manage ${selectedCategory}`;
-                categorySpecificDetailsDiv.classList.remove('hidden');
+                itemManagementTitle.innerHTML = `<i data-lucide="layers" class="w-4 h-4 text-blue-500"></i> Manage ${selectedCategory}`;
+                categorySpecificDetailsDiv.classList.remove('hidden'); lucide.createIcons();
             } else {
-                categorySpecificDetailsDiv.classList.add('hidden');
-                if (tempItems.length > 0) {
-                    tempItems = [];
-                    renderItemListInModal();
-                }
+                categorySpecificDetailsDiv.classList.add('hidden'); tempItems = []; renderItemListInModal();
             }
         });
+
+        // Add Item
         addItemToListBtn.addEventListener('click', () => {
             const name = newItemNameInput.value.trim();
             const price = parseFloat(newItemPriceInput.value) || 0;
             const dueDay = parseInt(newItemDueDayInput.value) || null;
-            if (!name) {
-                showToast("Please enter an item/service name.", false);
-                return;
-            }
-            if (dueDay !== null && (dueDay < 1 || dueDay > 31)) {
-                 showToast("Please enter a valid Due Day (1-31).", false);
-                 newItemDueDayInput.focus();
-                 return;
-            }
-            if (tempItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
-                 showToast(`"${name}" is already added.`, false);
-                 return;
-            }
-            const newItem = { name, price, dueDay, id: `temp_${crypto.randomUUID()}` };
-            tempItems.push(newItem);
+            if (!name) { showToast("Enter item name.", false); return; }
+            if (dueDay !== null && (dueDay < 1 || dueDay > 31)) { showToast("Invalid Due Day.", false); return; }
+            
+            tempItems.push({ name, price, dueDay, id: `temp_${crypto.randomUUID()}` });
             renderItemListInModal();
-            newItemNameInput.value = '';
-            newItemPriceInput.value = '';
-            newItemDueDayInput.value = '';
-            newItemNameInput.focus();
+            newItemNameInput.value = ''; newItemPriceInput.value = ''; newItemDueDayInput.value = ''; newItemNameInput.focus();
         });
+
+        // Remove Item
         itemsListDiv.addEventListener('click', (e) => {
-             const removeBtn = e.target.closest('.remove-item-item');
+             const removeBtn = e.target.closest('button');
              if (removeBtn) {
-                 const itemIdToRemove = removeBtn.dataset.id;
-                 tempItems = tempItems.filter(item => item.id !== itemIdToRemove);
+                 const id = removeBtn.dataset.id;
+                 tempItems = tempItems.filter(item => item.id !== id);
                  renderItemListInModal();
              }
         });
+
         function renderItemListInModal() {
             itemsListDiv.innerHTML = '';
-             if (tempItems.length === 0) {
-                 noItemsMsg.style.display = 'block';
-             } else {
+            if (tempItems.length === 0) { noItemsMsg.style.display = 'block'; } 
+            else {
                  noItemsMsg.style.display = 'none';
-                 tempItems.sort((a, b) => a.name.localeCompare(b.name));
                  tempItems.forEach(item => {
                      const div = document.createElement('div');
-                     div.className = 'item-list-item text-sm';
-                     const dueDayText = item.dueDay ? ` <span class="text-xs text-slate-400">(Due: Day ${item.dueDay})</span>` : '';
+                     div.className = 'flex justify-between items-center p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600 text-xs';
                      div.innerHTML = `
-                         <span>
-                             <span class="font-semibold">${item.name}</span>${dueDayText} - € ${item.price.toFixed(2)}
-                         </span>
-                         <button type="button" data-id="${item.id}" class="remove-item-item text-red-500 hover:text-red-400 p-1">
-                             <i data-lucide="x-circle" class="w-4 h-4 pointer-events-none"></i>
-                         </button>
+                         <span><span class="font-bold text-slate-700 dark:text-slate-300">${item.name}</span> ${item.dueDay ? `(Day ${item.dueDay})` : ''} - € ${item.price.toFixed(2)}</span>
+                         <button data-id="${item.id}" class="text-red-500 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                      `;
                      itemsListDiv.appendChild(div);
                  });
                  lucide.createIcons();
-             }
-             updateModalItemTotal();
-         }
-         function updateModalItemTotal() {
+            }
+            updateModalItemTotal();
+        }
+        function updateModalItemTotal() {
              const total = tempItems.reduce((sum, item) => sum + item.price, 0);
              totalItemPriceSpan.textContent = `€ ${total.toFixed(2)}`;
-         }
+        }
+
+        // Toast
         const showToast = (message, isSuccess = true) => {
-            toast.textContent = message;
-            toast.className = `fixed bottom-10 right-10 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 no-print ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            toast.querySelector('p').textContent = message;
+            toast.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium flex items-center gap-2 z-[70] no-print ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
         };
 
-        // --- Customer Form Submit (Kalin wage) ---
+        // Submit Form
         customerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUserId) return;
             const docId = document.getElementById('customerDocId').value;
-            submitCustomerBtn.disabled = true;
-            submitCustomerBtnText.classList.add('hidden');
-            submitCustomerSpinner.classList.remove('hidden');
+            submitCustomerBtn.disabled = true; submitCustomerBtnText.textContent = 'Processing...'; submitCustomerSpinner.classList.remove('hidden');
             try {
-                const customerData = {
+                const data = {
                     name: document.getElementById('customerName').value.trim(),
                     contact: document.getElementById('customerContact').value.trim(),
                     email: document.getElementById('customerEmail').value.trim(),
                     category: document.getElementById('customerCategory').value,
                     agreementPercentage: parseFloat(document.getElementById('agreementPercentage').value) || 0,
-                    items: [],
+                    items: tempItems.map(({ name, price, dueDay }) => ({ name, price, dueDay: dueDay || null }))
                 };
                 const dateValue = document.getElementById('customerDate').value;
-                 if (!customerData.name || !customerData.contact || !customerData.category) {
-                     showToast("Please fill in Name, Contact, and Category.", false);
-                     throw new Error("Missing required fields");
-                 }
-                const categoriesWithItems = ["Condominium", "Hotel B&B", "Gardners", "Gym", "Laundry"];
-                if (categoriesWithItems.includes(customerData.category)) {
-                    customerData.items = tempItems.map(({ name, price, dueDay }) => ({
-                        name,
-                        price,
-                        dueDay: dueDay || null
-                    }));
-                     customerData.items.sort((a,b) => a.name.localeCompare(b.name));
-                }
+                
                 if (docId) {
-                    if(dateValue) customerData.createdAt = new Date(dateValue);
-                     else {
-                         const existingDoc = await getDoc(doc(db, `users/${currentUserId}/customers`, docId));
-                         if (existingDoc.exists() && existingDoc.data().createdAt) {
-                             customerData.createdAt = existingDoc.data().createdAt;
-                         }
-                     }
-                      if (!categoriesWithItems.includes(customerData.category)) {
-                         customerData.items = [];
-                     }
-                    await updateDoc(doc(db, `users/${currentUserId}/customers`, docId), customerData);
-                    showToast('Customer updated successfully!');
+                     if(dateValue) data.createdAt = new Date(dateValue);
+                     await updateDoc(doc(db, `users/${currentUserId}/customers`, docId), data);
+                     showToast('Customer updated!');
                 } else {
-                    customerData.createdAt = dateValue ? new Date(dateValue) : new Date();
-                    await addDoc(collection(db, `users/${currentUserId}/customers`), customerData);
-                    showToast('Customer added successfully!');
+                     data.createdAt = dateValue ? new Date(dateValue) : new Date();
+                     await addDoc(collection(db, `users/${currentUserId}/customers`), data);
+                     showToast('Customer added!');
                 }
                 closeCustomerModal();
-            } catch (error) {
-                 if (error.message !== "Missing required fields") {
-                     console.error("Error saving customer:", error);
-                     showToast(`Error: ${error.message}`, false);
-                 }
-            } finally {
-                submitCustomerBtn.disabled = false;
-                submitCustomerBtnText.classList.remove('hidden');
-                submitCustomerSpinner.classList.add('hidden');
-            }
+            } catch (error) { console.error(error); showToast("Error saving.", false); }
+            finally { submitCustomerBtn.disabled = false; submitCustomerBtnText.textContent = 'Save Customer'; submitCustomerSpinner.classList.add('hidden'); }
         });
 
-
-        // --- *** VENAS KALA *** --- Render Table eka haduwa count eka saha total eka pennanna
-        async function renderCustomerTable(customerList) {
+        // Render Table
+        function renderCustomerTable(list) {
             customerTableBody.innerHTML = '';
-            const customerCount = customerList.length; // Customer gana gaththa
-            let totalCashSum = 0; // *** ALUTHEN DAMME: Total eka save karanna
-
-            if (customerCount === 0) {
-                customerTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-400">No customers found matching criteria.</td></tr>`;
-                // Count eka update karanna
-                currentCustomerCountValueSpan.textContent = customerCount; // Count eka pennanna
-                currentTotalCashValueSpan.textContent = `€ 0.00`; // *** ALUTHEN DAMME: Total eka update karanna
+            if (list.length === 0) {
+                customerTableBody.innerHTML = `<tr><td colspan="6" class="text-center p-12 text-slate-400 italic">No customers found.</td></tr>`;
+                document.getElementById('currentCustomerCountValue').textContent = '0';
+                document.getElementById('currentTotalCashValue').textContent = '€ 0.00 Total';
                 return;
             }
-
-            customerList.forEach((customer) => {
+            let totalCash = 0;
+            list.forEach(c => {
                 const row = customerTableBody.insertRow();
-                row.dataset.docId = customer.id;
-                let detailsHtml = 'N/A';
-                let itemCount = 0;
-                let totalPrice = 0; // Me totalPrice eka table eke pennanna witharai dan use karanne
+                row.dataset.docId = c.id;
+                row.className = "hover-row border-b border-slate-100 dark:border-slate-700/50 align-middle transition-colors duration-150 group cursor-pointer";
                 
-                if (customer.items && Array.isArray(customer.items) && customer.items.length > 0) {
-                    itemCount = customer.items.length;
-                    totalPrice = customer.items.reduce((sum, item) => sum + (item.price || 0), 0);
-                    detailsHtml = `<span class="font-semibold">${itemCount} Item(s)</span><br>€ ${totalPrice.toFixed(2)}`;
-                    
-                    totalCashSum += totalPrice; // *** ALUTHEN DAMME: Total ekata ekathu karanawa
+                let itemsHtml = '<span class="text-slate-400 text-xs">N/A</span>';
+                let price = 0;
+                if(c.items && c.items.length > 0) {
+                    price = c.items.reduce((s, i) => s + (i.price || 0), 0);
+                    itemsHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-100 dark:border-blue-800">${c.items.length} Items</span> <span class="text-slate-600 dark:text-slate-300 font-bold text-xs ml-1">€ ${price.toFixed(2)}</span>`;
+                    totalCash += price;
                 }
-                const addedDate = customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString() : 'N/A';
+
                 row.innerHTML = `
-                    <td class="p-4">${customer.name || 'N/A'}</td>
-                    <td class="p-4">${customer.category || 'N/A'}</td>
-                    <td class="p-4">${customer.contact || 'N/A'}</td>
-                    <td class="p-4">${customer.agreementPercentage || '0'}%</td>
-                    <td class="p-4 text-sm">${detailsHtml}</td>
-                    <td class="p-4">${addedDate}</td>
-                    <td class="p-4 flex items-center gap-2 no-print no-pdf">
-                        <button data-id="${customer.id}" class="edit-customer-btn text-blue-400 hover:text-blue-300"><i data-lucide="edit" class="w-5 h-5 pointer-events-none"></i></button>
-                        <button data-id="${customer.id}" class="delete-customer-btn text-red-400 hover:text-red-300"><i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i></button>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-900 dark:text-white text-sm">${c.name}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">${c.contact}</div>
+                    </td>
+                    <td class="p-4"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">${c.category}</span></td>
+                    <td class="p-4 text-sm text-slate-600 dark:text-slate-400 font-medium">${c.agreementPercentage}%</td>
+                    <td class="p-4">${itemsHtml}</td>
+                    <td class="p-4 text-xs text-slate-500 dark:text-slate-400 font-medium">${c.createdAt?.toDate ? c.createdAt.toDate().toLocaleDateString() : 'N/A'}</td>
+                    <td class="p-4 text-right no-print no-pdf">
+                        <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                           <button data-id="${c.id}" class="edit-customer-btn p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                           <button data-id="${c.id}" class="delete-customer-btn p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
                     </td>
                 `;
             });
-
-            // --- Loop eken passe count eka update karanawa ---
-            currentCustomerCountValueSpan.textContent = customerCount; // Count eka pennanna
-            currentTotalCashValueSpan.textContent = `€ ${totalCashSum.toFixed(2)}`; // *** ALUTHEN DAMME: Total eka pennanna
-            // --- ---
-
+            document.getElementById('currentCustomerCountValue').textContent = list.length;
+            document.getElementById('currentTotalCashValue').textContent = `€ ${totalCash.toFixed(2)} Total`;
             lucide.createIcons();
         }
 
-        // --- DATA LISTENER (Transactions) (Kalin wage) ---
-        function listenForTransactionUpdates() {
+        // Data Listeners
+        function listenForCustomerUpdates() {
             if(!currentUserId) return;
-            onSnapshot(collection(db, `users/${currentUserId}/transactions`), (snapshot) => {
-                allTransactions = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                if (activeTab === 'alerts') {
-                    renderAlerts();
-                }
-            }, error => {
-                console.error("Error listening for transaction updates:", error);
-                showToast("Error loading payment data.", false);
+            onSnapshot(collection(db, `users/${currentUserId}/customers`), (snapshot) => {
+               allCustomers = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+               allCustomers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+               if (activeTab === 'allCustomers') applyFilters(); else renderAlerts();
             });
         }
-
-        // --- CUSTOMER LISTENER (Kalin wage) ---
-        const listenForCustomerUpdates = () => {
+        function listenForTransactionUpdates() {
              if(!currentUserId) return;
-             onSnapshot(collection(db, `users/${currentUserId}/customers`), (snapshot) => {
-                allCustomers = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                 allCustomers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-                if (activeTab === 'allCustomers') {
-                    applyFilters();
-                } else if (activeTab === 'alerts') {
-                    renderAlerts();
-                }
-             }, error => {
-                 console.error("Error listening for customer updates:", error);
-                 customerTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-400">Error loading customer data.</td></tr>`;
-                 showToast("Error loading customer data.", false);
+             onSnapshot(collection(db, `users/${currentUserId}/transactions`), (s) => {
+                 allTransactions = s.docs.map(d => ({id: d.id, ...d.data()}));
+                 if (activeTab === 'alerts') renderAlerts();
              });
-        };
+        }
 
-        // --- FILTER LOGIC (Kalin wage) ---
+        // Filter
         function applyFilters() {
-            const category = filterCategorySelect.value;
-            const searchTerm = searchByNameInput.value.toLowerCase();
-            let filtered = allCustomers;
-            if (searchTerm) {
-                filtered = filtered.filter(c => c.name && c.name.toLowerCase().includes(searchTerm));
-            }
-            if (category) {
-                filtered = filtered.filter(c => c.category === category);
-            }
-            renderCustomerTable(filtered); // Render table eka call karaddi count eka auto update wei
+            const cat = filterCategorySelect.value; const term = searchByNameInput.value.toLowerCase();
+            let list = allCustomers;
+            if (term) list = list.filter(c => c.name.toLowerCase().includes(term));
+            if (cat) list = list.filter(c => c.category === cat);
+            renderCustomerTable(list);
         }
         searchByNameInput.addEventListener('input', applyFilters);
         filterCategorySelect.addEventListener('change', applyFilters);
-        clearFiltersBtn.addEventListener('click', () => {
-            searchByNameInput.value = '';
-            filterCategorySelect.value = '';
-            applyFilters();
-        });
+        clearFiltersBtn.addEventListener('click', () => { searchByNameInput.value = ''; filterCategorySelect.value = ''; applyFilters(); });
 
-        // --- Edit Modal Logic (Kalin wage) ---
-        async function openEditModal(docId) {
-            try {
-                const docRef = doc(db, `users/${currentUserId}/customers`, docId);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const customer = docSnap.data();
-                    customerModalTitle.textContent = 'Edit Customer';
-                    submitCustomerBtnText.textContent = 'Update Customer';
-                    document.getElementById('customerDocId').value = docId;
-                    document.getElementById('customerName').value = customer.name || '';
-                    document.getElementById('customerContact').value = customer.contact || '';
-                    document.getElementById('customerEmail').value = customer.email || '';
-                    document.getElementById('customerCategory').value = customer.category || '';
-                    document.getElementById('agreementPercentage').value = customer.agreementPercentage || '';
-                    if (customer.createdAt && customer.createdAt.toDate) {
-                         document.getElementById('customerDate').value = customer.createdAt.toDate().toISOString().split('T')[0];
-                    } else {
-                         document.getElementById('customerDate').value = '';
-                    }
-                    tempItems = [];
-                    const categoriesWithItems = ["Condominium", "Hotel B&B", "Gardners", "Gym", "Laundry"];
-                    if (categoriesWithItems.includes(customer.category)) {
-                        categorySpecificDetailsDiv.classList.remove('hidden');
-                        itemManagementTitle.textContent = `Manage ${customer.category}`;
-                        if (customer.items && Array.isArray(customer.items)) {
-                             tempItems = customer.items.map((item, index) => ({
-                                 name: item.name || '',
-                                 price: item.price || 0,
-                                 dueDay: item.dueDay || null,
-                                 id: `temp_${Date.now()}_${index}`
-                             }));
-                        }
-                        renderItemListInModal();
-                    } else {
-                        categorySpecificDetailsDiv.classList.add('hidden');
-                        renderItemListInModal();
-                    }
-                    openCustomerModal();
-                } else {
-                    showToast("Customer not found.", false);
-                }
-            } catch (error) {
-                console.error("Error fetching customer for edit:", error);
-                showToast(`Error fetching data: ${error.message}`, false);
-            }
-        }
-
-
-        // --- Main Table Click Listener (Kalin wage) ---
+        // Table Actions
         customerTableBody.addEventListener('click', async (e) => {
-            const deleteBtn = e.target.closest('.delete-customer-btn');
-            if (deleteBtn) {
+            const delBtn = e.target.closest('.delete-customer-btn');
+            if (delBtn) {
                 e.stopPropagation();
-                const docId = deleteBtn.dataset.id;
-                if(confirm('Are you sure you want to delete this customer and all their associated items/services?')) {
-                    try {
-                        await deleteDoc(doc(db, `users/${currentUserId}/customers`, docId));
-                        showToast('Customer deleted successfully.');
-                    } catch (error) {
-                         console.error("Error deleting customer:", error);
-                         showToast(`Error deleting customer: ${error.message}`, false);
-                    }
-                }
-                return;
+                if(confirm('Delete this customer?')) {
+                    try { await deleteDoc(doc(db, `users/${currentUserId}/customers`, delBtn.dataset.id)); showToast('Deleted.'); } 
+                    catch(e) { showToast("Error deleting.", false); }
+                } return;
             }
             const editBtn = e.target.closest('.edit-customer-btn');
-            if (editBtn) {
-                 e.stopPropagation();
-                openEditModal(editBtn.dataset.id);
-                 return;
-            }
+            if (editBtn) { e.stopPropagation(); openEditModal(editBtn.dataset.id); return; }
             const row = e.target.closest('tr');
-            if (row && row.dataset.docId) {
-                 if (!e.target.closest('td:last-child')) {
-                     openCustomerDetailModal(row.dataset.docId);
-                 }
-            }
+            if (row && !e.target.closest('td:last-child')) openCustomerDetailModal(row.dataset.docId);
         });
 
-        // --- ALERTS LOGIC (Kalin wage, typo fixed) ---
-        function isPaidThisMonth(customerName, itemName, year, month) {
-            if (!allTransactions || allTransactions.length === 0) return false;
-
-            const searchCustomer = customerName.toLowerCase();
-            const searchItem = itemName.toLowerCase();
-            const expectedDescription = `fixed_payment: ${searchCustomer} | ${searchItem}`;
-
-            return allTransactions.some(t => {
-                if (t.type !== 'Income' || !t.date || !t.date.toDate) return false;
-
-                const transDate = t.date.toDate();
-                if (transDate.getFullYear() !== year || transDate.getMonth() !== month) return false;
-
-                const description = (t.description || '').toLowerCase();
-                return description === expectedDescription;
-            });
+        async function openEditModal(docId) {
+            try {
+                const doc = await getDoc(doc(db, `users/${currentUserId}/customers`, docId));
+                if (doc.exists()) {
+                    const c = doc.data();
+                    customerModalTitle.textContent = 'Edit Customer'; submitCustomerBtnText.textContent = 'Update Customer';
+                    document.getElementById('customerDocId').value = docId;
+                    document.getElementById('customerName').value = c.name;
+                    document.getElementById('customerContact').value = c.contact;
+                    document.getElementById('customerEmail').value = c.email;
+                    document.getElementById('customerCategory').value = c.category;
+                    document.getElementById('agreementPercentage').value = c.agreementPercentage;
+                    document.getElementById('customerDate').value = c.createdAt?.toDate().toISOString().split('T')[0] || '';
+                    
+                    tempItems = [];
+                    if(["Condominium", "Hotel B&B", "Gardners", "Gym", "Laundry"].includes(c.category)) {
+                        categorySpecificDetailsDiv.classList.remove('hidden');
+                        if(c.items) tempItems = c.items.map((i, idx) => ({ ...i, id: `temp_${Date.now()}_${idx}` }));
+                    } else { categorySpecificDetailsDiv.classList.add('hidden'); }
+                    renderItemListInModal();
+                    openCustomerModal();
+                }
+            } catch(e) { showToast("Error opening edit.", false); }
         }
 
+        // Alerts Logic
         function renderAlerts() {
             alertsList.innerHTML = '';
-            let alertsFound = false;
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const sevenDaysFromNow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth();
-            let upcomingPayments = [];
-
-            allCustomers.forEach(customer => {
-                if (customer.items && Array.isArray(customer.items)) {
-                    customer.items.forEach(item => {
-                        if (item.dueDay) {
-                            const dueDay = parseInt(item.dueDay);
-                            if (isNaN(dueDay) || dueDay < 1 || dueDay > 31) return;
-                            const dateThisMonth = new Date(currentYear, currentMonth, dueDay);
-                            const dateNextMonth = new Date(currentYear, currentMonth + 1, dueDay);
-                            let dateToCheck = null;
-                            if (dateThisMonth >= today && dateThisMonth < sevenDaysFromNow) {
-                                dateToCheck = dateThisMonth;
-                            }
-                            else if (dateNextMonth >= today && dateNextMonth < sevenDaysFromNow) {
-                                dateToCheck = dateNextMonth;
-                            }
-                            if (dateToCheck) {
-                                const checkYear = dateToCheck.getFullYear();
-                                const checkMonth = dateToCheck.getMonth();
-                                const isPaid = isPaidThisMonth(customer.name, item.name, checkYear, checkMonth);
-                                if (!isPaid) {
-                                    alertsFound = true;
-                                    upcomingPayments.push({
-                                        date: dateToCheck,
-                                        customerName: customer.name,
-                                        customerCategory: customer.category,
-                                        itemName: item.name,
-                                        amount: item.price
+            let found = false;
+            const today = new Date(); today.setHours(0,0,0,0);
+            const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+            
+            allCustomers.forEach(c => {
+                if(c.items) c.items.forEach(i => {
+                    if(i.dueDay) {
+                        const due = parseInt(i.dueDay);
+                        if(!isNaN(due)) {
+                            // Check this month and next month for due date
+                            let dueDates = [
+                                new Date(today.getFullYear(), today.getMonth(), due),
+                                new Date(today.getFullYear(), today.getMonth() + 1, due)
+                            ];
+                            
+                            dueDates.forEach(d => {
+                                if(d >= today && d <= nextWeek) {
+                                    // Check if paid
+                                    const paid = allTransactions.some(t => {
+                                        const td = t.date.toDate();
+                                        return td.getMonth() === d.getMonth() && td.getFullYear() === d.getFullYear() && 
+                                               t.description?.includes(c.name.toLowerCase()) && t.description?.includes(i.name.toLowerCase());
                                     });
+                                    
+                                    if(!paid) {
+                                        found = true;
+                                        const el = document.createElement('div');
+                                        el.className = "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm flex flex-col justify-between";
+                                        el.innerHTML = `
+                                            <div>
+                                                <div class="flex justify-between items-start mb-2">
+                                                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-md">Due ${d.toLocaleDateString()}</span>
+                                                    <span class="font-bold text-slate-800 dark:text-white">€ ${i.price.toFixed(2)}</span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-900 dark:text-white text-sm">${i.name}</h4>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${c.name} (${c.category})</p>
+                                            </div>
+                                            <button class="mt-4 w-full py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-xs font-bold transition mark-paid-btn" data-cname="${c.name}" data-iname="${i.name}" data-amt="${i.price}" data-cat="${c.category}">Mark Paid</button>
+                                        `;
+                                        alertsList.appendChild(el);
+                                    }
                                 }
-                            }
+                            });
                         }
-                    });
-                }
+                    }
+                });
             });
-
-            upcomingPayments.sort((a,b) => a.date - b.date);
-
-            upcomingPayments.forEach(payment => {
-                const alertEl = document.createElement('div');
-                alertEl.className = 'bg-slate-700 p-4 rounded-lg flex flex-col justify-between gap-3';
-                alertEl.innerHTML = `
-                    <div>
-                        <div class="flex items-start gap-3">
-                            <div><i data-lucide="bell-ring" class="w-5 h-5 text-green-400 flex-shrink-0 mt-1"></i></div>
-                            <div>
-                                <p class="font-bold">${payment.itemName}</p>
-                                <p class="text-sm text-slate-400">Owner: ${payment.customerName}</p>
-                                <p class="text-sm text-slate-400">Category: ${payment.customerCategory}</p>
-                                <p class="text-sm text-slate-300 italic">Due Date: ${payment.date.toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                        <div class="text-right mt-2">
-                             <p class="font-semibold text-lg text-green-300">€ ${payment.amount.toLocaleString() || '0.00'}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-2">
-                        <button class="mark-as-paid-btn text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md flex items-center gap-2"
-                                data-customer-name="${payment.customerName}"
-                                data-item-name="${payment.itemName}"
-                                data-amount="${payment.amount}"
-                                data-category="${payment.customerCategory}">
-                            <i data-lucide="check" class="w-4 h-4"></i> Mark as Paid
-                        </button>
-                    </div>
-                `;
-                alertsList.appendChild(alertEl);
-            });
-            if (alertsFound) {
-                noAlertsMsg.classList.add('hidden');
-            } else {
-                noAlertsMsg.classList.remove('hidden');
-            }
-            lucide.createIcons();
+            
+            if(found) noAlertsMsg.classList.add('hidden'); else noAlertsMsg.classList.remove('hidden');
         }
 
         alertsList.addEventListener('click', async (e) => {
-             const markPaidBtn = e.target.closest('.mark-as-paid-btn');
-             if (markPaidBtn) {
-                 const { customerName, itemName, amount, category } = markPaidBtn.dataset;
-                 if (!customerName || !itemName) return;
-                 if (confirm(`Record payment of € ${amount} for "${itemName}" from "${customerName}"?`)) {
-                     markPaidBtn.disabled = true; // <-- TYPO FIX
-                     markPaidBtn.textContent = 'Saving...';
-                     try {
-                         const uniqueDescription = `fixed_payment: ${customerName.toLowerCase()} | ${itemName.toLowerCase()}`;
-                         const transactionData = {
-                             date: new Date(),
-                             description: uniqueDescription,
-                             category: `Customer Payment (${category})`,
-                             type: 'Income',
-                             amount: parseFloat(amount) || 0,
-                             paymentMethod: 'Cash'
-                         };
-                         await addDoc(collection(db, `users/${currentUserId}/transactions`), transactionData);
-                         showToast('Payment recorded successfully!');
-                     } catch (error) {
-                         showToast(`Error recording payment: ${error.message}`, false);
-                         markPaidBtn.disabled = false;
-                         markPaidBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Mark as Paid';
-                         lucide.createIcons();
-                     }
-                 }
-             }
-        });
-
-
-        // --- === ADDED/UPDATED: PDF FUNCTIONS === ---
-
-        function checkPdfLibraries() {
-            if (typeof window.jspdf === 'undefined' || typeof window.html2canvas === 'undefined') {
-                showToast("PDF libraries failed to load. Please reload.", false);
-                return false;
-            }
-            return true;
-        }
-
-        /**
-         * ADDED: Function to download the main customer list table
-         */
-        async function downloadTableAsPDF(tableId, title, filename) {
-            if (!checkPdfLibraries()) return;
-            const table = document.getElementById(tableId);
-            if (!table) {
-                showToast("Table not found.", false);
-                return;
-            }
-
-            const elementsToHide = table.querySelectorAll('.no-print, .no-pdf');
-            elementsToHide.forEach(el => el.style.display = 'none');
-
-            table.classList.add('pdf-export-table'); // Use table-specific class
-            showToast("Generating Full List PDF... Please wait.", true);
-
-            try {
-                const canvas = await html2canvas(table);
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'px',
-                    format: [canvas.width + 40, canvas.height + 40] // Increased padding
-                });
-                const pdfWidth = doc.internal.pageSize.getWidth();
-                const pdfHeight = doc.internal.pageSize.getHeight();
-                // Add title
-                doc.setFontSize(16);
-                doc.text(title, 20, 25);
-                // Adjust position for title
-                const contentHeight = pdfHeight - 40; // available height after title
-                const contentWidth = pdfWidth - 40;    // available width
-                const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
-                const imgWidthScaled = canvas.width * scale;
-                const imgHeightScaled = canvas.height * scale;
-                const x = (pdfWidth - imgWidthScaled) / 2;
-                const y = 40 + (contentHeight - imgHeightScaled) / 2; // Position below title
-
-                doc.addImage(imgData, 'PNG', x, y, imgWidthScaled, imgHeightScaled);
-                doc.save(filename);
-            } catch (error) {
-                console.error("Error generating table PDF:", error);
-                showToast("Failed to generate table PDF.", false);
-            } finally {
-                elementsToHide.forEach(el => el.style.display = '');
-                table.classList.remove('pdf-export-table');
-            }
-        }
-
-        /**
-         * UPDATED: PDF Function for Detail Modal
-         * Appends HR and letterhead, uses updated filename
-         */
-        async function downloadDetailAsPDF(elementId, title, filename) {
-            if (!checkPdfLibraries()) return;
-
-            const elementToPrint = document.getElementById(elementId);
-            if (!elementToPrint) {
-                showToast("Detail content not found.", false);
-                return;
-            }
-
-            // --- Letterhead Injection Logic ---
-            const letterheadHr = document.createElement('hr');
-            letterheadHr.className = 'pdf-letterhead-hr no-pdf no-print'; // Add "line"
-
-            const letterheadImg = document.createElement('img');
-            letterheadImg.className = 'pdf-letterhead no-pdf no-print';
-            letterheadImg.crossOrigin = "anonymous";
-            // --- End Injection ---
-
-            const elementsToHide = elementToPrint.querySelectorAll('.no-print, .no-pdf');
-            elementsToHide.forEach(el => el.style.display = 'none');
-
-            elementToPrint.classList.add('pdf-export-modal'); // Use modal-specific class
-            showToast("Generating PDF... Please wait.", true);
-
-            let hrAdded = false;
-            let imgAdded = false;
-
-            // --- Await Image Load ---
-            await new Promise((resolve) => {
-                letterheadImg.onload = () => {
-                    // Add HR and Image *after* we know the image loaded
-                    elementToPrint.appendChild(letterheadHr);
-                    hrAdded = true;
-                    elementToPrint.appendChild(letterheadImg);
-                    imgAdded = true;
-                    resolve();
-                };
-                letterheadImg.onerror = () => {
-                    console.warn("l-down.png failed to load. Printing without it.");
-                    showToast("Letterhead image missing. Printing anyway.", false);
-                    resolve(); // Resolve anyway, just don't append the image
-                };
-                // Set src to trigger the load - UPDATED FILENAME
-                letterheadImg.src = 'l-down.png';
-            });
-            // --- End Await ---
-
-            try {
-                const canvas = await html2canvas(elementToPrint, {
-                    useCORS: true,
-                    allowTaint: true,
-                    scale: 2 // Higher resolution
-                });
-
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdfWidth = 595.28; // A4 width in points
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const ratio = pdfWidth / imgWidth;
-                const pdfHeight = imgHeight * ratio;
-
-                const doc = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'pt',
-                    format: [pdfWidth, pdfHeight + 40] // Add padding
-                });
-
-                // Add image at 0,0 - it now contains the title
-                doc.addImage(imgData, 'PNG', 0, 20, pdfWidth, pdfHeight);
-                doc.save(filename);
-
-            } catch (error) {
-                console.error("Error generating PDF:", error);
-                showToast("Failed to generate PDF.", false);
-            } finally {
-                elementsToHide.forEach(el => el.style.display = '');
-                elementToPrint.classList.remove('pdf-export-modal');
-
-                // --- Letterhead Removal ---
-                try {
-                    // Check if elements were added before removing
-                    if (hrAdded && letterheadHr.parentNode === elementToPrint) {
-                        elementToPrint.removeChild(letterheadHr);
-                    }
-                    if (imgAdded && letterheadImg.parentNode === elementToPrint) {
-                        elementToPrint.removeChild(letterheadImg);
-                    }
-                } catch (e) {
-                    // console.warn("Error cleaning up letterhead:", e);
+            if(e.target.classList.contains('mark-paid-btn')) {
+                const { cname, iname, amt, cat } = e.target.dataset;
+                if(confirm(`Mark paid: €${amt} for ${iname}?`)) {
+                    try {
+                        await addDoc(collection(db, `users/${currentUserId}/transactions`), {
+                            date: new Date(), amount: parseFloat(amt), type: 'Income', paymentMethod: 'Cash',
+                            category: `Customer Payment (${cat})`, description: `fixed_payment: ${cname.toLowerCase()} | ${iname.toLowerCase()}`
+                        });
+                        showToast("Paid!"); renderAlerts();
+                    } catch(e) { showToast("Error.", false); }
                 }
-                // --- End Removal ---
             }
+        });
+
+        // PDF Export
+        downloadListPdfBtn.addEventListener('click', () => downloadTableAsPDF('customerTable', 'Customer List', 'customer_list.pdf'));
+        downloadDetailPdfBtn.addEventListener('click', () => {
+            const name = customerDetailName.textContent;
+            downloadDetailAsPDF('customer-detail-pdf-content', name, `${name.replace(/\s/g, '_')}_Details.pdf`);
+        });
+
+        // PDF Helpers (Same logic as staff)
+        function checkPdfLibraries() { if(typeof jspdf === 'undefined' || typeof html2canvas === 'undefined') { showToast("PDF libs missing.", false); return false; } return true; }
+        async function downloadTableAsPDF(id, title, fname) {
+            if(!checkPdfLibraries()) return;
+            const el = document.getElementById(id);
+            el.querySelectorAll('.no-print').forEach(e => e.style.display = 'none');
+            el.classList.add('pdf-export-table');
+            showToast("Generating PDF...", true);
+            try {
+                const canvas = await html2canvas(el);
+                const img = canvas.toDataURL('image/png');
+                const doc = new jspdf.jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width+40, canvas.height+40] });
+                doc.setFontSize(16); doc.text(title, 20, 25);
+                doc.addImage(img, 'PNG', 20, 40, canvas.width, canvas.height);
+                doc.save(fname);
+            } catch(e) { console.error(e); }
+            finally { el.querySelectorAll('.no-print').forEach(e => e.style.display = ''); el.classList.remove('pdf-export-table'); }
+        }
+        async function downloadDetailAsPDF(id, title, fname) {
+             if(!checkPdfLibraries()) return;
+             const el = document.getElementById(id);
+             const hr = document.createElement('hr'); hr.className='pdf-letterhead-hr no-print';
+             const img = document.createElement('img'); img.className='pdf-letterhead no-print'; img.crossOrigin='anonymous'; img.src='l-down.png';
+             
+             el.querySelectorAll('.no-print').forEach(e => e.style.display='none');
+             el.classList.add('pdf-export-modal');
+             
+             await new Promise(r => { img.onload=()=>{ el.append(hr, img); r(); }; img.onerror=()=>{ r(); }; });
+             
+             try {
+                 const canvas = await html2canvas(el, { scale:2, useCORS:true, allowTaint:true });
+                 const doc = new jspdf.jsPDF({ unit:'pt', format:[595.28, canvas.height*595.28/canvas.width + 40] });
+                 doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 20, 595.28, canvas.height*595.28/canvas.width);
+                 doc.save(fname);
+             } catch(e) { console.error(e); }
+             finally {
+                 el.querySelectorAll('.no-print').forEach(e => e.style.display='');
+                 el.classList.remove('pdf-export-modal');
+                 if(hr.parentNode===el) el.removeChild(hr); if(img.parentNode===el) el.removeChild(img);
+             }
         }
 
-        // --- ADDED: Listener for Full List PDF Download ---
-        downloadListPdfBtn.addEventListener('click', () => {
-            downloadTableAsPDF('customerTable', 'Customer List', 'customer_list.pdf');
-        });
-
-        // --- Listener for Detail Modal PDF (Kalin wage) ---
-        downloadDetailPdfBtn.addEventListener('click', () => {
-            const customerName = customerDetailName.textContent.trim();
-            let filename = "customer_details.pdf";
-            if (customerName && customerName !== "Customer Details") {
-                filename = `${customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_details.pdf`;
-            }
-            downloadDetailAsPDF('customer-detail-pdf-content', customerName, filename);
-        });
-
-        // --- ---
-
-        // --- Initial setup ---
-        switchTab('allCustomers'); // Set the initial tab and show count display
+        // Init
+        switchTab('allCustomers');
         lucide.createIcons();
     </script>
 </body>
