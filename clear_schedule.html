@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Schedule - RSG MANAGER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen font-sans">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 max-w-md w-full text-center">
+        <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="alert-triangle" class="text-red-600 w-10 h-10"></i>
+        </div>
+        
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-2">Clear All Schedule Data</h1>
+        <p class="text-slate-600 mb-8">ඔබේ කැලැන්ඩර් එකේ ඇති සියලුම දත්ත (Events/Finance) මෙතනින් සම්පූර්ණයෙන්ම මකා දැමිය හැක. මෙය නැවත සැකසිය නොහැක.</p>
+
+        <div id="status-area" class="mb-6 hidden">
+            <div class="flex items-center justify-center gap-3 text-blue-600 font-bold italic">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                Deleting data... <span id="count-display">0</span> items
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <button id="clearBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="trash-2" class="w-5 h-5"></i> Confirm & Delete All
+            </button>
+            
+            <a href="./schedule.html" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition">
+                Go Back to Schedule
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        // Firebase Config (ඔයාගේ කලින් තිබ්බ එකමයි)
+        const firebaseConfig = {
+             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+             authDomain: "rsgweb-5f36d.firebaseapp.com",
+             projectId: "rsgweb-5f36d",
+             storageBucket: "rsgweb-5f36d.firebasestorage.app",
+             messagingSenderId: "633023905515",
+             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUserId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+            } else {
+                alert("Please login first!");
+                window.location.href = './index.html';
+            }
+        });
+
+        const clearBtn = document.getElementById('clearBtn');
+        const statusArea = document.getElementById('status-area');
+        const countDisplay = document.getElementById('count-display');
+
+        clearBtn.addEventListener('click', async () => {
+            if (!currentUserId) return;
+
+            const confirmation = confirm("Are you ABSOLUTELY sure? This will delete every single event in your schedule.");
+            if (!confirmation) return;
+
+            try {
+                clearBtn.disabled = true;
+                clearBtn.classList.add('opacity-50');
+                statusArea.classList.remove('hidden');
+
+                // Schedule collection එකට reference එකක් ගන්නවා
+                const scheduleRef = collection(db, `users/${currentUserId}/schedule`);
+                const snapshot = await getDocs(scheduleRef);
+                
+                if (snapshot.empty) {
+                    alert("No events found to delete.");
+                    statusArea.classList.add('hidden');
+                    clearBtn.disabled = false;
+                    return;
+                }
+
+                let count = 0;
+                const total = snapshot.docs.length;
+
+                // Batch එකකින් Delete කරන එක වේගවත් (Max 500 docs per batch)
+                // නමුත් සරල වෙන්න මම ලූප් එකක් පාවිච්චි කරන්නම්
+                for (const document of snapshot.docs) {
+                    await deleteDoc(doc(db, `users/${currentUserId}/schedule`, document.id));
+                    count++;
+                    countDisplay.textContent = `${count} / ${total}`;
+                }
+
+                alert("All schedule data has been cleared successfully!");
+                window.location.href = './schedule.html';
+
+            } catch (error) {
+                console.error("Error deleting data:", error);
+                alert("Something went wrong. Please try again.");
+            } finally {
+                clearBtn.disabled = false;
+                clearBtn.classList.remove('opacity-50');
+            }
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

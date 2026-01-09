@@ -154,6 +154,20 @@
                         </button>
                     </div>
                 </div>
+                <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 mb-6 flex flex-col md:flex-row items-center gap-4 shadow-sm no-print">
+    <div class="relative flex-1 w-full">
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+        <input type="text" id="agreementSearch" placeholder="Search by agreement title or customer name..." class="w-full bg-slate-50 dark:bg-slate-900/50 border-none text-slate-900 dark:text-white rounded-xl py-2.5 pl-11 pr-4 focus:ring-2 focus:ring-blue-500 text-sm font-medium transition">
+    </div>
+    <div class="flex items-center gap-2 w-full md:w-auto">
+        <select id="categoryFilter" class="bg-slate-50 dark:bg-slate-900/50 border-none text-slate-700 dark:text-slate-300 rounded-xl py-2.5 px-4 focus:ring-2 focus:ring-blue-500 text-sm font-bold transition cursor-pointer min-w-[160px]">
+            <option value="">All Categories</option>
+            </select>
+        <button id="resetFilters" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-600 transition" title="Reset Filters">
+            <i data-lucide="filter-x" class="w-5 h-5"></i>
+        </button>
+    </div>
+</div>
 
                 <div id="expiringAlerts" class="mb-6 no-print"></div>
 
@@ -318,7 +332,8 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const storage = getStorage(app);
-        
+        const agreementSearch = document.getElementById('agreementSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
         let currentUserId = null;
         let allAgreements = [];
         let allCustomers = []; 
@@ -1012,6 +1027,58 @@
         });
 
         lucide.createIcons();
+
+function applyFilters() {
+    const searchTerm = agreementSearch.value.toLowerCase(); // Search box එකේ තියෙන text එක
+    const selectedCat = categoryFilter.value; // Select කරලා තියෙන category එක
+
+    const filtered = allAgreements.filter(a => {
+        // Title එකේ හෝ Customer නමේ search කරන අකුරු තියෙනවාද බලනවා
+        const matchesSearch = (a.title || '').toLowerCase().includes(searchTerm) || 
+                              (a.customerName || '').toLowerCase().includes(searchTerm);
+        
+        // Category එකක් select කරලා නැත්නම් ඔක්කොම පෙන්වනවා, නැත්නම් අදාළ එක විතරක් පෙන්වනවා
+        const matchesCat = selectedCat === "" || a.category === selectedCat;
+        
+        return matchesSearch && matchesCat;
+    });
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    let active = []; 
+    let expired = [];
+
+    // Filter වුණ ලිස්ට් එක active සහ expired ලෙස වෙන් කරනවා
+    filtered.forEach(agreement => {
+        const endDate = agreement.endDate?.toDate ? new Date(agreement.endDate.toDate().getFullYear(), agreement.endDate.toDate().getMonth(), agreement.endDate.toDate().getDate()) : null;
+        if (endDate && endDate < today) expired.push(agreement);
+        else active.push(agreement);
+    });
+
+    // ලිස්ට් දෙක sort කරනවා (Expire වෙන දවස අනුව)
+    active.sort((a,b) => (a.endDate?.toMillis() || 0) - (b.endDate?.toMillis() || 0));
+    expired.sort((a,b) => (b.endDate?.toMillis() || 0) - (a.endDate?.toMillis() || 0));
+
+    // Table එකට අලුත් data ටික දානවා
+    renderAgreementsTable(active);
+    renderExpiredAgreementsTable(expired);
+    renderExpirationAlerts(active);
+}
+
+// Search box එකේ අකුරක් ගහන ගානේ auto-filter වෙන්න මේ listener එක ඕනේ
+agreementSearch.addEventListener('input', applyFilters);
+
+// Category එක මාරු කරනකොට auto-filter වෙන්න මේ listener එක ඕනේ
+categoryFilter.addEventListener('change', applyFilters);
+
+// Reset button එකක් තියෙනවා නම් ඒකෙන් filters clear කරන්න
+resetFiltersBtn.addEventListener('click', () => {
+    agreementSearch.value = '';
+    categoryFilter.value = '';
+    applyFilters();
+});
+        
 
     </script>
 

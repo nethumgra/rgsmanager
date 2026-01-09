@@ -242,6 +242,7 @@
                         <select id="incomeType" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm">
                             <option value="Variable">Variable (One-time)</option>
                             <option value="Fixed">Fixed (Monthly Recurring)</option>
+                            <option value="Biweekly">Fixed (Every 15 Days)</option>
                         </select>
                     </div>
                     <div id="expenseTypeWrapper" class="hidden col-span-2">
@@ -249,6 +250,7 @@
                         <select id="expenseType" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-sm">
                             <option value="Variable">Variable (One-time)</option>
                             <option value="Fixed">Fixed (Monthly Recurring)</option>
+                            <option value="Biweekly">Fixed (Every 15 Days)</option>
                         </select>
                     </div>
                 </div>
@@ -667,14 +669,37 @@
                 } else {
                     data.status = 'Pending';
                     const recType = data.type === 'Income' ? data.incomeType : data.expenseType;
-                    if (data.type !== 'General' && recType === 'Fixed') {
-                        const rid = crypto.randomUUID(); const batch = writeBatch(db);
-                        for(let i=0; i < 12; i++) {
-                            const fDate = new Date(localDate); fDate.setMonth(localDate.getMonth() + i);
-                            batch.set(doc(collection(db, `users/${currentUserId}/schedule`)), {...data, date: Timestamp.fromDate(fDate), recurringId: rid});
-                        }
-                        await batch.commit(); showToast('Recurring event added!');
-                    } else { await addDoc(collection(db, `users/${currentUserId}/schedule`), data); showToast('Event added!'); }
+                    if (data.type !== 'General' && (recType === 'Fixed' || recType === 'Biweekly')) {
+    const rid = crypto.randomUUID(); 
+    const batch = writeBatch(db);
+    
+    // මාසික නම් 12 පාරක්, දවස් 15 නම් අවුරුද්දකට 24 පාරක් වගේ දාමු
+    const iterations = recType === 'Fixed' ? 12 : 24; 
+
+    for(let i=0; i < iterations; i++) {
+        const fDate = new Date(localDate);
+        
+        if (recType === 'Fixed') {
+            // මාසෙන් මාසෙට
+            fDate.setMonth(localDate.getMonth() + i);
+        } else {
+            // දවස් 15න් 15ට
+            fDate.setDate(localDate.getDate() + (i * 15));
+        }
+
+        batch.set(doc(collection(db, `users/${currentUserId}/schedule`)), {
+            ...data, 
+            date: Timestamp.fromDate(fDate), 
+            recurringId: rid
+        });
+    }
+    await batch.commit(); 
+    showToast('Recurring events added!');
+} else { 
+    // Variable හෝ General නම් සාමාන්‍ය විදිහට එකක් විතරක් add වෙනවා
+    await addDoc(collection(db, `users/${currentUserId}/schedule`), data); 
+    showToast('Event added!'); 
+}
                 }
                 closeEventModal();
             } catch (err) { showToast("Error saving.", false); console.error(err); }
