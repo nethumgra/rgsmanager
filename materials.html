@@ -3,50 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Materials Stock - RSG MANAGER</title>
-
+    <title>Stock Dashboard - RSG MANAGER</title>
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
-
     <style>
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        
+
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3b82f6;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #fff;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 16px; height: 16px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .file-input-label {
-            display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px; font-weight: 500;
-            background-color: #3b82f6; color: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        .stock-card {
+            transition: all 0.2s ease;
         }
-        .file-input-label:hover { background-color: #2563eb; }
-        .file-input { display: none; }
+        .stock-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .dark .stock-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
 
-        /* Clickable Rows */
-        .clickable-row { cursor: pointer; transition: background-color 0.15s; }
-        tr.clickable-row:hover td { background-color: #f8fafc; }
-        .dark tr.clickable-row:hover td { background-color: #1e293b; }
-        
-        /* Range Slider */
+        .progress-bar-fill {
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pulse-red {
+            animation: pulse-red 2s ease-in-out infinite;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         input[type=range] {
             -webkit-appearance: none; width: 100px; height: 4px;
             background: #cbd5e1; border-radius: 5px; outline: none;
@@ -54,871 +58,1153 @@
         .dark input[type=range] { background: #475569; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; width: 14px; height: 14px;
-            border-radius: 50%; background: #3b82f6; cursor: pointer; transition: background .15s ease-in-out;
+            border-radius: 50%; background: #3b82f6; cursor: pointer;
         }
-        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; }
 
-        .modal-content { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+        .modal-backdrop { animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content-animate {
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        .tab-active {
+            border-bottom-color: #2563eb;
+            color: #2563eb;
+            font-weight: 700;
+        }
+        .dark .tab-active {
+            border-bottom-color: #60a5fa;
+            color: #60a5fa;
+        }
+
+        .alert-banner {
+            animation: slideDown 0.4s ease;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .clickable-row { cursor: pointer; }
+
+        /* File input */
+        .file-input { display: none; }
+        .file-input-label {
+            display: inline-flex; align-items: center; padding: 8px 16px; font-size: 13px;
+            font-weight: 500; background-color: #3b82f6; color: white; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .file-input-label:hover { background-color: #2563eb; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-sans transition-colors duration-300">
 
-    <div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
+<div id="brightness-overlay" class="fixed inset-0 z-[100] pointer-events-none bg-black opacity-0 transition-opacity duration-0 mix-blend-multiply"></div>
 
-    <div id="app-container" class="flex h-screen hidden">
-        
-        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
-            <div>
-                <div class="flex items-center gap-3 mb-10">
-                    <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
-                        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
-                    </div>
-                    <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
+<div id="app-container" class="flex h-screen hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex-shrink-0 flex flex-col justify-between z-10 shadow-sm transition-colors duration-300">
+        <div>
+            <div class="flex items-center gap-3 mb-10">
+                <div class="bg-blue-50 dark:bg-slate-700 p-1 rounded-lg transition-colors">
+                    <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
                 </div>
-                
-                <nav class="flex flex-col gap-1.5">
-                   <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
-                   </a>
-                   <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
-                   </a>
-                   <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
-                   </a>
-                   <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
-                   </a>
-                   <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
-                   </a>
-                   <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
-                       <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
-                   </a>
-                   
-                   <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
-                        <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
-                        <div class="space-y-1">
-                            <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
-                            <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
-                            <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
-                            <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
-                            <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
-                            <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
-                            <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
-                            <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
-                            <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
-                            <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
-                        </div>
-                   </div>
-                </nav>
+                <h1 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">RSG MANAGER</h1>
             </div>
+            <nav class="flex flex-col gap-1.5">
+                <a href="./index.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                </a>
+                <a href="./staff.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="users" class="w-5 h-5"></i><span>Staff Members</span>
+                </a>
+                <a href="./staff_schedule.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="calendar" class="w-5 h-5"></i><span>Staff Schedule</span>
+                </a>
+                <a href="./customers.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="contact" class="w-5 h-5"></i><span>Customers</span>
+                </a>
+                <a href="./properties.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="home" class="w-5 h-5"></i><span>Properties</span>
+                </a>
+                <a href="./income_expenses.html" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium">
+                    <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>Income/Expenses</span>
+                </a>
+                <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                    <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>
+                    <div class="space-y-1">
+                        <a href="./scheduled_finance.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="clock" class="w-4 h-4"></i><span>Scheduled</span></a>
+                        <a href="./materials.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="boxes" class="w-4 h-4"></i><span>Materials</span></a>
+                        <a href="./materialstock.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-white font-bold shadow-sm"><i data-lucide="bar-chart-2" class="w-4 h-4"></i><span>Stock Dashboard</span></a>
+                        <a href="./vehicles.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="car" class="w-4 h-4"></i><span>Vehicles</span></a>
+                        <a href="./schedule.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="calendar-check" class="w-4 h-4"></i><span>Schedule</span></a>
+                        <a href="./agreements.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-check-2" class="w-4 h-4"></i><span>Agreements</span></a>
+                        <a href="./invoice.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Invoices</span></a>
+                        <a href="./app_access.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="key-round" class="w-4 h-4"></i><span>App Access</span></a>
+                        <a href="./payslips.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="receipt" class="w-4 h-4"></i><span>Payslips</span></a>
+                        <a href="./f24.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-text" class="w-4 h-4"></i><span>F24 Tax</span></a>
+                        <a href="./agreement_generator.html" class="nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 font-medium"><i data-lucide="file-edit" class="w-4 h-4"></i><span>Proposal Gen</span></a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div>
+            <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
+                <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+            </button>
+            <div class="text-xs text-slate-500 text-center">
+                <p>&copy; 2025 RSG Multiservice</p>
+                <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 overflow-y-auto flex flex-col">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
             <div>
-                <button id="signOutBtn" class="w-full flex items-center justify-center gap-3 px-4 py-2.5 mb-4 rounded-xl transition bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 text-slate-700 dark:text-slate-300 font-bold group">
-                    <i data-lucide="log-out" class="group-hover:text-red-600"></i><span>Sign Out</span>
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Stock Dashboard</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Real-time inventory overview, alerts & analytics</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
+                    <input type="range" id="brightness-slider" min="0" max="70" value="0">
+                </div>
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                    <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                 </button>
-                <div class="text-xs text-slate-500 text-center">
-                    <p>&copy; 2025 RSG Multiservice</p>
-                    <p class="mt-1">UID: <span id="userId" class="font-mono text-slate-600 dark:text-slate-400">Loading...</span></p>
+                <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-xs font-medium text-slate-500">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Low Stock Alert at:</span>
+                    <input type="number" id="lowStockThreshold" value="20" min="1" max="500" class="w-14 bg-transparent border-b border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white text-center font-bold focus:outline-none focus:border-blue-500">
+                    <span>units</span>
                 </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 p-8 overflow-y-auto flex flex-col">
-            <section id="page-materials" class="page max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
-                
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Materials Stock</h2>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1 font-medium">Manage inventory, incoming bulk orders, and issued stock.</p>
-                    </div>
-                    
-                    <div class="flex items-center gap-3">
-                         <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                             <i data-lucide="sun-dim" class="w-4 h-4 text-slate-500"></i>
-                             <input type="range" id="brightness-slider" min="0" max="70" value="0">
-                         </div>
-                         <button id="theme-toggle" class="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
-                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i><i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
-                        </button>
-
-                        <button id="addStockInBtn" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
-                             <i data-lucide="arrow-down-circle" class="w-4 h-4"></i> Stock In
-                        </button>
-                        <button id="addStockOutBtn" class="bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
-                             <i data-lucide="arrow-up-circle" class="w-4 h-4"></i> Issue Stock
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-6 border-b border-slate-200 dark:border-slate-700">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button id="tabBulk" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 transition">
-                            Bulk Purchases
-                        </button>
-                        <button id="tabSummary" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition">
-                            Item Summary
-                        </button>
-                        <button id="tabHistory" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition">
-                            All Transactions
-                        </button>
-                    </nav>
-                </div>
-
-                <div id="bulkView">
-                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 mb-6 flex items-center justify-between shadow-sm">
-                         <div class="flex items-center flex-1 gap-2 p-1">
-                             <div class="relative flex-1 max-w-md">
-                                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
-                                  <input type="text" id="bulkSearch" placeholder="Search bulk name or supplier..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
-                             </div>
-                         </div>
-                     </div>
-
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <tr>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Bulk Name / Ref</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Supplier</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Items</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Value (€)</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bulkTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                                    <tr><td colspan="6" class="text-center p-12 text-slate-500 font-medium">Loading bulk purchases...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="summaryView" class="hidden">
-                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 mb-6 flex items-center justify-between shadow-sm">
-                         <div class="flex items-center flex-1 gap-2 p-1">
-                             <div class="relative flex-1 max-w-md">
-                                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
-                                  <input type="text" id="summarySearch" placeholder="Search material name..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
-                             </div>
-                         </div>
-                     </div>
-
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <tr>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Material Name</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-green-600 dark:text-green-400">Total Received</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-red-600 dark:text-red-400">Total Issued</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Value (€)</th> 
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Current Stock</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="summaryTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                                    <tr><td colspan="5" class="text-center p-12 text-slate-500 font-medium">Loading stock summary...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="historyView" class="hidden">
-                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 mb-6 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-                         <div class="relative flex-1 w-full">
-                              <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                              <input type="text" id="historySearch" placeholder="Search transaction history..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm rounded-lg pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium">
-                         </div>
-                         <div class="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
-                             <button id="historyFilterAll" class="history-filter-btn px-4 py-1.5 text-xs font-bold rounded-md bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm transition">All</button>
-                             <button id="historyFilterIn" class="history-filter-btn px-4 py-1.5 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">In</button>
-                             <button id="historyFilterOut" class="history-filter-btn px-4 py-1.5 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Out</button>
-                         </div>
-                     </div>
-
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <tr>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider w-1/3">Details</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Source / Issued To</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total (€)</th> 
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Bill</th>
-                                        <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-right"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="historyTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                                    <tr><td colspan="7" class="text-center p-12 text-slate-500 font-medium">Loading history...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-        </main>
-    </div>
-
-    <div id="stockInModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-3xl transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="stockIn-modal-content">
-             <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Add Incoming Stock</h3>
-             <form id="stockInForm">
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                     <div>
-                         <label for="inBulkName" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Bulk Name / Ref No.</label>
-                         <input id="inBulkName" type="text" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" placeholder="e.g. Weekly Order">
-                     </div>
-                     <div>
-                         <label for="inSupplier" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Supplier</label>
-                         <input id="inSupplier" type="text" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium">
-                     </div>
-                 </div>
-                 <div class="mb-5">
-                     <label for="inDate" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
-                     <input id="inDate" type="date" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
-                 </div>
-                 
-                 <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-5 border border-slate-100 dark:border-slate-700 mb-6">
-                     <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-3">Item Details</h4>
-                     <div id="materialItemsContainer" class="space-y-3"></div>
-                     <button type="button" id="addItemBtn" class="mt-4 flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-bold transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> Add Another Item</button>
-                 </div>
-
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                     <div>
-                         <label for="inPaymentMethod" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Payment Method</label>
-                         <select id="inPaymentMethod" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium">
-                             <option>Cash</option> <option>Check</option> <option>Bank Payment</option>
-                         </select>
-                     </div>
-                     <div>
-                         <label for="billFile" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Upload Bill</label>
-                         <div class="flex items-center gap-2">
-                            <label for="billFile" class="file-input-label text-xs py-2 px-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer rounded-lg border border-slate-200 dark:border-slate-600">Choose File</label>
-                            <input type="file" id="billFile" class="file-input" accept="image/*">
-                            <span id="billFileName" class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px]">No file</span>
-                         </div>
-                     </div>
-                 </div>
-                 
-                 <div class="mb-6 text-right border-t border-slate-100 dark:border-slate-700 pt-4">
-                     <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Price: <span id="totalPrice" class="text-xl font-bold text-slate-900 dark:text-white ml-2">€ 0.00</span></p> 
-                 </div>
-                 
-                 <div class="flex justify-end gap-3">
-                     <button type="button" class="cancel-btn px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
-                     <button type="submit" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg">Save Stock</button>
-                 </div>
-             </form>
-        </div>
-    </div>
-
-    <div id="stockOutModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-lg transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="stockOut-modal-content">
-             <h3 id="stockOutModalTitle" class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Issue Stock</h3>
-             <form id="stockOutForm" data-doc-id="">
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                     <div class="col-span-2 md:col-span-1">
-                         <label for="outMaterialName" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Material Name</label>
-                         <select id="outMaterialName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required></select>
-                     </div>
-                     <div class="col-span-2 md:col-span-1">
-                         <label for="outQuantity" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Quantity</label>
-                         <input id="outQuantity" type="number" min="1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
-                         <p id="availableStockInfo" class="text-xs text-blue-500 dark:text-blue-400 mt-1 font-bold h-4"></p>
-                     </div>
-                     <div class="col-span-2 md:col-span-1">
-                         <label for="outDate" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
-                         <input id="outDate" type="date" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
-                     </div>
-                     <div class="col-span-2 md:col-span-1">
-                         <label for="outIssuedTo" class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Issued To</label>
-                         <input id="outIssuedTo" type="text" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
-                     </div>
-                 </div>
-                 <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
-                     <button type="button" class="cancel-btn px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
-                     <button type="submit" id="stockOutSubmitBtn" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-bold transition shadow-lg">Issue</button>
-                 </div>
-             </form>
-        </div>
-    </div>
-    
-    <div id="bulkItemsModal" class="fixed inset-0 bg-slate-900/80 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-[60] p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700" id="bulkItems-modal-content">
-            <div class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl">
-                <h3 id="bulkItemsTitle" class="text-lg font-bold text-slate-900 dark:text-white">Bulk Items</h3>
-                <button id="closeBulkItemsModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-0">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-100 dark:bg-slate-900/50 sticky top-0">
-                        <tr>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Material Name</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty Received</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price (€)</th> 
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Global Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bulkItemsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
-                </table>
-            </div>
-            <div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 rounded-b-2xl">
-                 <p class="text-xs text-slate-500 dark:text-slate-400 text-center font-medium">Click on an item row to see its full transaction history.</p>
+                <button id="addStockInBtn" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-green-500/20">
+                    <i data-lucide="arrow-down-circle" class="w-4 h-4"></i> Stock In
+                </button>
+                <button id="addStockOutBtn" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-red-500/20">
+                    <i data-lucide="arrow-up-circle" class="w-4 h-4"></i> Issue Stock
+                </button>
             </div>
         </div>
-    </div>
 
-    <div id="stockDetailModal" class="fixed inset-0 bg-slate-900/80 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-[60] p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700" id="stockDetail-modal-content">
-            <div class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl">
-                <h3 id="stockDetailTitle" class="text-lg font-bold text-slate-900 dark:text-white">Material Details</h3>
-                <button id="closeStockDetailModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-100 dark:bg-slate-900/50 sticky top-0">
-                        <tr>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Type</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Qty</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Source / To</th>
-                            <th class="p-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price (€)</th> 
-                        </tr>
-                    </thead>
-                    <tbody id="stockDetailTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
-                </table>
+        <!-- Low Stock Alert Banner -->
+        <div id="lowStockBanner" class="hidden mb-5 alert-banner">
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+                <div class="mt-0.5 p-1.5 bg-red-100 dark:bg-red-900/40 rounded-lg pulse-red">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600 dark:text-red-400"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-red-700 dark:text-red-400 text-sm">Low Stock Alert</p>
+                    <p id="lowStockList" class="text-red-600 dark:text-red-500 text-sm mt-0.5"></p>
+                </div>
+                <button id="closeBannerBtn" class="text-red-400 hover:text-red-600 transition"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
         </div>
-    </div>
 
-    <div id="billViewModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center hidden z-[70] p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700" id="bill-view-modal-content">
-            <div class="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-blue-500"></i> Bill Viewer</h3>
-                <button id="closeBillViewModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+        <!-- Stats Cards Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm stock-card">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Items</p>
+                    <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg"><i data-lucide="package" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i></div>
+                </div>
+                <p id="statTotalItems" class="text-3xl font-extrabold text-slate-900 dark:text-white">—</p>
+                <p class="text-xs text-slate-500 mt-1">Distinct materials</p>
             </div>
-            <div class="flex-1 overflow-auto p-4 bg-slate-50 dark:bg-slate-900/50 rounded-b-2xl">
-                <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto rounded-lg shadow-lg">
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm stock-card">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total In Stock</p>
+                    <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg"><i data-lucide="trending-up" class="w-4 h-4 text-green-600 dark:text-green-400"></i></div>
+                </div>
+                <p id="statTotalInStock" class="text-3xl font-extrabold text-slate-900 dark:text-white">—</p>
+                <p class="text-xs text-slate-500 mt-1">Units available</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm stock-card">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Low / Out</p>
+                    <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg"><i data-lucide="alert-circle" class="w-4 h-4 text-red-600 dark:text-red-400"></i></div>
+                </div>
+                <p id="statLowStock" class="text-3xl font-extrabold text-slate-900 dark:text-white">—</p>
+                <p class="text-xs text-slate-500 mt-1">Need attention</p>
+            </div>
+            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm stock-card">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Value</p>
+                    <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg"><i data-lucide="euro" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i></div>
+                </div>
+                <p id="statTotalValue" class="text-3xl font-extrabold text-slate-900 dark:text-white">—</p>
+                <p class="text-xs text-slate-500 mt-1">Total spent on stock</p>
             </div>
         </div>
+
+        <!-- Tabs -->
+        <div class="mb-5 border-b border-slate-200 dark:border-slate-700">
+            <nav class="-mb-px flex space-x-6">
+                <button id="tabStock" class="tab-btn tab-active whitespace-nowrap py-3 px-1 border-b-2 text-sm transition">Stock Overview</button>
+                <button id="tabChart" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition">Analytics</button>
+                <button id="tabMovements" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition">Recent Movements</button>
+            </nav>
+        </div>
+
+        <!-- TAB: Stock Overview -->
+        <div id="viewStock" class="flex-1 flex flex-col">
+            <!-- Search & Filter -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 mb-5 flex items-center gap-3 shadow-sm">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="stockSearch" placeholder="Search materials..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
+                </div>
+                <div class="flex gap-2">
+                    <button data-filter="all" class="stock-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition">All</button>
+                    <button data-filter="ok" class="stock-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Good</button>
+                    <button data-filter="low" class="stock-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Low</button>
+                    <button data-filter="out" class="stock-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Out</button>
+                </div>
+                <div class="flex gap-2 border-l border-slate-200 dark:border-slate-700 pl-3">
+                    <button id="viewGrid" class="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600"><i data-lucide="grid-3x3" class="w-4 h-4"></i></button>
+                    <button id="viewList" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition"><i data-lucide="list" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+
+            <!-- Grid View -->
+            <div id="stockGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+            <!-- List View (hidden by default) -->
+            <div id="stockListView" class="hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Material</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total In</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Out</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Current Stock</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Value Spent</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockListBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="stockEmpty" class="hidden flex-1 flex flex-col items-center justify-center text-center py-20">
+                <div class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4"><i data-lucide="package-open" class="w-10 h-10 text-slate-400"></i></div>
+                <p class="font-bold text-slate-600 dark:text-slate-400">No materials found</p>
+                <p class="text-sm text-slate-400 mt-1">Add stock in Materials page or adjust your filters.</p>
+                <a href="./materials.html" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition">Go to Materials</a>
+            </div>
+        </div>
+
+        <!-- TAB: Analytics -->
+        <div id="viewChart" class="hidden flex-1 flex flex-col gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Top 10 by Stock Bar Chart -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-1">Top Materials by Current Stock</h3>
+                    <p class="text-xs text-slate-500 mb-4">Top 10 items with highest available units</p>
+                    <div class="relative h-64">
+                        <canvas id="topStockChart"></canvas>
+                    </div>
+                </div>
+                <!-- Stock Status Doughnut -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-1">Stock Status Distribution</h3>
+                    <p class="text-xs text-slate-500 mb-4">Breakdown of healthy, low & out of stock items</p>
+                    <div class="relative h-64 flex items-center justify-center">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <!-- Monthly Movements -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm lg:col-span-2">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-1">Monthly Stock Movements</h3>
+                    <p class="text-xs text-slate-500 mb-4">Units received vs issued over the last 6 months</p>
+                    <div class="relative h-56">
+                        <canvas id="movementChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Recent Movements -->
+        <div id="viewMovements" class="hidden flex-1 flex flex-col">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 mb-5 flex items-center gap-3 shadow-sm">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="movSearch" placeholder="Search by material or party..." class="w-full bg-transparent border-none text-slate-800 dark:text-white text-sm pl-10 pr-3 py-2 focus:ring-0 placeholder-slate-400 font-medium">
+                </div>
+                <div class="flex gap-2">
+                    <button data-mfilter="All" class="mov-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition">All</button>
+                    <button data-mfilter="In" class="mov-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Stock In</button>
+                    <button data-mfilter="Out" class="mov-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Stock Out</button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden flex-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Items</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Party</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Qty</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Value (€)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movTableBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Stock In Modal -->
+<div id="stockInModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10 modal-backdrop">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-slate-700 modal-content-animate">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="arrow-down-circle" class="w-6 h-6 text-green-500"></i>Stock In</h3>
+            <button class="cancel-btn text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <form id="stockInForm">
+            <div class="grid grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Bulk Name / Reference</label>
+                    <input id="inBulkName" type="text" placeholder="e.g. March 2025 Order" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium text-sm">
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Supplier</label>
+                    <input id="inSupplier" type="text" placeholder="Supplier name" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium text-sm">
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
+                    <input id="inDate" type="date" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium text-sm" required>
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Payment Method</label>
+                    <select id="inPaymentMethod" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium text-sm">
+                        <option>Bank Transfer</option><option>Cash</option><option>Card</option><option>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Materials</label>
+                    <button type="button" id="addItemBtn" class="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs font-bold hover:text-blue-800 transition"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add Row</button>
+                </div>
+                <div class="grid grid-cols-12 gap-2 mb-2 px-1">
+                    <span class="col-span-5 text-xs text-slate-400 font-medium">Name</span>
+                    <span class="col-span-3 text-xs text-slate-400 font-medium">Qty</span>
+                    <span class="col-span-3 text-xs text-slate-400 font-medium">Price (€)</span>
+                </div>
+                <div id="materialItemsContainer" class="space-y-2"></div>
+            </div>
+
+            <div class="flex items-center justify-between mb-5 bg-slate-50 dark:bg-slate-900 rounded-xl px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <label class="file-input-label text-xs" for="billFile"><i data-lucide="paperclip" class="w-3 h-3 mr-1"></i>Attach Bill</label>
+                    <input type="file" id="billFile" class="file-input" accept="image/*">
+                    <span id="billFileName" class="text-xs text-slate-400">No file chosen</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-500">Total:</span>
+                    <span id="totalPrice" class="ml-2 font-extrabold text-blue-600 dark:text-blue-400">€ 0.00</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button type="button" class="cancel-btn px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                <button type="submit" id="stockInSubmitBtn" class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition shadow-lg flex items-center gap-2">
+                    <span>Add Stock</span>
+                    <div id="inSpinner" class="loader hidden"></div>
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div id="toast" class="fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium flex items-center gap-2 z-[80]">
-         <i data-lucide="check-circle" class="w-5 h-5"></i> <p>Toast message!</p>
+<!-- Stock Out Modal -->
+<div id="stockOutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10 modal-backdrop">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 modal-content-animate">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="arrow-up-circle" class="w-6 h-6 text-red-500"></i>Issue Stock</h3>
+            <button class="cancel-btn text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <form id="stockOutForm" data-doc-id="">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="col-span-2">
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Material</label>
+                    <select id="outMaterialName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required></select>
+                    <p id="availableStockInfo" class="text-xs text-blue-500 dark:text-blue-400 mt-1 font-bold h-4"></p>
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Quantity</label>
+                    <input id="outQuantity" type="number" min="1" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Date</label>
+                    <input id="outDate" type="date" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
+                </div>
+                <div class="col-span-2">
+                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">Issued To</label>
+                    <input id="outIssuedTo" type="text" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-blue-500 font-medium" required>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button type="button" class="cancel-btn px-5 py-2.5 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-sm font-bold transition border border-slate-200 dark:border-slate-600">Cancel</button>
+                <button type="submit" id="stockOutSubmitBtn" class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition shadow-lg flex items-center gap-2">
+                    <span>Issue Stock</span>
+                    <div id="outSpinner" class="loader hidden"></div>
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, getDocs, deleteDoc, getDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+<!-- Item Detail Modal -->
+<div id="itemDetailModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center hidden z-60 p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 modal-content-animate">
+        <div class="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700">
+            <div>
+                <h3 id="itemDetailTitle" class="text-xl font-bold text-slate-900 dark:text-white"></h3>
+                <p id="itemDetailSub" class="text-sm text-slate-500 mt-0.5"></p>
+            </div>
+            <button id="closeItemDetailBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <!-- Summary bar -->
+        <div id="itemDetailStats" class="grid grid-cols-3 gap-4 p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30"></div>
+        <!-- History table -->
+        <div class="flex-1 overflow-y-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 dark:bg-slate-900/50 sticky top-0">
+                    <tr>
+                        <th class="p-4 text-xs font-bold text-slate-500 uppercase">Date</th>
+                        <th class="p-4 text-xs font-bold text-slate-500 uppercase">Type</th>
+                        <th class="p-4 text-xs font-bold text-slate-500 uppercase">Qty</th>
+                        <th class="p-4 text-xs font-bold text-slate-500 uppercase">Party</th>
+                        <th class="p-4 text-xs font-bold text-slate-500 uppercase">Price (€)</th>
+                    </tr>
+                </thead>
+                <tbody id="itemDetailBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm"></tbody>
+            </table>
+        </div>
+        <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/30">
+            <p id="itemDetailRunningStock" class="text-sm font-bold text-slate-700 dark:text-slate-300"></p>
+            <a href="./materials.html" class="text-xs text-blue-600 hover:underline font-medium">Manage in Materials →</a>
+        </div>
+    </div>
+</div>
 
-        const firebaseConfig = {
-             apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
-             authDomain: "rsgweb-5f36d.firebaseapp.com",
-             projectId: "rsgweb-5f36d",
-             storageBucket: "rsgweb-5f36d.firebasestorage.app",
-             messagingSenderId: "633023905515",
-             appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
-        };
-        const IMGBB_API_KEY = "9960ed5927a4c5187a7b6dd2db60ecff";
+<!-- Toast -->
+<div id="toast" class="fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-500 font-medium flex items-center gap-2 z-[80] bg-green-600">
+    <i data-lucide="check-circle" class="w-5 h-5"></i><p>Done!</p>
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let currentUserId = null;
-        let allTransactions = [];
-        let historyTypeFilter = 'All';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, query, where, getDocs, updateDoc, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-        // Theme & Brightness
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const brightnessSlider = document.getElementById('brightness-slider');
-        const brightnessOverlay = document.getElementById('brightness-overlay');
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkKqLZFM4sm5jdbR1NVhhVy9IhUeDXOWc",
+        authDomain: "rsgweb-5f36d.firebaseapp.com",
+        projectId: "rsgweb-5f36d",
+        storageBucket: "rsgweb-5f36d.firebasestorage.app",
+        messagingSenderId: "633023905515",
+        appId: "1:633023905515:web:3b1ae3ebc44eefc59748ae",
+    };
+    const IMGBB_API_KEY = "9960ed5927a4c5187a7b6dd2db60ecff";
 
-        function initializeTheme() {
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            const savedBrightness = localStorage.getItem('brightness') || 0;
-            brightnessSlider.value = savedBrightness;
-            brightnessOverlay.style.opacity = savedBrightness / 100;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUserId = null;
+    let allTransactions = [];
+    let stockFilter = 'all';
+    let movFilter = 'All';
+    let isGridView = true;
+    let topStockChartInst = null, statusChartInst = null, movementChartInst = null;
+
+    // Theme
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const brightnessSlider = document.getElementById('brightness-slider');
+    const brightnessOverlay = document.getElementById('brightness-overlay');
+
+    function initializeTheme() {
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
-        initializeTheme();
+        const b = localStorage.getItem('brightness') || 0;
+        brightnessSlider.value = b;
+        brightnessOverlay.style.opacity = b / 100;
+    }
+    initializeTheme();
+    themeToggleBtn.addEventListener('click', () => {
+        const h = document.documentElement;
+        if (h.classList.contains('dark')) { h.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+        else { h.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+        refreshCharts();
+    });
+    brightnessSlider.addEventListener('input', e => {
+        brightnessOverlay.style.opacity = e.target.value / 100;
+        localStorage.setItem('brightness', e.target.value);
+    });
 
-        themeToggleBtn.addEventListener('click', () => {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } 
-            else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
-        });
-        brightnessSlider.addEventListener('input', (e) => {
-            const val = e.target.value; brightnessOverlay.style.opacity = val / 100; localStorage.setItem('brightness', val);
-        });
-
-        // DOM
-        const appContainer = document.getElementById('app-container');
-        const signOutBtn = document.getElementById('signOutBtn');
-        const userIdSpan = document.getElementById('userId');
-        const toast = document.getElementById('toast');
-        
-        const tabBulk = document.getElementById('tabBulk');
-        const tabSummary = document.getElementById('tabSummary');
-        const tabHistory = document.getElementById('tabHistory');
-        const bulkView = document.getElementById('bulkView');
-        const summaryView = document.getElementById('summaryView');
-        const historyView = document.getElementById('historyView');
-        const allTabs = { tabBulk, tabSummary, tabHistory };
-        const allViews = { bulkView, summaryView, historyView };
-
-        const bulkTableBody = document.getElementById('bulkTableBody');
-        const summaryTableBody = document.getElementById('summaryTableBody');
-        const historyTableBody = document.getElementById('historyTableBody');
-        const bulkSearchInput = document.getElementById('bulkSearch');
-        const summarySearchInput = document.getElementById('summarySearch');
-        const historySearchInput = document.getElementById('historySearch');
-        const historyFilterBtns = document.querySelectorAll('.history-filter-btn');
-        
-        // Modals
-        const stockInModal = document.getElementById('stockInModal');
-        const stockOutModal = document.getElementById('stockOutModal');
-        const addStockInBtn = document.getElementById('addStockInBtn');
-        const addStockOutBtn = document.getElementById('addStockOutBtn');
-        const cancelBtns = document.querySelectorAll('.cancel-btn');
-        const stockInForm = document.getElementById('stockInForm');
-        const stockOutForm = document.getElementById('stockOutForm');
-        const materialItemsContainer = document.getElementById('materialItemsContainer');
-        const addItemBtn = document.getElementById('addItemBtn');
-        const totalPriceEl = document.getElementById('totalPrice');
-        const billFileInput = document.getElementById('billFile');
-        const billFileNameSpan = document.getElementById('billFileName');
-        const outMaterialNameSelect = document.getElementById('outMaterialName');
-        const availableStockInfo = document.getElementById('availableStockInfo');
-        const stockOutModalTitle = document.getElementById('stockOutModalTitle');
-        const stockOutSubmitBtn = document.getElementById('stockOutSubmitBtn');
-
-        const bulkItemsModal = document.getElementById('bulkItemsModal');
-        const bulkItemsTitle = document.getElementById('bulkItemsTitle');
-        const bulkItemsTableBody = document.getElementById('bulkItemsTableBody');
-        const closeBulkItemsModalBtn = document.getElementById('closeBulkItemsModalBtn');
-
-        const stockDetailModal = document.getElementById('stockDetailModal');
-        const stockDetailTitle = document.getElementById('stockDetailTitle');
-        const stockDetailTableBody = document.getElementById('stockDetailTableBody');
-        const closeStockDetailModalBtn = document.getElementById('closeStockDetailModalBtn');
-        
-        const billViewModal = document.getElementById('billViewModal');
-        const closeBillViewModalBtn = document.getElementById('closeBillViewModalBtn');
-        const billImagePreview = document.getElementById('billImagePreview');
-
-        // Auth
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserId = user.uid;
-                userIdSpan.textContent = currentUserId.substring(0, 10) + '...';
-                appContainer.classList.remove('hidden');
-                listenForTransactions();
-            } else { window.location.href = './index.html'; }
-        });
-        signOutBtn.addEventListener('click', () => signOut(auth));
-
-        // Tabs
-        function switchTab(activeTabId) {
-            Object.values(allViews).forEach(view => view.classList.add('hidden'));
-            Object.values(allTabs).forEach(tab => {
-                tab.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-400', 'dark:border-blue-400', 'font-bold');
-                tab.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200', 'hover:border-slate-300', 'font-medium');
-            });
-
-            if (activeTabId === 'tabBulk') allViews.bulkView.classList.remove('hidden');
-            if (activeTabId === 'tabSummary') allViews.summaryView.classList.remove('hidden');
-            if (activeTabId === 'tabHistory') allViews.historyView.classList.remove('hidden');
-            
-            const activeTab = allTabs[activeTabId];
-            if (activeTab) { 
-                activeTab.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-400', 'dark:border-blue-400', 'font-bold');
-                activeTab.classList.remove('border-transparent', 'text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200', 'hover:border-slate-300', 'font-medium');
-            }
+    // Auth
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            currentUserId = user.uid;
+            document.getElementById('userId').textContent = user.uid.substring(0, 10) + '...';
+            document.getElementById('app-container').classList.remove('hidden');
+            listenTransactions();
+        } else {
+            window.location.href = './index.html';
         }
-        tabBulk.addEventListener('click', () => switchTab('tabBulk'));
-        tabSummary.addEventListener('click', () => switchTab('tabSummary'));
-        tabHistory.addEventListener('click', () => switchTab('tabHistory'));
-        
-        // Modal & Forms
-        addStockInBtn.addEventListener('click', () => {
-            stockInForm.reset(); materialItemsContainer.innerHTML = ''; addMaterialItemRow();
-            document.getElementById('inDate').valueAsDate = new Date();
-            stockInModal.classList.remove('hidden'); setTimeout(() => document.getElementById('stockIn-modal-content').classList.remove('scale-95', 'opacity-0'), 10);
+    });
+    document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
+
+    // Listen
+    function listenTransactions() {
+        onSnapshot(collection(db, `users/${currentUserId}/materials`), snap => {
+            allTransactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderAll();
         });
-        addStockOutBtn.addEventListener('click', () => {
-            stockOutForm.reset(); stockOutForm.dataset.docId = '';
-            stockOutModalTitle.textContent = 'Issue Stock'; stockOutSubmitBtn.textContent = 'Issue'; availableStockInfo.textContent = '';
-            document.getElementById('outDate').valueAsDate = new Date(); populateMaterialSelect();
-            stockOutModal.classList.remove('hidden'); setTimeout(() => document.getElementById('stockOut-modal-content').classList.remove('scale-95', 'opacity-0'), 10);
-        });
-        cancelBtns.forEach(btn => btn.addEventListener('click', () => {
-            document.getElementById('stockIn-modal-content').classList.add('scale-95', 'opacity-0');
-            document.getElementById('stockOut-modal-content').classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { stockInModal.classList.add('hidden'); stockOutModal.classList.add('hidden'); }, 200);
+    }
+
+    // Low stock threshold
+    let lowThreshold = parseInt(localStorage.getItem('lowStockThreshold') || '20');
+    const thresholdInput = document.getElementById('lowStockThreshold');
+    thresholdInput.value = lowThreshold;
+    thresholdInput.addEventListener('change', () => {
+        lowThreshold = parseInt(thresholdInput.value) || 20;
+        localStorage.setItem('lowStockThreshold', lowThreshold);
+        renderAll();
+    });
+
+    // Helpers
+    function calcStock(name) {
+        let inQ = 0, outQ = 0;
+        allTransactions.forEach(t => t.items?.forEach(i => {
+            if (i.name === name) { if (t.type === 'In') inQ += i.quantity; else outQ += i.quantity; }
         }));
-        billFileInput.addEventListener('change', () => { billFileNameSpan.textContent = billFileInput.files[0]?.name || 'No file chosen'; });
+        return { in: inQ, out: outQ, current: inQ - outQ };
+    }
 
-        const openBillViewModal = (url) => { billImagePreview.src = url; billViewModal.classList.remove('hidden'); };
-        const closeBillViewModal = () => billViewModal.classList.add('hidden');
-        closeBillViewModalBtn.addEventListener('click', closeBillViewModal);
-        billViewModal.addEventListener('click', (e) => { if(e.target === billViewModal) closeBillViewModal() });
-
-        closeStockDetailModalBtn.addEventListener('click', () => stockDetailModal.classList.add('hidden'));
-        stockDetailModal.addEventListener('click', (e) => { if(e.target === stockDetailModal) stockDetailModal.classList.add('hidden') });
-        
-        closeBulkItemsModalBtn.addEventListener('click', () => bulkItemsModal.classList.add('hidden'));
-        bulkItemsModal.addEventListener('click', (e) => { if(e.target === bulkItemsModal) bulkItemsModal.classList.add('hidden') });
-
-        // History Actions
-        historyTableBody.addEventListener('click', async e => {
-            const viewBtn = e.target.closest('.view-bill-btn');
-            if (viewBtn) { e.preventDefault(); openBillViewModal(viewBtn.dataset.url); return; }
-            const deleteBtn = e.target.closest('.delete-btn');
-            if (deleteBtn && currentUserId) {
-                const docId = deleteBtn.dataset.id;
-                if (confirm('Delete transaction? This also removes linked expenses.')) {
-                    try {
-                        const matRef = doc(db, `users/${currentUserId}/materials`, docId);
-                        const matSnap = await getDoc(matRef);
-                        const batch = writeBatch(db);
-                        if (matSnap.exists() && matSnap.data().type === 'In' && (matSnap.data().totalPrice > 0 || matSnap.data().items?.some(i => i.price > 0))) {
-                             const q = query(collection(db, `users/${currentUserId}/transactions`), where("materialDocId", "==", docId));
-                             const snaps = await getDocs(q);
-                             snaps.forEach(s => batch.delete(s.ref));
-                        }
-                        batch.delete(matRef); await batch.commit();
-                        showToast('Deleted.');
-                    } catch (error) { showToast(`Error: ${error.message}`, false); }
-                }
-                return;
-            }
-            const editBtn = e.target.closest('.edit-btn');
-            if (editBtn && currentUserId) {
-                const docId = editBtn.dataset.id; const type = editBtn.dataset.type;
-                if (type === 'Out') openEditStockOutModal(docId);
-                else alert('For "Stock In", please delete and re-add.');
-            }
-        });
-        
-        summaryTableBody.addEventListener('click', (e) => {
-            const row = e.target.closest('tr.clickable-row'); 
-            if (row && row.dataset.materialName) openStockDetailModal(row.dataset.materialName);
-        });
-
-        bulkTableBody.addEventListener('click', async e => {
-            const deleteBtn = e.target.closest('.delete-bulk-btn');
-            if (deleteBtn && currentUserId) {
-                const docId = deleteBtn.dataset.id;
-                if (confirm('Delete bulk purchase? Linked expenses will be removed.')) {
-                    try {
-                        const matRef = doc(db, `users/${currentUserId}/materials`, docId);
-                        const matSnap = await getDoc(matRef);
-                        const batch = writeBatch(db);
-                        if (matSnap.exists() && (matSnap.data().totalPrice > 0 || matSnap.data().items?.some(i => i.price > 0))) {
-                             const q = query(collection(db, `users/${currentUserId}/transactions`), where("materialDocId", "==", docId));
-                             const snaps = await getDocs(q); snaps.forEach(s => batch.delete(s.ref));
-                        }
-                        batch.delete(matRef); await batch.commit(); showToast('Deleted.');
-                    } catch (error) { showToast(`Error: ${error.message}`, false); }
-                }
-                return; 
-            }
-            const cell = e.target.closest('td');
-            if (cell && !cell.contains(deleteBtn) && !cell.closest('.edit-bulk-btn')) { 
-                 const row = cell.closest('tr'); if (row && row.dataset.docId) openBulkItemsModal(row.dataset.docId);
-            }
-        });
-
-        // Detail Modal
-        function openStockDetailModal(materialName) {
-            stockDetailTitle.textContent = `${materialName} - History`; stockDetailTableBody.innerHTML = '';
-            const txs = allTransactions.filter(t => t.items && t.items.some(i => i.name === materialName)).sort((a, b) => a.date.toDate() - b.date.toDate());
-            if (txs.length === 0) { stockDetailTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No history.</td></tr>`; stockDetailModal.classList.remove('hidden'); return; }
-            txs.forEach(t => {
-                const item = t.items.find(i => i.name === materialName); if (!item) return;
-                const row = stockDetailTableBody.insertRow();
-                const typeClass = t.type === 'In' ? 'text-green-500 font-bold' : 'text-red-500 font-bold';
-                row.innerHTML = `
-                    <td class="p-3 border-b border-slate-100 dark:border-slate-700 text-slate-800 dark:text-white text-sm">${t.date?.toDate().toLocaleDateString() || 'N/A'}</td>
-                    <td class="p-3 border-b border-slate-100 dark:border-slate-700 text-sm ${typeClass}">${t.type}</td>
-                    <td class="p-3 border-b border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-sm">${t.type === 'In' ? '+' : '-'}${item.quantity || 0}</td>
-                    <td class="p-3 border-b border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-sm">${t.type === 'In' ? (t.supplier || t.bulkName || 'N/A') : (t.issuedTo || 'N/A')}</td>
-                    <td class="p-3 border-b border-slate-100 dark:border-slate-700 text-slate-800 dark:text-white font-medium text-sm">€ ${t.type === 'In' ? (item.price != null ? item.price.toFixed(2) : '0.00') : 'N/A'}</td>
-                `;
+    function buildSummary() {
+        const map = {};
+        allTransactions.forEach(t => {
+            t.items?.forEach(i => {
+                if (!i.name) return;
+                if (!map[i.name]) map[i.name] = { in: 0, out: 0, cost: 0 };
+                if (t.type === 'In') { map[i.name].in += i.quantity; map[i.name].cost += (i.price || 0); }
+                else map[i.name].out += i.quantity;
             });
-            stockDetailModal.classList.remove('hidden');
-        }
-        
-        // Bulk Items Modal
-        function openBulkItemsModal(docId) {
-            const bt = allTransactions.find(t => t.id === docId);
-            if (!bt) return;
-            bulkItemsTitle.textContent = `Items: ${bt.bulkName || bt.supplier || 'N/A'}`; bulkItemsTableBody.innerHTML = '';
-            if (!bt.items || bt.items.length === 0) { bulkItemsTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No items.</td></tr>`; bulkItemsModal.classList.remove('hidden'); return; }
-            bt.items.forEach(item => {
-                const row = bulkItemsTableBody.insertRow();
-                row.className = 'clickable-row border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition'; 
-                row.dataset.materialName = item.name; 
-                const avail = calculateCurrentStock(item.name);
-                let stClass = 'text-green-500'; if (avail <= 0) stClass = 'text-red-500'; else if (avail <= 20) stClass = 'text-yellow-500';
-                row.innerHTML = `
-                    <td class="p-3 text-slate-800 dark:text-white text-sm font-medium">${item.name || 'N/A'}</td>
-                    <td class="p-3 text-slate-600 dark:text-slate-300 text-sm">${item.quantity || 0}</td>
-                    <td class="p-3 text-slate-600 dark:text-slate-300 text-sm">€ ${(item.price || 0).toFixed(2)}</td>
-                    <td class="p-3 font-bold text-sm ${stClass}">${avail}</td>
-                `;
-            });
-            bulkItemsModal.classList.remove('hidden');
-        }
-
-        // Edit Stock Out
-        async function openEditStockOutModal(docId) {
-            try {
-                const docSnap = await getDoc(doc(db, `users/${currentUserId}/materials`, docId));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    stockOutForm.reset(); await populateMaterialSelect(); 
-                    if (data.items && data.items.length > 0) {
-                        outMaterialNameSelect.value = data.items[0].name || ''; document.getElementById('outQuantity').value = data.items[0].quantity || '';
-                    }
-                    document.getElementById('outDate').value = data.date?.toDate().toISOString().split('T')[0] || '';
-                    document.getElementById('outIssuedTo').value = data.issuedTo || '';
-                    stockOutForm.dataset.docId = docId; stockOutModalTitle.textContent = 'Edit Issued Stock'; stockOutSubmitBtn.textContent = 'Update';
-                    outMaterialNameSelect.dispatchEvent(new Event('change'));
-                    stockOutModal.classList.remove('hidden'); setTimeout(() => document.getElementById('stockOut-modal-content').classList.remove('scale-95', 'opacity-0'), 10);
-                }
-            } catch (e) { showToast("Error loading.", false); }
-        }
-
-        // Toast
-        const showToast = (message, isSuccess = true) => {
-            toast.querySelector('p').textContent = message;
-            toast.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium flex items-center gap-2 z-[80] ${isSuccess ? 'bg-green-600' : 'bg-red-600'}`;
-            toast.classList.remove('translate-y-24', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
-        };
-
-        // Storage
-        const uploadFile = async (file) => {
-             if (!file) return null;
-            const formData = new FormData(); formData.append('image', file);
-            try { 
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                const json = await res.json();
-                if (json.success) return json.data.url;
-                throw new Error(json.error?.message);
-            } catch (e) { showToast(`Upload failed: ${e.message}`, false); return null; }
-        };
-
-        stockInForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const billUrl = await uploadFile(billFileInput.files[0]);
-            const items = []; let totalPrice = 0; let valid = true;
-            document.querySelectorAll('.material-item-row').forEach(row => {
-                const name = row.querySelector('.material-name').value.trim();
-                const qty = parseInt(row.querySelector('.material-quantity').value) || 0;
-                const price = parseFloat(row.querySelector('.material-price').value) || 0;
-                if(!name || qty <= 0) valid = false;
-                else { items.push({ name, quantity: qty, price }); totalPrice += price; }
-            });
-            if (!valid) return showToast('Invalid items.', false);
-            if (items.length === 0) return showToast('Add items.', false);
-            
-            const data = {
-                date: new Date(document.getElementById('inDate').value), type: 'In',
-                bulkName: document.getElementById('inBulkName').value.trim(), supplier: document.getElementById('inSupplier').value.trim(),
-                items, totalPrice, paymentMethod: document.getElementById('inPaymentMethod').value, billUrl
-            };
-            try {
-                const ref = await addDoc(collection(db, `users/${currentUserId}/materials`), data);
-                if(totalPrice > 0) {
-                     await addDoc(collection(db, `users/${currentUserId}/transactions`), {
-                         date: data.date, description: `Stock: ${data.bulkName||data.supplier}`, category: 'Materials', type: 'Expense',
-                         amount: totalPrice, paymentMethod: data.paymentMethod, billUrl, materialDocId: ref.id
-                     });
-                }
-                showToast('Stock added!'); stockInForm.reset(); materialItemsContainer.innerHTML = ''; addMaterialItemRow(); stockInModal.classList.add('hidden');
-            } catch (e) { showToast(`Error: ${e.message}`, false); }
         });
+        return map;
+    }
 
-        stockOutForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const docId = stockOutForm.dataset.docId;
-            const matName = document.getElementById('outMaterialName').value;
-            const qty = parseInt(document.getElementById('outQuantity').value);
-            const issuedTo = document.getElementById('outIssuedTo').value.trim();
-            const date = document.getElementById('outDate').value;
+    function getStatus(current) {
+        if (current <= 0) return 'out';
+        if (current <= lowThreshold) return 'low';
+        return 'ok';
+    }
 
-            if (!matName || !qty || qty <= 0 || !issuedTo || !date) return showToast('Invalid fields.', false);
+    function statusClass(status) {
+        if (status === 'out') return { badge: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400', bar: 'bg-red-500', text: 'text-red-600 dark:text-red-400' };
+        if (status === 'low') return { badge: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400', bar: 'bg-yellow-400', text: 'text-yellow-600 dark:text-yellow-400' };
+        return { badge: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', bar: 'bg-green-500', text: 'text-green-600 dark:text-green-400' };
+    }
 
-            const current = calculateCurrentStock(matName);
-            let origQty = 0;
-            if (docId) { const orig = allTransactions.find(t => t.id === docId); if(orig?.items?.[0]) origQty = orig.items[0].quantity; }
-            if(qty > (current + origQty)) return showToast('Not enough stock.', false);
+    function statusLabel(status) {
+        if (status === 'out') return 'Out of Stock';
+        if (status === 'low') return 'Low Stock';
+        return 'In Stock';
+    }
 
-            const data = { date: new Date(date), items: [{ name: matName, quantity: qty }], type: 'Out', issuedTo };
-            try {
-                if (docId) { await updateDoc(doc(db, `users/${currentUserId}/materials`, docId), data); showToast('Updated!'); }
-                else { await addDoc(collection(db, `users/${currentUserId}/materials`), data); showToast('Issued!'); }
-                stockOutForm.reset(); stockOutModal.classList.add('hidden');
-            } catch (e) { showToast(`Error: ${e.message}`, false); }
+    // Render All
+    function renderAll() {
+        updateStats();
+        updateAlerts();
+        if (!document.getElementById('viewStock').classList.contains('hidden')) renderStockView();
+        if (!document.getElementById('viewChart').classList.contains('hidden')) renderCharts();
+        if (!document.getElementById('viewMovements').classList.contains('hidden')) renderMovements();
+    }
+
+    function updateStats() {
+        const sum = buildSummary();
+        const names = Object.keys(sum);
+        let totalInStock = 0, lowCount = 0, totalCost = 0;
+        names.forEach(n => {
+            const curr = sum[n].in - sum[n].out;
+            totalInStock += Math.max(0, curr);
+            totalCost += sum[n].cost;
+            const st = getStatus(curr);
+            if (st === 'low' || st === 'out') lowCount++;
         });
+        document.getElementById('statTotalItems').textContent = names.length;
+        document.getElementById('statTotalInStock').textContent = totalInStock.toLocaleString();
+        document.getElementById('statLowStock').textContent = lowCount;
+        document.getElementById('statTotalValue').textContent = '€ ' + totalCost.toFixed(0);
+    }
 
-        function addMaterialItemRow(){
-            const div = document.createElement('div');
-            div.className = 'material-item-row grid grid-cols-12 gap-2 items-center';
-            div.innerHTML = `
-                <input type="text" class="material-name col-span-5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="Name" required>
-                <input type="number" min="1" class="material-quantity col-span-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="Qty" required>
-                <input type="number" step="0.01" min="0" class="material-price col-span-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="Price">
-                <button type="button" class="remove-item-btn col-span-1 text-red-500 p-2"><i data-lucide="minus-circle" class="w-5 h-5"></i></button>
-            `;
-            materialItemsContainer.appendChild(div); lucide.createIcons();
+    function updateAlerts() {
+        const sum = buildSummary();
+        const lowItems = Object.keys(sum).filter(n => {
+            const c = sum[n].in - sum[n].out;
+            return c <= lowThreshold;
+        }).map(n => {
+            const c = sum[n].in - sum[n].out;
+            return c <= 0 ? `${n} (OUT)` : `${n} (${c})`;
+        });
+        const banner = document.getElementById('lowStockBanner');
+        if (lowItems.length > 0) {
+            document.getElementById('lowStockList').textContent = lowItems.join(' · ');
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
         }
-        addItemBtn.addEventListener('click', addMaterialItemRow);
-        materialItemsContainer.addEventListener('click', e => { if(e.target.closest('.remove-item-btn') && materialItemsContainer.children.length > 1) { e.target.closest('.material-item-row').remove(); updateTotalPrice(); } });
-        materialItemsContainer.addEventListener('input', updateTotalPrice);
-        function updateTotalPrice() {
-            let total = 0;
-            document.querySelectorAll('.material-item-row').forEach(r => total += parseFloat(r.querySelector('.material-price').value) || 0);
-            totalPriceEl.textContent = `€ ${total.toFixed(2)}`;
-        }
+    }
 
-        function listenForTransactions(){
-            if (!currentUserId) return;
-            onSnapshot(collection(db, `users/${currentUserId}/materials`), (snapshot) => {
-                allTransactions = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                applyFilters(); 
+    // Stock View
+    const stockSearch = document.getElementById('stockSearch');
+    stockSearch.addEventListener('input', renderStockView);
+
+    document.querySelectorAll('.stock-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.stock-filter-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-700');
             });
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-700');
+            stockFilter = btn.dataset.filter;
+            renderStockView();
+        });
+    });
+
+    document.getElementById('viewGrid').addEventListener('click', () => {
+        isGridView = true;
+        document.getElementById('stockGrid').classList.remove('hidden');
+        document.getElementById('stockListView').classList.add('hidden');
+        document.getElementById('viewGrid').className = 'p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600';
+        document.getElementById('viewList').className = 'p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition';
+        renderStockView();
+    });
+
+    document.getElementById('viewList').addEventListener('click', () => {
+        isGridView = false;
+        document.getElementById('stockGrid').classList.add('hidden');
+        document.getElementById('stockListView').classList.remove('hidden');
+        document.getElementById('viewGrid').className = 'p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition';
+        document.getElementById('viewList').className = 'p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600';
+        renderStockView();
+    });
+
+    function renderStockView() {
+        const sum = buildSummary();
+        const term = stockSearch.value.toLowerCase();
+        let names = Object.keys(sum).sort();
+        if (term) names = names.filter(n => n.toLowerCase().includes(term));
+        if (stockFilter !== 'all') names = names.filter(n => getStatus(sum[n].in - sum[n].out) === stockFilter);
+
+        const grid = document.getElementById('stockGrid');
+        const listBody = document.getElementById('stockListBody');
+        const emptyEl = document.getElementById('stockEmpty');
+
+        if (names.length === 0) {
+            grid.innerHTML = ''; listBody.innerHTML = '';
+            emptyEl.classList.remove('hidden');
+            return;
         }
+        emptyEl.classList.add('hidden');
 
-        function applyFilters() {
-            renderBulkTable(); renderSummaryTable(); renderHistoryTable();
-        }
-
-        bulkSearchInput.addEventListener('input', renderBulkTable);
-        summarySearchInput.addEventListener('input', renderSummaryTable);
-        historySearchInput.addEventListener('input', renderHistoryTable);
-        historyFilterBtns.forEach(btn => btn.addEventListener('click', () => {
-             historyFilterBtns.forEach(b => b.classList.replace('bg-blue-600', 'text-slate-400')); 
-             historyFilterBtns.forEach(b => b.classList.replace('text-white', 'hover:text-slate-600'));
-             btn.classList.add('bg-blue-600', 'text-white'); historyTypeFilter = btn.textContent; renderHistoryTable();
-        }));
-
-        const calculateCurrentStock = (name) => {
-             let i=0, o=0;
-             allTransactions.forEach(t => { t.items?.forEach(item => { if(item.name === name) { if(t.type==='In') i+=item.quantity; else o+=item.quantity; } }); });
-             return i - o;
-        };
-
-        function renderBulkTable() {
-            const term = bulkSearchInput.value.toLowerCase();
-            let list = allTransactions.filter(t => t.type === 'In');
-            if(term) list = list.filter(t => t.bulkName?.toLowerCase().includes(term) || t.supplier?.toLowerCase().includes(term));
-            list.sort((a,b) => (b.date?.toDate()||0)-(a.date?.toDate()||0));
-            bulkTableBody.innerHTML = '';
-            if(list.length === 0) { bulkTableBody.innerHTML = `<tr><td colspan="6" class="p-12 text-center text-slate-400">No bulk purchases.</td></tr>`; return; }
-            list.forEach(t => {
-                const row = bulkTableBody.insertRow(); row.dataset.docId = t.id;
-                row.className = 'border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group';
-                row.innerHTML = `
-                    <td class="p-4 clickable-row text-slate-600 dark:text-slate-300 text-sm">${t.date?.toDate().toLocaleDateString()||'N/A'}</td>
-                    <td class="p-4 clickable-row font-bold text-slate-800 dark:text-white text-sm">${t.bulkName||t.supplier||'N/A'}</td>
-                    <td class="p-4 clickable-row text-slate-600 dark:text-slate-400 text-sm">${t.supplier||'N/A'}</td>
-                    <td class="p-4 clickable-row text-slate-600 dark:text-slate-400 text-sm">${t.items?.length||0}</td>
-                    <td class="p-4 clickable-row font-bold text-blue-600 dark:text-blue-400 text-sm">€ ${(t.totalPrice||0).toFixed(2)}</td>
-                    <td class="p-4"><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition"><button data-id="${t.id}" class="edit-bulk-btn text-slate-400 hover:text-blue-500"><i data-lucide="edit" class="w-4 h-4"></i></button><button data-id="${t.id}" class="delete-bulk-btn text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td>
-                `;
-            });
-            lucide.createIcons();
-        }
-
-        function renderSummaryTable() {
-            const term = summarySearchInput.value.toLowerCase();
-            let txs = allTransactions;
-            if(term) txs = txs.filter(t => t.items?.some(i => i.name?.toLowerCase().includes(term)));
-            const sum = {};
-            txs.forEach(t => t.items?.forEach(i => {
-                if(i.name) {
-                    if(!sum[i.name]) sum[i.name] = { in:0, out:0, cost:0 };
-                    if(t.type==='In') { sum[i.name].in+=i.quantity; sum[i.name].cost+=(i.price||0); } else sum[i.name].out+=i.quantity;
-                }
-            }));
-            summaryTableBody.innerHTML = '';
-            if(Object.keys(sum).length === 0) { summaryTableBody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-400">No materials.</td></tr>`; return; }
-            Object.keys(sum).sort().forEach(n => {
-                const s = sum[n]; const curr = s.in - s.out;
-                let cls = 'text-green-500'; if(curr<=0) cls='text-red-500'; else if(curr<=20) cls='text-yellow-500';
-                const row = summaryTableBody.insertRow(); row.className = 'clickable-row border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition'; row.dataset.materialName = n;
-                row.innerHTML = `
-                    <td class="p-4 font-bold text-slate-800 dark:text-white">${n}</td>
+        if (isGridView) {
+            grid.innerHTML = names.map(n => {
+                const s = sum[n];
+                const curr = s.in - s.out;
+                const status = getStatus(curr);
+                const cls = statusClass(status);
+                const maxRef = Math.max(s.in, 1);
+                const pct = Math.min(100, Math.max(0, (curr / maxRef) * 100));
+                return `
+                <div class="stock-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition" data-name="${n}">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-slate-900 dark:text-white truncate">${n}</p>
+                        </div>
+                        <span class="ml-2 px-2 py-1 rounded-full text-xs font-bold ${cls.badge} whitespace-nowrap">${statusLabel(status)}</span>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-xs text-slate-500">Current Stock</span>
+                            <span class="text-xl font-extrabold ${cls.text}">${curr}</span>
+                        </div>
+                        <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div class="h-full progress-bar-fill ${cls.bar} rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                        <div>
+                            <p class="text-xs text-slate-400">Total In</p>
+                            <p class="font-bold text-green-600 dark:text-green-400 text-sm">${s.in}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Total Out</p>
+                            <p class="font-bold text-red-500 text-sm">${s.out}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-xs text-slate-400">Value Spent</p>
+                            <p class="font-bold text-purple-600 dark:text-purple-400 text-sm">€ ${s.cost.toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            listBody.innerHTML = names.map(n => {
+                const s = sum[n];
+                const curr = s.in - s.out;
+                const status = getStatus(curr);
+                const cls = statusClass(status);
+                const maxRef = Math.max(s.in, 1);
+                const pct = Math.min(100, Math.max(0, (curr / maxRef) * 100));
+                return `<tr class="clickable-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition" data-name="${n}">
+                    <td class="p-4 font-bold text-slate-900 dark:text-white">${n}</td>
                     <td class="p-4 text-green-600 dark:text-green-400 font-medium">${s.in}</td>
                     <td class="p-4 text-red-500 font-medium">${s.out}</td>
-                    <td class="p-4 text-blue-500 font-medium">€ ${s.cost.toFixed(2)}</td>
-                    <td class="p-4 font-extrabold ${cls}">${curr}</td>
-                `;
-            });
+                    <td class="p-4 font-extrabold ${cls.text} text-lg">${curr}</td>
+                    <td class="p-4 text-purple-600 dark:text-purple-400 font-medium">€ ${s.cost.toFixed(2)}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${cls.badge}">${statusLabel(status)}</span></td>
+                    <td class="p-4 min-w-[120px]">
+                        <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-28">
+                            <div class="h-full ${cls.bar} rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        function renderHistoryTable() {
-            const term = historySearchInput.value.toLowerCase();
-            let list = [...allTransactions].sort((a,b) => (b.date?.toDate()||0)-(a.date?.toDate()||0));
-            if(historyTypeFilter !== 'All') list = list.filter(t => t.type === historyTypeFilter);
-            if(term) list = list.filter(t => t.items?.some(i => i.name.toLowerCase().includes(term)) || t.supplier?.toLowerCase().includes(term) || t.issuedTo?.toLowerCase().includes(term));
-            
-            historyTableBody.innerHTML = '';
-            if(list.length === 0) { historyTableBody.innerHTML = `<tr><td colspan="7" class="p-12 text-center text-slate-400">No history.</td></tr>`; return; }
-            
-            list.forEach(t => {
-                const row = historyTableBody.insertRow();
-                const typeCls = t.type === 'In' ? 'text-green-500 bg-green-50 dark:bg-green-900/20' : 'text-red-500 bg-red-50 dark:bg-red-900/20';
-                const itemsHtml = t.items?.map(i => `<div>${i.name} (${i.quantity})</div>`).join('') || 'Error';
-                
-                row.className = 'border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition';
-                row.innerHTML = `
-                    <td class="p-4 align-top text-slate-600 dark:text-slate-300 text-sm">${t.date?.toDate().toLocaleDateString()||'N/A'}</td>
-                    <td class="p-4 align-top text-sm text-slate-700 dark:text-slate-200 font-medium">${itemsHtml}</td>
-                    <td class="p-4 align-top"><span class="px-2 py-1 rounded text-xs font-bold ${typeCls}">${t.type}</span></td>
-                    <td class="p-4 align-top text-slate-500 dark:text-slate-400 text-sm">${t.type==='In'?(t.bulkName||t.supplier):(t.issuedTo)}</td>
-                    <td class="p-4 align-top font-bold text-slate-800 dark:text-white text-sm">${t.totalPrice!=null ? '€ '+t.totalPrice.toFixed(2) : '-'}</td>
-                    <td class="p-4 align-top">${t.billUrl ? `<button data-url="${t.billUrl}" class="view-bill-btn text-blue-500 hover:underline text-xs font-bold">View</button>` : '<span class="text-slate-400 text-xs">No</span>'}</td>
-                    <td class="p-4 align-top"><div class="flex gap-2"><button data-id="${t.id}" data-type="${t.type}" class="edit-btn text-slate-400 hover:text-blue-500"><i data-lucide="edit" class="w-4 h-4"></i></button><button data-id="${t.id}" class="delete-btn text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td>
-                `;
-            });
-            lucide.createIcons();
-        }
+        // Click to open detail
+        const clickables = isGridView ? grid.querySelectorAll('[data-name]') : listBody.querySelectorAll('[data-name]');
+        clickables.forEach(el => el.addEventListener('click', () => openItemDetail(el.dataset.name)));
+        lucide.createIcons();
+    }
 
-        async function populateMaterialSelect() {
-            const s = new Set();
-            let data = allTransactions;
-            if (data.length === 0) { try { const q = await getDocs(collection(db, `users/${currentUserId}/materials`)); data = q.docs.map(d => d.data()); } catch(e){} }
-            data.forEach(t => t.items?.forEach(i => { if(i.name) s.add(i.name); }));
-            const sel = document.getElementById('outMaterialName');
-            sel.innerHTML = '<option value="" disabled selected>Select Material</option>';
-            Array.from(s).sort().forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
-        }
+    // Charts
+    function refreshCharts() {
+        if (!document.getElementById('viewChart').classList.contains('hidden')) renderCharts();
+    }
 
-        outMaterialNameSelect.addEventListener('change', (e) => {
-            const name = e.target.value; const docId = stockOutForm.dataset.docId;
-            if(name) {
-                let stock = calculateCurrentStock(name);
-                if(docId) { const orig = allTransactions.find(t => t.id===docId); if(orig?.items?.[0]?.name===name) stock += orig.items[0].quantity; }
-                availableStockInfo.textContent = `Available: ${stock}`;
-            } else availableStockInfo.textContent = '';
+    function renderCharts() {
+        const sum = buildSummary();
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(255,255,255,0.07)' : '#f1f5f9';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
+
+        // Top stock bar
+        const sorted = Object.keys(sum).map(n => ({ name: n, curr: sum[n].in - sum[n].out }))
+            .sort((a, b) => b.curr - a.curr).slice(0, 10);
+        if (topStockChartInst) topStockChartInst.destroy();
+        topStockChartInst = new Chart(document.getElementById('topStockChart'), {
+            type: 'bar',
+            data: {
+                labels: sorted.map(s => s.name.length > 15 ? s.name.slice(0, 15) + '…' : s.name),
+                datasets: [{
+                    label: 'Current Stock',
+                    data: sorted.map(s => Math.max(0, s.curr)),
+                    backgroundColor: sorted.map(s => {
+                        const st = getStatus(s.curr);
+                        return st === 'out' ? '#ef4444' : st === 'low' ? '#f59e0b' : '#22c55e';
+                    }),
+                    borderRadius: 6, barThickness: 22
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } }, beginAtZero: true },
+                    y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } }
+                }
+            }
         });
 
+        // Status doughnut
+        const statusCounts = { ok: 0, low: 0, out: 0 };
+        Object.keys(sum).forEach(n => { statusCounts[getStatus(sum[n].in - sum[n].out)]++; });
+        if (statusChartInst) statusChartInst.destroy();
+        statusChartInst = new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+                datasets: [{ data: [statusCounts.ok, statusCounts.low, statusCounts.out], backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 16, font: { size: 12 } } } }
+            }
+        });
+
+        // Monthly movements
+        const months = [], inData = [], outData = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+            inData.push(0); outData.push(0);
+        }
+        allTransactions.forEach(t => {
+            if (!t.date) return;
+            const d = t.date.toDate();
+            const monthIdx = (now.getFullYear() - d.getFullYear()) * 12 + now.getMonth() - d.getMonth();
+            const idx = 5 - monthIdx;
+            if (idx < 0 || idx > 5) return;
+            const qty = t.items?.reduce((s, i) => s + (i.quantity || 0), 0) || 0;
+            if (t.type === 'In') inData[idx] += qty; else outData[idx] += qty;
+        });
+        if (movementChartInst) movementChartInst.destroy();
+        movementChartInst = new Chart(document.getElementById('movementChart'), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: 'Received', data: inData, backgroundColor: '#22c55e', borderRadius: 5, barThickness: 18 },
+                    { label: 'Issued', data: outData, backgroundColor: '#ef4444', borderRadius: 5, barThickness: 18 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: textColor, font: { size: 12 } }, position: 'top', align: 'end' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                    x: { grid: { display: false }, ticks: { color: textColor } }
+                }
+            }
+        });
+    }
+
+    // Movements
+    const movSearch = document.getElementById('movSearch');
+    movSearch.addEventListener('input', renderMovements);
+    document.querySelectorAll('.mov-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mov-filter-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-700');
+            });
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('text-slate-500', 'hover:bg-slate-100', 'dark:hover:bg-slate-700');
+            movFilter = btn.dataset.mfilter;
+            renderMovements();
+        });
+    });
+
+    function renderMovements() {
+        const term = movSearch.value.toLowerCase();
+        let list = [...allTransactions].sort((a, b) => (b.date?.toDate() || 0) - (a.date?.toDate() || 0));
+        if (movFilter !== 'All') list = list.filter(t => t.type === movFilter);
+        if (term) list = list.filter(t =>
+            t.items?.some(i => i.name?.toLowerCase().includes(term)) ||
+            (t.supplier || '').toLowerCase().includes(term) ||
+            (t.issuedTo || '').toLowerCase().includes(term) ||
+            (t.bulkName || '').toLowerCase().includes(term)
+        );
+
+        const body = document.getElementById('movTableBody');
+        if (list.length === 0) {
+            body.innerHTML = `<tr><td colspan="6" class="p-12 text-center text-slate-400">No movements found.</td></tr>`;
+            return;
+        }
+        body.innerHTML = list.map(t => {
+            const typeClr = t.type === 'In' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+            const itemsStr = t.items?.map(i => `${i.name} (${i.quantity})`).join(', ') || '—';
+            const party = t.type === 'In' ? (t.bulkName || t.supplier || '—') : (t.issuedTo || '—');
+            const totalQty = t.items?.reduce((s, i) => s + (i.quantity || 0), 0) || 0;
+            const val = t.totalPrice != null ? '€ ' + t.totalPrice.toFixed(2) : '—';
+            return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                <td class="p-4 text-slate-600 dark:text-slate-300">${t.date?.toDate().toLocaleDateString() || '—'}</td>
+                <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${typeClr}">${t.type === 'In' ? '▼ Stock In' : '▲ Issue'}</span></td>
+                <td class="p-4 text-slate-700 dark:text-slate-300 text-xs max-w-[200px]">${itemsStr}</td>
+                <td class="p-4 text-slate-600 dark:text-slate-400">${party}</td>
+                <td class="p-4 font-bold text-slate-800 dark:text-white">${totalQty}</td>
+                <td class="p-4 font-medium text-blue-600 dark:text-blue-400">${val}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // Item Detail Modal
+    function openItemDetail(name) {
+        const sum = buildSummary();
+        const s = sum[name] || { in: 0, out: 0, cost: 0 };
+        const curr = s.in - s.out;
+        const status = getStatus(curr);
+        const cls = statusClass(status);
+
+        document.getElementById('itemDetailTitle').textContent = name;
+        document.getElementById('itemDetailSub').textContent = `${statusLabel(status)} · Updated live`;
+        document.getElementById('itemDetailStats').innerHTML = `
+            <div class="text-center">
+                <p class="text-xs text-slate-500 mb-1">Current Stock</p>
+                <p class="text-2xl font-extrabold ${cls.text}">${curr}</p>
+            </div>
+            <div class="text-center border-x border-slate-200 dark:border-slate-700">
+                <p class="text-xs text-slate-500 mb-1">Total Received</p>
+                <p class="text-2xl font-extrabold text-green-600 dark:text-green-400">${s.in}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs text-slate-500 mb-1">Total Issued</p>
+                <p class="text-2xl font-extrabold text-red-500">${s.out}</p>
+            </div>
+        `;
+
+        const txs = allTransactions
+            .filter(t => t.items?.some(i => i.name === name))
+            .sort((a, b) => (a.date?.toDate() || 0) - (b.date?.toDate() || 0));
+
+        let running = 0;
+        const body = document.getElementById('itemDetailBody');
+        if (txs.length === 0) {
+            body.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No history found.</td></tr>`;
+        } else {
+            body.innerHTML = txs.map(t => {
+                const item = t.items?.find(i => i.name === name);
+                if (!item) return '';
+                const qty = item.quantity || 0;
+                if (t.type === 'In') running += qty; else running -= qty;
+                const sign = t.type === 'In' ? '+' : '-';
+                const typeClr = t.type === 'In' ? 'text-green-600 dark:text-green-400 font-bold' : 'text-red-500 font-bold';
+                const party = t.type === 'In' ? (t.supplier || t.bulkName || '—') : (t.issuedTo || '—');
+                const price = t.type === 'In' ? (item.price != null ? '€ ' + item.price.toFixed(2) : '—') : '—';
+                const runClr = running > lowThreshold ? 'text-green-600' : running > 0 ? 'text-yellow-500' : 'text-red-500';
+                return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="p-4 text-slate-600 dark:text-slate-300">${t.date?.toDate().toLocaleDateString() || '—'}</td>
+                    <td class="p-4 text-xs font-bold ${typeClr}">${t.type}</td>
+                    <td class="p-4 font-bold ${typeClr}">${sign}${qty} <span class="text-xs font-medium text-slate-400 ml-1">(→ <span class="${runClr}">${running}</span>)</span></td>
+                    <td class="p-4 text-slate-600 dark:text-slate-400">${party}</td>
+                    <td class="p-4 font-medium text-slate-700 dark:text-slate-300">${price}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        const finalStock = txs.reduce((acc, t) => {
+            const item = t.items?.find(i => i.name === name);
+            return acc + (item ? (t.type === 'In' ? item.quantity : -item.quantity) : 0);
+        }, 0);
+        document.getElementById('itemDetailRunningStock').textContent = `Final Stock: ${finalStock} units`;
+
+        document.getElementById('itemDetailModal').classList.remove('hidden');
         lucide.createIcons();
-    </script>
+    }
+    document.getElementById('closeItemDetailBtn').addEventListener('click', () => document.getElementById('itemDetailModal').classList.add('hidden'));
+    document.getElementById('itemDetailModal').addEventListener('click', e => { if (e.target === document.getElementById('itemDetailModal')) document.getElementById('itemDetailModal').classList.add('hidden'); });
+
+    // Tabs
+    const tabs = [
+        { btn: document.getElementById('tabStock'), view: document.getElementById('viewStock'), onShow: renderStockView },
+        { btn: document.getElementById('tabChart'), view: document.getElementById('viewChart'), onShow: renderCharts },
+        { btn: document.getElementById('tabMovements'), view: document.getElementById('viewMovements'), onShow: renderMovements },
+    ];
+    tabs.forEach(({ btn, view, onShow }) => {
+        btn.addEventListener('click', () => {
+            tabs.forEach(t => {
+                t.view.classList.add('hidden');
+                t.btn.className = 'tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 transition';
+            });
+            view.classList.remove('hidden');
+            btn.className = 'tab-btn tab-active whitespace-nowrap py-3 px-1 border-b-2 text-sm transition';
+            onShow();
+        });
+    });
+
+    // Alerts
+    document.getElementById('closeBannerBtn').addEventListener('click', () => document.getElementById('lowStockBanner').classList.add('hidden'));
+
+    // Stock In/Out Modals
+    const stockInModal = document.getElementById('stockInModal');
+    const stockOutModal = document.getElementById('stockOutModal');
+    const stockInForm = document.getElementById('stockInForm');
+    const stockOutForm = document.getElementById('stockOutForm');
+    const materialItemsContainer = document.getElementById('materialItemsContainer');
+    const billFileInput = document.getElementById('billFile');
+    const billFileNameSpan = document.getElementById('billFileName');
+    const outMaterialNameSelect = document.getElementById('outMaterialName');
+    const availableStockInfo = document.getElementById('availableStockInfo');
+    const inSpinner = document.getElementById('inSpinner');
+    const outSpinner = document.getElementById('outSpinner');
+
+    function openModal(modal) { modal.classList.remove('hidden'); }
+    function closeModal(modal) { modal.classList.add('hidden'); }
+
+    document.getElementById('addStockInBtn').addEventListener('click', () => {
+        stockInForm.reset(); materialItemsContainer.innerHTML = ''; addMaterialItemRow();
+        document.getElementById('inDate').valueAsDate = new Date();
+        billFileNameSpan.textContent = 'No file chosen';
+        document.getElementById('totalPrice').textContent = '€ 0.00';
+        openModal(stockInModal);
+    });
+
+    document.getElementById('addStockOutBtn').addEventListener('click', async () => {
+        stockOutForm.reset(); stockOutForm.dataset.docId = '';
+        availableStockInfo.textContent = '';
+        document.getElementById('outDate').valueAsDate = new Date();
+        await populateMaterialSelect();
+        openModal(stockOutModal);
+    });
+
+    document.querySelectorAll('.cancel-btn').forEach(btn => btn.addEventListener('click', () => {
+        closeModal(stockInModal); closeModal(stockOutModal);
+    }));
+
+    billFileInput.addEventListener('change', () => { billFileNameSpan.textContent = billFileInput.files[0]?.name || 'No file chosen'; });
+
+    outMaterialNameSelect.addEventListener('change', e => {
+        const name = e.target.value;
+        if (name) {
+            const s = calcStock(name);
+            availableStockInfo.textContent = `Available: ${s.current} units`;
+        } else availableStockInfo.textContent = '';
+    });
+
+    async function populateMaterialSelect() {
+        const s = new Set();
+        let data = allTransactions;
+        if (!data.length) {
+            try {
+                const q = await getDocs(collection(db, `users/${currentUserId}/materials`));
+                data = q.docs.map(d => d.data());
+            } catch(e){}
+        }
+        data.forEach(t => t.items?.forEach(i => { if (i.name) s.add(i.name); }));
+        outMaterialNameSelect.innerHTML = '<option value="" disabled selected>Select Material</option>';
+        Array.from(s).sort().forEach(n => {
+            const o = document.createElement('option'); o.value = n; o.textContent = n;
+            outMaterialNameSelect.appendChild(o);
+        });
+    }
+
+    function addMaterialItemRow() {
+        const div = document.createElement('div');
+        div.className = 'material-item-row grid grid-cols-12 gap-2 items-center';
+        div.innerHTML = `
+            <input type="text" class="material-name col-span-5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="Material name" required>
+            <input type="number" min="1" class="material-quantity col-span-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="Qty" required>
+            <input type="number" step="0.01" min="0" class="material-price col-span-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 p-2 rounded-lg text-sm dark:text-white" placeholder="€ Price">
+            <button type="button" class="remove-item-btn col-span-1 text-red-500 hover:text-red-700 p-2 transition"><i data-lucide="minus-circle" class="w-5 h-5"></i></button>
+        `;
+        materialItemsContainer.appendChild(div); lucide.createIcons();
+    }
+
+    document.getElementById('addItemBtn').addEventListener('click', addMaterialItemRow);
+    materialItemsContainer.addEventListener('click', e => {
+        if (e.target.closest('.remove-item-btn') && materialItemsContainer.children.length > 1) {
+            e.target.closest('.material-item-row').remove(); updateTotalPrice();
+        }
+    });
+    materialItemsContainer.addEventListener('input', updateTotalPrice);
+    function updateTotalPrice() {
+        let total = 0;
+        document.querySelectorAll('.material-item-row').forEach(r => total += parseFloat(r.querySelector('.material-price').value) || 0);
+        document.getElementById('totalPrice').textContent = `€ ${total.toFixed(2)}`;
+    }
+
+    const uploadFile = async (file) => {
+        if (!file) return null;
+        const fd = new FormData(); fd.append('image', file);
+        try {
+            const r = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
+            const j = await r.json();
+            if (j.success) return j.data.url;
+        } catch(e){}
+        return null;
+    };
+
+    stockInForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        inSpinner.classList.remove('hidden');
+        document.querySelector('#stockInSubmitBtn span').textContent = 'Adding...';
+        const billUrl = await uploadFile(billFileInput.files[0]);
+        const items = []; let totalPrice = 0; let valid = true;
+        document.querySelectorAll('.material-item-row').forEach(row => {
+            const name = row.querySelector('.material-name').value.trim();
+            const qty = parseInt(row.querySelector('.material-quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.material-price').value) || 0;
+            if (!name || qty <= 0) valid = false;
+            else { items.push({ name, quantity: qty, price }); totalPrice += price; }
+        });
+        if (!valid || items.length === 0) {
+            showToast('Please fill all item rows correctly.', false);
+            inSpinner.classList.add('hidden');
+            document.querySelector('#stockInSubmitBtn span').textContent = 'Add Stock';
+            return;
+        }
+        const data = {
+            date: new Date(document.getElementById('inDate').value),
+            type: 'In',
+            bulkName: document.getElementById('inBulkName').value.trim(),
+            supplier: document.getElementById('inSupplier').value.trim(),
+            items, totalPrice,
+            paymentMethod: document.getElementById('inPaymentMethod').value,
+            billUrl
+        };
+        try {
+            const ref = await addDoc(collection(db, `users/${currentUserId}/materials`), data);
+            if (totalPrice > 0) {
+                await addDoc(collection(db, `users/${currentUserId}/transactions`), {
+                    date: data.date, description: `Stock: ${data.bulkName || data.supplier}`,
+                    category: 'Materials', type: 'Expense', amount: totalPrice,
+                    paymentMethod: data.paymentMethod, billUrl, materialDocId: ref.id
+                });
+            }
+            showToast('Stock added successfully!');
+            closeModal(stockInModal);
+        } catch(err) { showToast(`Error: ${err.message}`, false); }
+        inSpinner.classList.add('hidden');
+        document.querySelector('#stockInSubmitBtn span').textContent = 'Add Stock';
+    });
+
+    stockOutForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        outSpinner.classList.remove('hidden');
+        const matName = outMaterialNameSelect.value;
+        const qty = parseInt(document.getElementById('outQuantity').value);
+        const issuedTo = document.getElementById('outIssuedTo').value.trim();
+        const date = document.getElementById('outDate').value;
+        if (!matName || !qty || qty <= 0 || !issuedTo || !date) {
+            showToast('Please fill all fields.', false); outSpinner.classList.add('hidden'); return;
+        }
+        const curr = calcStock(matName).current;
+        if (qty > curr) { showToast(`Not enough stock! Available: ${curr}`, false); outSpinner.classList.add('hidden'); return; }
+        try {
+            await addDoc(collection(db, `users/${currentUserId}/materials`), {
+                date: new Date(date), items: [{ name: matName, quantity: qty }], type: 'Out', issuedTo
+            });
+            showToast('Stock issued!');
+            closeModal(stockOutModal);
+        } catch(err) { showToast(`Error: ${err.message}`, false); }
+        outSpinner.classList.add('hidden');
+    });
+
+    // Toast
+    function showToast(msg, ok = true) {
+        const t = document.getElementById('toast');
+        t.querySelector('p').textContent = msg;
+        t.className = `fixed bottom-8 right-8 text-white px-6 py-3 rounded-xl shadow-2xl transform transition-all duration-500 font-medium flex items-center gap-2 z-[80] ${ok ? 'bg-green-600' : 'bg-red-600'}`;
+        t.classList.remove('translate-y-24', 'opacity-0');
+        setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000);
+    }
+
+    lucide.createIcons();
+</script>
 </body>
 </html>
