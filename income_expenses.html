@@ -192,6 +192,9 @@
                         <button id="addTransactionBtn" class="bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
                             <i data-lucide="plus" class="w-4 h-4"></i> Add Transaction
                         </button>
+                        <button id="clearAllDataBtn" class="bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Clear All Data
+                        </button>
                     </div>
                 </div>
                 
@@ -379,6 +382,27 @@
             <div class="flex-1 overflow-auto p-4 bg-slate-50 dark:bg-slate-900/50 rounded-b-2xl">
                 <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto rounded-lg shadow-md hidden" alt="Bill Preview">
                 <iframe id="billPdfPreview" src="" class="w-full h-[75vh] border-none hidden bg-white rounded-lg shadow-md"></iframe> 
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear All Data Modal -->
+    <div id="clearAllModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-[90]">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-md shadow-2xl border border-red-200 dark:border-red-800 mx-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 dark:bg-red-900/40 rounded-full p-2.5">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clear All Transactions</h3>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 mb-2">This will permanently delete <strong class="text-red-600 dark:text-red-400">all income & expense transactions</strong> from the database.</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-5">This action <strong>cannot be undone</strong>. Type <span class="font-mono bg-slate-100 dark:bg-slate-700 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded">CLEAR</span> below to confirm.</p>
+            <input id="clearConfirmInput" type="text" placeholder='Type "CLEAR" to confirm' class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 mb-5 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition">
+            <div class="flex justify-end gap-3">
+                <button id="cancelClearBtn" class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold transition">Cancel</button>
+                <button id="confirmClearBtn" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition flex items-center gap-2 opacity-40 cursor-not-allowed" disabled>
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete All
+                </button>
             </div>
         </div>
     </div>
@@ -1078,6 +1102,64 @@
                 console.error(err); showToast("PDF Error", false);
             } finally {
                 element.classList.remove('pdf-capture-mode');
+            }
+        });
+
+        // --- Clear All Data ---
+        const clearAllDataBtn = document.getElementById('clearAllDataBtn');
+        const clearAllModal = document.getElementById('clearAllModal');
+        const cancelClearBtn = document.getElementById('cancelClearBtn');
+        const confirmClearBtn = document.getElementById('confirmClearBtn');
+        const clearConfirmInput = document.getElementById('clearConfirmInput');
+
+        clearAllDataBtn.addEventListener('click', () => {
+            clearConfirmInput.value = '';
+            confirmClearBtn.disabled = true;
+            confirmClearBtn.classList.add('opacity-40', 'cursor-not-allowed');
+            confirmClearBtn.classList.remove('opacity-100', 'cursor-pointer');
+            clearAllModal.classList.remove('hidden');
+            lucide.createIcons();
+        });
+
+        cancelClearBtn.addEventListener('click', () => {
+            clearAllModal.classList.add('hidden');
+        });
+
+        clearAllModal.addEventListener('click', (e) => {
+            if (e.target === clearAllModal) clearAllModal.classList.add('hidden');
+        });
+
+        clearConfirmInput.addEventListener('input', () => {
+            const valid = clearConfirmInput.value.trim() === 'CLEAR';
+            confirmClearBtn.disabled = !valid;
+            if (valid) {
+                confirmClearBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+                confirmClearBtn.classList.add('opacity-100', 'cursor-pointer');
+            } else {
+                confirmClearBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                confirmClearBtn.classList.remove('opacity-100', 'cursor-pointer');
+            }
+        });
+
+        confirmClearBtn.addEventListener('click', async () => {
+            if (clearConfirmInput.value.trim() !== 'CLEAR') return;
+            confirmClearBtn.innerHTML = '<div class="loader" style="border-top-color:#fff;width:16px;height:16px;border-width:2px;"></div> Deleting...';
+            confirmClearBtn.disabled = true;
+            try {
+                const snap = await getDocs(collection(db, `users/${currentUserId}/transactions`));
+                const docs = snap.docs;
+                for (let i = 0; i < docs.length; i += 500) {
+                    const batch = writeBatch(db);
+                    docs.slice(i, i + 500).forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+                }
+                showToast(`All ${docs.length} transactions deleted successfully!`);
+                clearAllModal.classList.add('hidden');
+            } catch (err) {
+                showToast(`Error: ${err.message}`, false);
+                confirmClearBtn.disabled = false;
+                confirmClearBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Delete All';
+                lucide.createIcons();
             }
         });
 
