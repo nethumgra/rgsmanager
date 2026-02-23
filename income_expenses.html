@@ -192,6 +192,9 @@
                         <button id="addTransactionBtn" class="bg-slate-900 dark:bg-blue-600 text-white hover:bg-slate-800 dark:hover:bg-blue-500 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
                             <i data-lucide="plus" class="w-4 h-4"></i> Add Transaction
                         </button>
+                        <button id="aiReportBtn" class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-violet-500/25">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> AI Report
+                        </button>
                         <button id="clearAllDataBtn" class="bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm">
                             <i data-lucide="trash-2" class="w-4 h-4"></i> Clear All Data
                         </button>
@@ -301,6 +304,129 @@
         </main>
     </div>
 
+    <!-- AI Financial Report Modal -->
+    <div id="aiReportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-[85] p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl p-2.5">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">AI Financial Report</h3>
+                        <p id="aiReportSubtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Powered by Gemini AI</p>
+                    </div>
+                </div>
+                <button id="closeAiReportBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Controls Row: Model + Language + Regenerate -->
+            <div class="px-6 pt-4 space-y-3">
+                <!-- Model Selector -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">Model:</span>
+                    <div class="relative flex-1">
+                        <select id="geminiModelSelect" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-xs font-semibold rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition appearance-none cursor-pointer">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+                    </div>
+                    <div id="modelStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0" title="Model status"></div>
+                </div>
+                <!-- Fallback status bar -->
+                <div id="modelFallbackBar" class="hidden items-center gap-2 text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-lg px-3 py-2">
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-500 shrink-0"></i>
+                    <span id="modelFallbackMsg" class="text-amber-700 dark:text-amber-300 font-medium"></span>
+                </div>
+                <!-- Language + Regenerate -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">Lang:</span>
+                    <div class="flex gap-2">
+                        <button data-lang="English" class="ai-lang-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 text-white transition">English</button>
+                        <button data-lang="Sinhala" class="ai-lang-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">සිංහල</button>
+                        <button data-lang="Italian" class="ai-lang-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">Italiano</button>
+                    </div>
+                    <button id="regenerateAiBtn" class="ml-auto flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200 transition hidden">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Regenerate
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Loading State -->
+                <div id="aiLoadingState" class="flex flex-col items-center justify-center py-16 gap-4">
+                    <div class="relative">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                            <div class="w-8 h-8 border-3 border-violet-300 border-t-violet-600 rounded-full" style="border-width:3px;animation:spin 1s linear infinite;"></div>
+                        </div>
+                    </div>
+                    <p id="aiLoadingMsg" class="text-slate-500 dark:text-slate-400 text-sm font-medium">Fetching available models...</p>
+                </div>
+
+                <!-- Report Content -->
+                <div id="aiReportContent" class="hidden">
+                    <!-- Summary Cards -->
+                    <div id="aiSummaryCards" class="grid grid-cols-3 gap-3 mb-5"></div>
+
+                    <!-- AI Text Report -->
+                    <div class="bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/10 dark:to-indigo-900/10 border border-violet-100 dark:border-violet-800/30 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="bot" class="w-4 h-4 text-violet-600 dark:text-violet-400"></i>
+                            <span class="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">Gemini Analysis</span>
+                        </div>
+                        <div id="aiTextReport" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-2"></div>
+                    </div>
+
+                    <!-- Top Categories -->
+                    <div id="aiCategoriesSection" class="mt-4"></div>
+                </div>
+
+                <!-- Error State -->
+                <div id="aiErrorState" class="hidden flex flex-col items-center justify-center py-12 gap-3 text-center">
+                    <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
+                        <i data-lucide="alert-circle" class="w-6 h-6 text-red-500"></i>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm font-medium" id="aiErrorMsg">Something went wrong. Please try again.</p>
+                    <button id="aiRetryBtn" class="mt-1 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 transition">Try Again</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/30 rounded-b-2xl">
+                <p class="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    Only totals & categories are sent — no personal data
+                </p>
+                <button id="closeAiReportBtn2" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear All Data Modal -->
+    <div id="clearAllModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-[90]">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-md shadow-2xl border border-red-200 dark:border-red-800 mx-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 dark:bg-red-900/40 rounded-full p-2.5">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clear All Transactions</h3>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 mb-2">This will permanently delete <strong class="text-red-600 dark:text-red-400">all income & expense transactions</strong> from the database.</p>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-5">This action <strong>cannot be undone</strong>. Type <span class="font-mono bg-slate-100 dark:bg-slate-700 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded">CLEAR</span> below to confirm.</p>
+            <input id="clearConfirmInput" type="text" placeholder='Type "CLEAR" to confirm' class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 mb-5 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition">
+            <div class="flex justify-end gap-3">
+                <button id="cancelClearBtn" class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold transition">Cancel</button>
+                <button id="confirmClearBtn" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition flex items-center gap-2 opacity-40 cursor-not-allowed" disabled>
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete All
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="transactionModal" class="fixed inset-0 bg-slate-900/50 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hidden z-50 overflow-y-auto py-10">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-lg transform transition-all scale-95 opacity-0 shadow-2xl border border-slate-100 dark:border-slate-700" id="transaction-modal-content">
             <div class="flex justify-between items-center mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
@@ -382,27 +508,6 @@
             <div class="flex-1 overflow-auto p-4 bg-slate-50 dark:bg-slate-900/50 rounded-b-2xl">
                 <img id="billImagePreview" src="" class="max-w-full h-auto mx-auto rounded-lg shadow-md hidden" alt="Bill Preview">
                 <iframe id="billPdfPreview" src="" class="w-full h-[75vh] border-none hidden bg-white rounded-lg shadow-md"></iframe> 
-            </div>
-        </div>
-    </div>
-
-    <!-- Clear All Data Modal -->
-    <div id="clearAllModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-[90]">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-md shadow-2xl border border-red-200 dark:border-red-800 mx-4">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-red-100 dark:bg-red-900/40 rounded-full p-2.5">
-                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Clear All Transactions</h3>
-            </div>
-            <p class="text-slate-600 dark:text-slate-300 mb-2">This will permanently delete <strong class="text-red-600 dark:text-red-400">all income & expense transactions</strong> from the database.</p>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mb-5">This action <strong>cannot be undone</strong>. Type <span class="font-mono bg-slate-100 dark:bg-slate-700 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded">CLEAR</span> below to confirm.</p>
-            <input id="clearConfirmInput" type="text" placeholder='Type "CLEAR" to confirm' class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 mb-5 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition">
-            <div class="flex justify-end gap-3">
-                <button id="cancelClearBtn" class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold transition">Cancel</button>
-                <button id="confirmClearBtn" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition flex items-center gap-2 opacity-40 cursor-not-allowed" disabled>
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete All
-                </button>
             </div>
         </div>
     </div>
@@ -1105,6 +1210,307 @@
             }
         });
 
+       
+        // AI FINANCIAL REPORT - GEMINI API (Dynamic Models + Fallback)
+        // ============================================================
+        const GEMINI_API_KEY = 'AIzaSyDRXv3v4WZswJG--vtawxmsrTrgci1ahAk'; // Replace with your key
+        const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+        const FALLBACK_DELAY_MS = 1200; // delay before switching to next model
+
+        const aiReportBtn = document.getElementById('aiReportBtn');
+        const aiReportModal = document.getElementById('aiReportModal');
+        const closeAiReportBtn = document.getElementById('closeAiReportBtn');
+        const closeAiReportBtn2 = document.getElementById('closeAiReportBtn2');
+        const regenerateAiBtn = document.getElementById('regenerateAiBtn');
+        const aiRetryBtn = document.getElementById('aiRetryBtn');
+        const aiLoadingState = document.getElementById('aiLoadingState');
+        const aiLoadingMsg = document.getElementById('aiLoadingMsg');
+        const aiReportContent = document.getElementById('aiReportContent');
+        const aiErrorState = document.getElementById('aiErrorState');
+        const aiErrorMsg = document.getElementById('aiErrorMsg');
+        const aiTextReport = document.getElementById('aiTextReport');
+        const aiSummaryCards = document.getElementById('aiSummaryCards');
+        const aiCategoriesSection = document.getElementById('aiCategoriesSection');
+        const aiReportSubtitle = document.getElementById('aiReportSubtitle');
+        const geminiModelSelect = document.getElementById('geminiModelSelect');
+        const modelStatusDot = document.getElementById('modelStatusDot');
+        const modelFallbackBar = document.getElementById('modelFallbackBar');
+        const modelFallbackMsg = document.getElementById('modelFallbackMsg');
+        const langBtns = document.querySelectorAll('.ai-lang-btn');
+
+        let selectedAiLang = 'English';
+        let availableGeminiModels = [];   // filled from API
+        let modelsLoaded = false;
+
+        // ── Language buttons ──────────────────────────────────────────────────
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                langBtns.forEach(b => {
+                    b.classList.remove('bg-violet-600', 'text-white');
+                    b.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+                });
+                btn.classList.add('bg-violet-600', 'text-white');
+                btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+                selectedAiLang = btn.dataset.lang;
+            });
+        });
+
+        // ── Fetch available Gemini models from Google ─────────────────────────
+        async function fetchGeminiModels() {
+            try {
+                const res = await fetch(`${GEMINI_BASE}/models?key=${GEMINI_API_KEY}`);
+                if (!res.ok) throw new Error('Cannot fetch models');
+                const data = await res.json();
+                // Filter only text-generation capable models, prefer generateContent support
+                const raw = (data.models || []).filter(m =>
+                    m.supportedGenerationMethods?.includes('generateContent') &&
+                    m.name.includes('gemini')
+                );
+                // Sort: flash first, then pro, then experimental, then others
+                raw.sort((a, b) => {
+                    const rank = m => {
+                        if (m.name.includes('flash') && !m.name.includes('thinking')) return 0;
+                        if (m.name.includes('pro') && !m.name.includes('vision')) return 1;
+                        if (m.name.includes('flash-thinking') || m.name.includes('exp')) return 2;
+                        return 3;
+                    };
+                    return rank(a) - rank(b);
+                });
+                return raw.map(m => ({
+                    id: m.name.replace('models/', ''),
+                    label: m.displayName || m.name.replace('models/', '')
+                }));
+            } catch (e) {
+                console.warn('Model fetch failed, using defaults:', e.message);
+                // Hardcoded fallback list if API fails
+                return [
+                    { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                    { id: 'gemini-1.5-pro',   label: 'Gemini 1.5 Pro' },
+                    { id: 'gemini-pro',        label: 'Gemini Pro' },
+                ];
+            }
+        }
+
+        async function initModelSelector() {
+            geminiModelSelect.innerHTML = '<option value="">⏳ Loading models...</option>';
+            geminiModelSelect.disabled = true;
+            modelStatusDot.style.backgroundColor = '#94a3b8';
+
+            availableGeminiModels = await fetchGeminiModels();
+            modelsLoaded = true;
+
+            geminiModelSelect.innerHTML = availableGeminiModels.map((m, i) =>
+                `<option value="${m.id}" ${i === 0 ? 'selected' : ''}>${m.label}</option>`
+            ).join('');
+            geminiModelSelect.disabled = false;
+            modelStatusDot.style.backgroundColor = '#22c55e'; // green = ready
+            lucide.createIcons();
+        }
+
+        // ── Try a single model, return text or throw ──────────────────────────
+        async function tryModel(modelId, prompt) {
+            const url = `${GEMINI_BASE}/models/${modelId}:generateContent?key=${GEMINI_API_KEY}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
+                })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.error?.message || `HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error('Empty response from model');
+            return text;
+        }
+
+        // ── Generate with automatic fallback through all models ───────────────
+        async function generateWithFallback(prompt) {
+            const selectedId = geminiModelSelect.value;
+            // Build ordered list: selected model first, then others
+            const ordered = [
+                selectedId,
+                ...availableGeminiModels.map(m => m.id).filter(id => id !== selectedId)
+            ].filter(Boolean);
+
+            modelFallbackBar.classList.add('hidden');
+            modelFallbackBar.classList.remove('flex');
+
+            for (let i = 0; i < ordered.length; i++) {
+                const modelId = ordered[i];
+                const label = availableGeminiModels.find(m => m.id === modelId)?.label || modelId;
+
+                aiLoadingMsg.textContent = i === 0
+                    ? `Using ${label}...`
+                    : `Switching to ${label}...`;
+
+                // Yellow dot = trying
+                modelStatusDot.style.backgroundColor = '#f59e0b';
+
+                try {
+                    const text = await tryModel(modelId, prompt);
+                    // Success — update selector to reflect actual model used
+                    geminiModelSelect.value = modelId;
+                    modelStatusDot.style.backgroundColor = '#22c55e'; // green
+                    if (i > 0) {
+                        modelFallbackBar.classList.remove('hidden');
+                        modelFallbackBar.classList.add('flex');
+                        modelFallbackMsg.textContent = `"${ordered[0]}" failed — used "${label}" instead.`;
+                        lucide.createIcons();
+                    }
+                    return text;
+                } catch (err) {
+                    console.warn(`Model ${modelId} failed:`, err.message);
+                    modelStatusDot.style.backgroundColor = '#ef4444'; // red
+
+                    if (i < ordered.length - 1) {
+                        // Show fallback bar with countdown
+                        modelFallbackBar.classList.remove('hidden');
+                        modelFallbackBar.classList.add('flex');
+                        modelFallbackMsg.textContent = `"${label}" failed — switching in ${FALLBACK_DELAY_MS / 1000}s...`;
+                        lucide.createIcons();
+                        await new Promise(r => setTimeout(r, FALLBACK_DELAY_MS));
+                    }
+                }
+            }
+            throw new Error('All available models failed. Please check your API key or try again later.');
+        }
+
+        // ── Build financial data object ───────────────────────────────────────
+        function buildFinancialDataForAI() {
+            const year = selectedYear;
+            const monthLabel = availableMonths[selectedMonth] || 'All Months';
+            const filtered = allTransactions.filter(t => {
+                const d = t.date instanceof Timestamp ? t.date.toDate() : (t.date?.toDate ? t.date.toDate() : new Date(t.date));
+                if (!d) return false;
+                if (d.getFullYear() !== year) return false;
+                if (selectedMonth !== 0 && d.getMonth() + 1 !== selectedMonth) return false;
+                return true;
+            });
+            let totalIncome = 0, totalExpenses = 0;
+            const categoryMap = {};
+            filtered.forEach(t => {
+                const amount = parseFloat(t.amount) || 0;
+                const cat = t.category || 'Uncategorized';
+                if (t.type === 'Income') { totalIncome += amount; }
+                else if (t.type === 'Expense') {
+                    totalExpenses += amount;
+                    if (!categoryMap[cat]) categoryMap[cat] = 0;
+                    categoryMap[cat] += amount;
+                }
+            });
+            const topCategories = Object.entries(categoryMap).sort((a,b) => b[1]-a[1]).slice(0,5);
+            return { year, monthLabel, totalIncome, totalExpenses, profit: totalIncome - totalExpenses, topCategories, totalTransactions: filtered.length };
+        }
+
+        // ── Main generate function ────────────────────────────────────────────
+        async function generateAiReport() {
+            const data = buildFinancialDataForAI();
+            aiReportModal.classList.remove('hidden');
+            aiLoadingState.classList.remove('hidden');
+            aiReportContent.classList.add('hidden');
+            aiErrorState.classList.add('hidden');
+            regenerateAiBtn.classList.add('hidden');
+            modelFallbackBar.classList.add('hidden');
+            modelFallbackBar.classList.remove('flex');
+
+            const period = data.monthLabel === 'All Months' ? `full year ${data.year}` : `${data.monthLabel} ${data.year}`;
+            aiReportSubtitle.textContent = `${period} · Powered by Gemini AI`;
+
+            // Load models if first time
+            if (!modelsLoaded) {
+                aiLoadingMsg.textContent = 'Fetching available models...';
+                await initModelSelector();
+            }
+
+            // Render summary cards immediately
+            const profitColor = data.profit >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300';
+            aiSummaryCards.innerHTML = `
+                <div class="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30 rounded-xl p-4 text-center">
+                    <p class="text-xs font-bold text-green-600 dark:text-green-400 uppercase mb-1">Income</p>
+                    <p class="text-xl font-extrabold text-green-700 dark:text-green-300">€ ${data.totalIncome.toFixed(2)}</p>
+                </div>
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 rounded-xl p-4 text-center">
+                    <p class="text-xs font-bold text-red-600 dark:text-red-400 uppercase mb-1">Expenses</p>
+                    <p class="text-xl font-extrabold text-red-700 dark:text-red-300">€ ${data.totalExpenses.toFixed(2)}</p>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-xl p-4 text-center">
+                    <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Profit</p>
+                    <p class="text-xl font-extrabold ${profitColor}">€ ${data.profit.toFixed(2)}</p>
+                </div>`;
+
+            // Render top categories
+            if (data.topCategories.length > 0) {
+                const maxAmt = data.topCategories[0][1];
+                aiCategoriesSection.innerHTML = `
+                    <div class="bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700 rounded-xl p-4 mt-1">
+                        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Top Expense Categories</p>
+                        <div class="space-y-2.5">
+                            ${data.topCategories.map(([cat, amt]) => `
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="font-semibold text-slate-700 dark:text-slate-300">${cat}</span>
+                                        <span class="font-bold text-slate-900 dark:text-white">€ ${amt.toFixed(2)}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                        <div class="bg-gradient-to-r from-violet-500 to-indigo-500 h-1.5 rounded-full" style="width:${Math.round((amt/maxAmt)*100)}%"></div>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>`;
+            } else { aiCategoriesSection.innerHTML = ''; }
+
+            // Build prompt
+            const topCatsText = data.topCategories.map(([c,a]) => `${c}: €${a.toFixed(2)}`).join(', ');
+            const prompt = `You are a professional financial analyst. Analyze the following business financial data and provide a concise, insightful summary report in ${selectedAiLang}.
+
+Period: ${period}
+Total Income: €${data.totalIncome.toFixed(2)}
+Total Expenses: €${data.totalExpenses.toFixed(2)}
+Net Profit/Loss: €${data.profit.toFixed(2)} (${data.profit >= 0 ? 'PROFIT' : 'LOSS'})
+Profit Margin: ${data.totalIncome > 0 ? ((data.profit/data.totalIncome)*100).toFixed(1) : 0}%
+Total Transactions: ${data.totalTransactions}
+Top Expense Categories: ${topCatsText || 'No expense data'}
+
+Write a professional 4-6 sentence financial summary that:
+1. States the overall financial performance clearly
+2. Highlights key strengths or concerns
+3. Comments on the profit margin
+4. Gives 1-2 specific, actionable recommendations
+Use a professional but friendly tone. Do NOT use markdown headers or bullet points — write in clean paragraphs only.`;
+
+            try {
+                const text = await generateWithFallback(prompt);
+               const paragraphs = text.split(/\n+/).filter(p => p.trim());
+                aiTextReport.innerHTML = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+                aiLoadingState.classList.add('hidden');
+                aiReportContent.classList.remove('hidden');
+                regenerateAiBtn.classList.remove('hidden');
+                lucide.createIcons();
+            } catch (err) {
+                console.error('All models failed:', err);
+                aiLoadingState.classList.add('hidden');
+                aiErrorState.classList.remove('hidden');
+                aiErrorMsg.textContent = err.message;
+                modelStatusDot.style.backgroundColor = '#ef4444';
+                lucide.createIcons();
+            }
+        }
+
+        // Open modal → init models, then generate
+        aiReportBtn.addEventListener('click', generateAiReport);
+        regenerateAiBtn.addEventListener('click', generateAiReport);
+        aiRetryBtn.addEventListener('click', generateAiReport);
+
+        const closeAiModal = () => aiReportModal.classList.add('hidden');
+        closeAiReportBtn.addEventListener('click', closeAiModal);
+        closeAiReportBtn2.addEventListener('click', closeAiModal);
+        aiReportModal.addEventListener('click', (e) => { if (e.target === aiReportModal) closeAiModal(); });
+
         // --- Clear All Data ---
         const clearAllDataBtn = document.getElementById('clearAllDataBtn');
         const clearAllModal = document.getElementById('clearAllModal');
@@ -1116,44 +1522,29 @@
             clearConfirmInput.value = '';
             confirmClearBtn.disabled = true;
             confirmClearBtn.classList.add('opacity-40', 'cursor-not-allowed');
-            confirmClearBtn.classList.remove('opacity-100', 'cursor-pointer');
             clearAllModal.classList.remove('hidden');
             lucide.createIcons();
         });
-
-        cancelClearBtn.addEventListener('click', () => {
-            clearAllModal.classList.add('hidden');
-        });
-
-        clearAllModal.addEventListener('click', (e) => {
-            if (e.target === clearAllModal) clearAllModal.classList.add('hidden');
-        });
-
+        cancelClearBtn.addEventListener('click', () => clearAllModal.classList.add('hidden'));
+        clearAllModal.addEventListener('click', (e) => { if (e.target === clearAllModal) clearAllModal.classList.add('hidden'); });
         clearConfirmInput.addEventListener('input', () => {
             const valid = clearConfirmInput.value.trim() === 'CLEAR';
             confirmClearBtn.disabled = !valid;
-            if (valid) {
-                confirmClearBtn.classList.remove('opacity-40', 'cursor-not-allowed');
-                confirmClearBtn.classList.add('opacity-100', 'cursor-pointer');
-            } else {
-                confirmClearBtn.classList.add('opacity-40', 'cursor-not-allowed');
-                confirmClearBtn.classList.remove('opacity-100', 'cursor-pointer');
-            }
+            confirmClearBtn.classList.toggle('opacity-40', !valid);
+            confirmClearBtn.classList.toggle('cursor-not-allowed', !valid);
         });
-
         confirmClearBtn.addEventListener('click', async () => {
             if (clearConfirmInput.value.trim() !== 'CLEAR') return;
-            confirmClearBtn.innerHTML = '<div class="loader" style="border-top-color:#fff;width:16px;height:16px;border-width:2px;"></div> Deleting...';
+            confirmClearBtn.innerHTML = '<div style="border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;margin-right:6px;vertical-align:middle;"></div> Deleting...';
             confirmClearBtn.disabled = true;
             try {
                 const snap = await getDocs(collection(db, `users/${currentUserId}/transactions`));
-                const docs = snap.docs;
-                for (let i = 0; i < docs.length; i += 500) {
+                for (let i = 0; i < snap.docs.length; i += 500) {
                     const batch = writeBatch(db);
-                    docs.slice(i, i + 500).forEach(d => batch.delete(d.ref));
+                    snap.docs.slice(i, i + 500).forEach(d => batch.delete(d.ref));
                     await batch.commit();
                 }
-                showToast(`All ${docs.length} transactions deleted successfully!`);
+                showToast(`All ${snap.docs.length} transactions deleted!`);
                 clearAllModal.classList.add('hidden');
             } catch (err) {
                 showToast(`Error: ${err.message}`, false);
